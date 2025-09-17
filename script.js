@@ -1,78 +1,67 @@
 console.log("Flower garden is loading...");
 
-// Your first flower data
+// Complete flower data with all 11 emotions
 const testFlower = {
-    sadness: 83,
-    joy: 12,
-    fear: 25
+    fear: 100, anger: 100, disgust: 100, pessimism: 100, sadness: 100,
+    anticipation: 100, surprise: 100,
+    optimism: 100, joy: 100, love: 100, trust: 100
 };
 
-// Create SVG element
+// Emotion angles from your PRD
+const emotionAngles = {
+    fear: 12, anger: 36, disgust: 60, pessimism: 84, sadness: 108,
+    anticipation: 150, surprise: 210,
+    optimism: 255, joy: 285, love: 315, trust: 345
+};
+
+// Colors for each emotion zone
+const emotionColors = {
+    fear: "#005BAB", anger: "#005BAB", disgust: "#005BAB", pessimism: "#005BAB", sadness: "#005BAB",
+    anticipation: "#EEDE73", surprise: "#EEDE73",
+    optimism: "#5EA748", joy: "#5EA748", love: "#5EA748", trust: "#5EA748"
+};
+
+// Create SVG
 const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
 svg.setAttribute("width", "300");
 svg.setAttribute("height", "300");
 
-// Center point
 const centerX = 150;
 const centerY = 150;
 const maxRadius = 120;
 
-// Function to convert angle to x,y coordinates
 function getCoordinates(angle, length) {
-    const radians = (angle - 90) * Math.PI / 180; // -90 to make 0° point up
+    const radians = (angle - 90) * Math.PI / 180;
     return {
         x: centerX + length * Math.cos(radians),
         y: centerY + length * Math.sin(radians)
     };
 }
 
-// Draw center dot
+// Draw center
 const center = document.createElementNS("http://www.w3.org/2000/svg", "circle");
 center.setAttribute("cx", centerX);
 center.setAttribute("cy", centerY);
 center.setAttribute("r", "3");
 center.setAttribute("fill", "#333");
-
-// Draw sadness petal (0 degrees - pointing up)
-const sadnessLength = (testFlower.sadness / 100) * maxRadius;
-const sadnessEnd = getCoordinates(0, sadnessLength);
-const sadnessPetal = document.createElementNS("http://www.w3.org/2000/svg", "line");
-sadnessPetal.setAttribute("x1", centerX);
-sadnessPetal.setAttribute("y1", centerY);
-sadnessPetal.setAttribute("x2", sadnessEnd.x);
-sadnessPetal.setAttribute("y2", sadnessEnd.y);
-sadnessPetal.setAttribute("stroke", "#005BAB");
-sadnessPetal.setAttribute("stroke-width", "8");
-
-// Draw joy petal (120 degrees)
-const joyLength = (testFlower.joy / 100) * maxRadius;
-const joyEnd = getCoordinates(120, joyLength);
-const joyPetal = document.createElementNS("http://www.w3.org/2000/svg", "line");
-joyPetal.setAttribute("x1", centerX);
-joyPetal.setAttribute("y1", centerY);
-joyPetal.setAttribute("x2", joyEnd.x);
-joyPetal.setAttribute("y2", joyEnd.y);
-joyPetal.setAttribute("stroke", "#5EA748");
-joyPetal.setAttribute("stroke-width", "8");
-
-// Draw fear petal (240 degrees)
-const fearLength = (testFlower.fear / 100) * maxRadius;
-const fearEnd = getCoordinates(240, fearLength);
-const fearPetal = document.createElementNS("http://www.w3.org/2000/svg", "line");
-fearPetal.setAttribute("x1", centerX);
-fearPetal.setAttribute("y1", centerY);
-fearPetal.setAttribute("x2", fearEnd.x);
-fearPetal.setAttribute("y2", fearEnd.y);
-fearPetal.setAttribute("stroke", "#005BAB");
-fearPetal.setAttribute("stroke-width", "8");
-
-// Add all elements to SVG
 svg.appendChild(center);
-svg.appendChild(sadnessPetal);
-svg.appendChild(joyPetal);
-svg.appendChild(fearPetal);
 
-// Add SVG to page
+// Draw all petals
+Object.keys(testFlower).forEach(emotion => {
+    const length = (testFlower[emotion] / 100) * maxRadius;
+    const angle = emotionAngles[emotion];
+    const end = getCoordinates(angle, length);
+    
+    const petal = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    petal.setAttribute("x1", centerX);
+    petal.setAttribute("y1", centerY);
+    petal.setAttribute("x2", end.x);
+    petal.setAttribute("y2", end.y);
+    petal.setAttribute("stroke", emotionColors[emotion]);
+    petal.setAttribute("stroke-width", "6");
+    
+    svg.appendChild(petal);
+});
+
 document.getElementById("flower-container").appendChild(svg);
-
-console.log("Drew flower with sadness:", sadnessLength, "joy:", joyLength, "fear:", fearLength);
+console.log("Drew complete 11-petal flower");
