@@ -6,11 +6,17 @@
         fill: url(#linear-gradient);
       }
     </style>
-    <linearGradient id="linear-gradient" x1="37.8" y1="0" x2="37.8" y2="249.71" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#366bb0"/>
-      <stop offset=".2" stop-color="#2e8ecc"/>
-      <stop offset=".56" stop-color="#7ec8ef"/>
-      <stop offset="1" stop-color="#c0e2f7"/>
+    <linearGradient id="linear-gradient" x1="37.8" y1="244.53" x2="37.8" y2="-5.18" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#b3e3f9"/>
+      <stop offset=".06" stop-color="#a8e0f8"/>
+      <stop offset=".17" stop-color="#8dd8f5"/>
+      <stop offset=".31" stop-color="#61ccf2"/>
+      <stop offset=".47" stop-color="#25bced"/>
+      <stop offset=".57" stop-color="#00b2ea"/>
+      <stop offset=".6" stop-color="#02a8e1"/>
+      <stop offset=".78" stop-color="#0b82c1"/>
+      <stop offset=".91" stop-color="#106bae"/>
+      <stop offset="1" stop-color="#1363a7"/>
     </linearGradient>
   </defs>
   <g id="Layer_17" data-name="Layer 17">

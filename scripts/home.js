@@ -8,9 +8,18 @@ const negativeEmotions = ['fear', 'disgust', 'anger', 'sadness', 'pessimism'];
 // Your SVG petal paths
 const neutralPetalPath = "M183.87,54.26C175.96,17.32,132.53,0,94.09,0c-0.44,0-0.89,0-1.34,0h0c-0.41,0-0.81,0-1.21,0C53.09,0,9.66,17.33,1.76,54.27c-7.15,24.44,9.04,51.95,21.73,72.44c23.05,37.19,48.72,79.4,69.32,116.28h0c20.6-36.88,46.27-79.09,69.32-116.29c12.7-20.49,28.89-48,21.73-72.44ZM159.03,120.64c-20.09,41.52-48.23,85.25-66.22,122.34c-17.99-37.09-46.13-80.82-66.22-122.33c-10.92-22.57-19.95-40.69-13.17-61.85C21.57,33.35,51.29,13.76,92.87,13.58h0c41.52,0.21,71.19,19.79,79.32,45.2c6.78,21.16-2.25,39.29-13.17,61.85Z";
 
-const positivePetalPath = "M67.2,3.83C60.76,1.38,54.34.16,48.16.03h0c-.12-.01-.24,0-.36,0-.34,0-.68-.02-1.02-.02v.04c-6.18.14-12.59,1.36-19.03,3.8C-13.12,22.65.41,79.7,10.6,114.21c10.46,37.71,26.01,93.14,36.87,130.21-9.48-37.28-23.22-93.46-32.25-131.5C5.26,78.13-4.66,14.06,45.96,14.06c.41,0,2.73-.01,3.02-.01,50.62,0,40.7,64.06,30.74,98.85-9.03,38.04-22.77,94.22-32.25,131.5,10.86-37.07,26.41-92.5,36.87-130.21,10.19-34.51,23.72-91.56-17.15-110.37Z";
+// NEW: Dominant neutral petal path
+const dominantNeutralPetalPath = "M183.87,54.26C175.96,17.32,132.53,0,94.09,0c-.44,0-.89,0-1.34,0h0c-.41,0-.81,0-1.21,0C53.09,0,9.66,17.33,1.76,54.27c-7.15,24.44,9.04,51.95,21.73,72.44,23.05,37.19,48.72,79.4,69.32,116.28h0c20.6-36.88,46.27-79.09,69.32-116.29,12.7-20.49,28.89-48,21.73-72.44Z";
+
+const positivePetalPath = "M67.2,3.83C60.76,1.38,54.34,.16,48.16,.03h0c-.12-.01-.24,0-.36,0-.34,0-.68-.02-1.02-.02v.04c-6.18,.14-12.59,1.36-19.03,3.8C-13.12,22.65,.41,79.7,10.6,114.21c10.46,37.71,26.01,93.14,36.87,130.21-9.48-37.28-23.22-93.46-32.25-131.5C5.26,78.13-4.66,14.06,45.96,14.06c.41,0,2.73-.01,3.02-.01,50.62,0,40.7,64.06,30.74,98.85-9.03,38.04-22.77,94.22-32.25,131.5,10.86-37.07,26.41-92.5,36.87-130.21,10.19-34.51,23.72-91.56-17.15-110.37Z";
+
+// Dominant positive petal path
+const dominantPositivePetalPath = "M47.48,244.4c10.86-37.07,26.41-92.5,36.87-130.21,10.19-34.51,23.72-91.56-17.15-110.37C60.76,1.38,54.34,.16,48.16,.03h0c-.12-.01-.24,0-.36,0-.34,0-.68-.02-1.02-.02v.04c-6.18,.14-12.59,1.36-19.03,3.8C-13.12,22.65,.41,79.7,10.6,114.21c10.46,37.71,26.01,93.14,36.87,130.21";
 
 const negativePetalPath = "M75.33,47.23C73.95,17.52,57.68-.02,38.12,0h0c-.09,0-.18,0-.27,0-.12,0-.24,0-.35,0h0C17.92-.02,1.66,17.52.28,47.23c-1.53,23.42,3.44,45.78,8.18,67.04c8.26,37.79,20.75,93.19,29.35,130.24,0,0,0,.01,0,.02,0,0,0-.01,0-.02,0,0,0,.01,0,.02,0,0,0-.01,0-.02,8.59-37.06,21.08-92.46,29.35-130.24,4.73-21.27,9.71-43.62,8.18-67.04ZM37.8,244.51c-7.6-37.53-18.4-93.38-25.66-131.53C3.71,76.45.86,13.38,37.82,13.29c36.93.11,34.08,63.16,25.64,99.69-7.25,38.16-18.06,94.01-25.66,131.54Z";
+
+// Dominant negative petal path
+const dominantNegativePetalPath = "M75.33,47.23C73.95,17.52,57.68-.02,38.12,0h0c-.09,0-.18,0-.27,0-.12,0-.24,0-.35,0h0C17.92-.02,1.66,17.52.28,47.23c-1.53,23.42,3.44,45.78,8.18,67.04c8.26,37.79,20.75,93.19,29.35,130.24,0,0,0,.01,0,.02,0,0,0-.01,0-.02,0,0,0,.01,0,.02,0,0,0-.01,0-.02,8.59-37.06,21.08-92.46,29.35-130.24,4.73-21.27,9.71-43.62,8.18-67.04Z";
 
 // Group flowers by category
 function groupFlowersByCategory(flowers) {
@@ -78,6 +87,32 @@ function createSmallFlower(flowerData, x, y) {
     neutralGradient.appendChild(neutralStop3);
     defs.appendChild(neutralGradient);
     
+    // NEW: Dominant neutral gradient (enhanced yellow)
+    const dominantNeutralGradient = document.createElementNS("http://www.w3.org/2000/svg", "linearGradient");
+    dominantNeutralGradient.setAttribute("id", `dominant_neutral_gradient_${x}_${y}`);
+    dominantNeutralGradient.setAttribute("x1", "92.81");
+    dominantNeutralGradient.setAttribute("y1", "0");
+    dominantNeutralGradient.setAttribute("x2", "92.81");
+    dominantNeutralGradient.setAttribute("y2", "248.13");
+    dominantNeutralGradient.setAttribute("gradientUnits", "userSpaceOnUse");
+    
+    const domNeutStop1 = document.createElementNS("http://www.w3.org/2000/svg", "stop");
+    domNeutStop1.setAttribute("offset", "0");
+    domNeutStop1.setAttribute("stop-color", "#d4c441"); // Deeper, richer yellow
+    
+    const domNeutStop2 = document.createElementNS("http://www.w3.org/2000/svg", "stop");
+    domNeutStop2.setAttribute("offset", ".49");
+    domNeutStop2.setAttribute("stop-color", "#efe173"); // Original top yellow
+    
+    const domNeutStop3 = document.createElementNS("http://www.w3.org/2000/svg", "stop");
+    domNeutStop3.setAttribute("offset", "1");
+    domNeutStop3.setAttribute("stop-color", "#fffdf0"); // Warm cream instead of greenish white
+    
+    dominantNeutralGradient.appendChild(domNeutStop1);
+    dominantNeutralGradient.appendChild(domNeutStop2);
+    dominantNeutralGradient.appendChild(domNeutStop3);
+    defs.appendChild(dominantNeutralGradient);
+    
     // Positive gradient (green)
     const positiveGradient = document.createElementNS("http://www.w3.org/2000/svg", "linearGradient");
     positiveGradient.setAttribute("id", `positive_gradient_${x}_${y}`);
@@ -104,38 +139,168 @@ function createSmallFlower(flowerData, x, y) {
     positiveGradient.appendChild(positiveStop3);
     defs.appendChild(positiveGradient);
     
-    // Negative gradient (blue)
+    // NEW: Dominant positive gradient (enhanced green with more vibrant colors)
+    const dominantPositiveGradient = document.createElementNS("http://www.w3.org/2000/svg", "linearGradient");
+    dominantPositiveGradient.setAttribute("id", `dominant_positive_gradient_${x}_${y}`);
+    dominantPositiveGradient.setAttribute("x1", "47.47");
+    dominantPositiveGradient.setAttribute("y1", "0");
+    dominantPositiveGradient.setAttribute("x2", "47.47");
+    dominantPositiveGradient.setAttribute("y2", "244.42");
+    dominantPositiveGradient.setAttribute("gradientUnits", "userSpaceOnUse");
+    
+    const domPosStop1 = document.createElementNS("http://www.w3.org/2000/svg", "stop");
+    domPosStop1.setAttribute("offset", "0");
+    domPosStop1.setAttribute("stop-color", "#5a9a3d"); // Deeper green
+    
+    const domPosStop2 = document.createElementNS("http://www.w3.org/2000/svg", "stop");
+    domPosStop2.setAttribute("offset", ".49");
+    domPosStop2.setAttribute("stop-color", "#7db056"); // Original middle green
+    
+    const domPosStop3 = document.createElementNS("http://www.w3.org/2000/svg", "stop");
+    domPosStop3.setAttribute("offset", "1");
+    domPosStop3.setAttribute("stop-color", "#e8f5e1"); // Light green instead of white
+    
+    dominantPositiveGradient.appendChild(domPosStop1);
+    dominantPositiveGradient.appendChild(domPosStop2);
+    dominantPositiveGradient.appendChild(domPosStop3);
+    defs.appendChild(dominantPositiveGradient);
+    
+    // Negative gradient (blue) - existing
     const negativeGradient = document.createElementNS("http://www.w3.org/2000/svg", "linearGradient");
     negativeGradient.setAttribute("id", `negative_gradient_${x}_${y}`);
     negativeGradient.setAttribute("x1", "37.8");
-    negativeGradient.setAttribute("y1", "0");
+    negativeGradient.setAttribute("y1", "244.53");
     negativeGradient.setAttribute("x2", "37.8");
-    negativeGradient.setAttribute("y2", "249.71");
+    negativeGradient.setAttribute("y2", "-5.18");
     negativeGradient.setAttribute("gradientUnits", "userSpaceOnUse");
     
     const negativeStop1 = document.createElementNS("http://www.w3.org/2000/svg", "stop");
     negativeStop1.setAttribute("offset", "0");
-    negativeStop1.setAttribute("stop-color", "#366bb0");
+    negativeStop1.setAttribute("stop-color", "#b3e3f9");
     
     const negativeStop2 = document.createElementNS("http://www.w3.org/2000/svg", "stop");
-    negativeStop2.setAttribute("offset", ".2");
-    negativeStop2.setAttribute("stop-color", "#2e8ecc");
+    negativeStop2.setAttribute("offset", ".06");
+    negativeStop2.setAttribute("stop-color", "#a8e0f8");
     
     const negativeStop3 = document.createElementNS("http://www.w3.org/2000/svg", "stop");
-    negativeStop3.setAttribute("offset", ".56");
-    negativeStop3.setAttribute("stop-color", "#7ec8ef");
+    negativeStop3.setAttribute("offset", ".16");
+    negativeStop3.setAttribute("stop-color", "#8dd8f5");
     
     const negativeStop4 = document.createElementNS("http://www.w3.org/2000/svg", "stop");
-    negativeStop4.setAttribute("offset", "1");
-    negativeStop4.setAttribute("stop-color", "#c0e2f7");
+    negativeStop4.setAttribute("offset", ".28");
+    negativeStop4.setAttribute("stop-color", "#61ccf2");
+    
+    const negativeStop5 = document.createElementNS("http://www.w3.org/2000/svg", "stop");
+    negativeStop5.setAttribute("offset", ".43");
+    negativeStop5.setAttribute("stop-color", "#25bced");
+    
+    const negativeStop6 = document.createElementNS("http://www.w3.org/2000/svg", "stop");
+    negativeStop6.setAttribute("offset", ".52");
+    negativeStop6.setAttribute("stop-color", "#00b2ea");
+    
+    const negativeStop7 = document.createElementNS("http://www.w3.org/2000/svg", "stop");
+    negativeStop7.setAttribute("offset", ".56");
+    negativeStop7.setAttribute("stop-color", "#02a8e1");
+    
+    const negativeStop8 = document.createElementNS("http://www.w3.org/2000/svg", "stop");
+    negativeStop8.setAttribute("offset", ".75");
+    negativeStop8.setAttribute("stop-color", "#0b82c1");
+    
+    const negativeStop9 = document.createElementNS("http://www.w3.org/2000/svg", "stop");
+    negativeStop9.setAttribute("offset", ".9");
+    negativeStop9.setAttribute("stop-color", "#106bae");
+    
+    const negativeStop10 = document.createElementNS("http://www.w3.org/2000/svg", "stop");
+    negativeStop10.setAttribute("offset", "1");
+    negativeStop10.setAttribute("stop-color", "#1363a7");
     
     negativeGradient.appendChild(negativeStop1);
     negativeGradient.appendChild(negativeStop2);
     negativeGradient.appendChild(negativeStop3);
     negativeGradient.appendChild(negativeStop4);
+    negativeGradient.appendChild(negativeStop5);
+    negativeGradient.appendChild(negativeStop6);
+    negativeGradient.appendChild(negativeStop7);
+    negativeGradient.appendChild(negativeStop8);
+    negativeGradient.appendChild(negativeStop9);
+    negativeGradient.appendChild(negativeStop10);
     defs.appendChild(negativeGradient);
     
+    // Dominant negative gradient (existing)
+    const dominantNegativeGradient = document.createElementNS("http://www.w3.org/2000/svg", "linearGradient");
+    dominantNegativeGradient.setAttribute("id", `dominant_negative_gradient_${x}_${y}`);
+    dominantNegativeGradient.setAttribute("x1", "37.8");
+    dominantNegativeGradient.setAttribute("y1", "244.53");
+    dominantNegativeGradient.setAttribute("x2", "37.8");
+    dominantNegativeGradient.setAttribute("y2", "-5.18");
+    dominantNegativeGradient.setAttribute("gradientUnits", "userSpaceOnUse");
+    
+    const domNegStop1 = document.createElementNS("http://www.w3.org/2000/svg", "stop");
+    domNegStop1.setAttribute("offset", "0");
+    domNegStop1.setAttribute("stop-color", "#b3e3f9");
+    
+    const domNegStop2 = document.createElementNS("http://www.w3.org/2000/svg", "stop");
+    domNegStop2.setAttribute("offset", ".06");
+    domNegStop2.setAttribute("stop-color", "#a8e0f8");
+    
+    const domNegStop3 = document.createElementNS("http://www.w3.org/2000/svg", "stop");
+    domNegStop3.setAttribute("offset", ".16");
+    domNegStop3.setAttribute("stop-color", "#8dd8f5");
+    
+    const domNegStop4 = document.createElementNS("http://www.w3.org/2000/svg", "stop");
+    domNegStop4.setAttribute("offset", ".28");
+    domNegStop4.setAttribute("stop-color", "#61ccf2");
+    
+    const domNegStop5 = document.createElementNS("http://www.w3.org/2000/svg", "stop");
+    domNegStop5.setAttribute("offset", ".43");
+    domNegStop5.setAttribute("stop-color", "#25bced");
+    
+    const domNegStop6 = document.createElementNS("http://www.w3.org/2000/svg", "stop");
+    domNegStop6.setAttribute("offset", ".52");
+    domNegStop6.setAttribute("stop-color", "#00b2ea");
+    
+    const domNegStop7 = document.createElementNS("http://www.w3.org/2000/svg", "stop");
+    domNegStop7.setAttribute("offset", ".56");
+    domNegStop7.setAttribute("stop-color", "#02a8e1");
+    
+    const domNegStop8 = document.createElementNS("http://www.w3.org/2000/svg", "stop");
+    domNegStop8.setAttribute("offset", ".75");
+    domNegStop8.setAttribute("stop-color", "#0b82c1");
+    
+    const domNegStop9 = document.createElementNS("http://www.w3.org/2000/svg", "stop");
+    domNegStop9.setAttribute("offset", ".9");
+    domNegStop9.setAttribute("stop-color", "#106bae");
+    
+    const domNegStop10 = document.createElementNS("http://www.w3.org/2000/svg", "stop");
+    domNegStop10.setAttribute("offset", "1");
+    domNegStop10.setAttribute("stop-color", "#1363a7");
+    
+    dominantNegativeGradient.appendChild(domNegStop1);
+    dominantNegativeGradient.appendChild(domNegStop2);
+    dominantNegativeGradient.appendChild(domNegStop3);
+    dominantNegativeGradient.appendChild(domNegStop4);
+    dominantNegativeGradient.appendChild(domNegStop5);
+    dominantNegativeGradient.appendChild(domNegStop6);
+    dominantNegativeGradient.appendChild(domNegStop7);
+    dominantNegativeGradient.appendChild(domNegStop8);
+    dominantNegativeGradient.appendChild(domNegStop9);
+    dominantNegativeGradient.appendChild(domNegStop10);
+    defs.appendChild(dominantNegativeGradient);
+    
     svg.appendChild(defs);
+    
+    // Find the dominant emotion (highest intensity)
+    const emotionIntensities = Object.keys(flowerData.emotions).map(emotion => ({
+        emotion: emotion,
+        intensity: flowerData.emotions[emotion]
+    }));
+    const dominantEmotion = emotionIntensities.reduce((max, current) => 
+        current.intensity > max.intensity ? current : max
+    ).emotion;
+    
+    const isDominantPositive = positiveEmotions.includes(dominantEmotion);
+    const isDominantNeutral = neutralEmotions.includes(dominantEmotion);
+    const isDominantNegative = negativeEmotions.includes(dominantEmotion);
     
     // Draw petals
     Object.keys(flowerData.emotions).forEach((emotion, index) => {
@@ -145,8 +310,9 @@ function createSmallFlower(flowerData, x, y) {
         if (neutralEmotions.includes(emotion)) {
             // Create SVG petal for neutral emotions
             const length = intensity * maxRadius;
+            const isDominant = emotion === dominantEmotion;
             
-            // Calculate scale to match line length (neutral SVG petal is ~243 units tall)
+            // Calculate scale to match line length (both neutral petals are ~243 units tall)
             const petalScale = length / 243;
             
             // Create a group for the petal that can be transformed
@@ -163,8 +329,17 @@ function createSmallFlower(flowerData, x, y) {
             
             // Create the petal path
             const petalElement = document.createElementNS("http://www.w3.org/2000/svg", "path");
-            petalElement.setAttribute("d", neutralPetalPath);
-            petalElement.setAttribute("fill", `url(#neutral_gradient_${x}_${y})`);
+            
+            if (isDominant) {
+                // Use dominant neutral petal for the highest scoring neutral emotion
+                petalElement.setAttribute("d", dominantNeutralPetalPath);
+                petalElement.setAttribute("fill", `url(#dominant_neutral_gradient_${x}_${y})`);
+            } else {
+                // Use regular neutral petal for supporting neutral emotions
+                petalElement.setAttribute("d", neutralPetalPath);
+                petalElement.setAttribute("fill", `url(#neutral_gradient_${x}_${y})`);
+            }
+            
             petalElement.setAttribute("transform", "translate(-92.81, -121.49)"); // Center the petal on its root
             
             petalGroup.appendChild(petalElement);
@@ -173,8 +348,9 @@ function createSmallFlower(flowerData, x, y) {
         } else if (positiveEmotions.includes(emotion)) {
             // Create SVG petal for positive emotions
             const length = intensity * maxRadius;
+            const isDominant = emotion === dominantEmotion;
             
-            // Calculate scale to match line length (positive SVG petal is ~244 units tall)
+            // Calculate scale - both regular and dominant positive use ~244 units tall
             const petalScale = length / 244;
             
             // Create a group for the petal that can be transformed
@@ -191,9 +367,18 @@ function createSmallFlower(flowerData, x, y) {
             
             // Create the petal path
             const petalElement = document.createElementNS("http://www.w3.org/2000/svg", "path");
-            petalElement.setAttribute("d", positivePetalPath);
-            petalElement.setAttribute("fill", `url(#positive_gradient_${x}_${y})`);
-            petalElement.setAttribute("transform", "translate(-47.47, -122.21)"); // Center the petal on its root
+            
+            if (isDominant) {
+                // Use dominant positive petal for the highest scoring positive emotion
+                petalElement.setAttribute("d", dominantPositivePetalPath);
+                petalElement.setAttribute("fill", `url(#dominant_positive_gradient_${x}_${y})`);
+                petalElement.setAttribute("transform", "translate(-47.48, -122.2)"); // Center the petal on its root
+            } else {
+                // Use regular positive petal for supporting positive emotions
+                petalElement.setAttribute("d", positivePetalPath);
+                petalElement.setAttribute("fill", `url(#positive_gradient_${x}_${y})`);
+                petalElement.setAttribute("transform", "translate(-47.47, -122.21)"); // Center the petal on its root
+            }
             
             petalGroup.appendChild(petalElement);
             svg.appendChild(petalGroup);
@@ -201,6 +386,7 @@ function createSmallFlower(flowerData, x, y) {
         } else if (negativeEmotions.includes(emotion)) {
             // Create SVG petal for negative emotions
             const length = intensity * maxRadius;
+            const isDominant = emotion === dominantEmotion;
             
             // Calculate scale to match line length (negative SVG petal is ~245 units tall)
             const petalScale = length / 245;
@@ -219,8 +405,17 @@ function createSmallFlower(flowerData, x, y) {
             
             // Create the petal path
             const petalElement = document.createElementNS("http://www.w3.org/2000/svg", "path");
-            petalElement.setAttribute("d", negativePetalPath);
-            petalElement.setAttribute("fill", `url(#negative_gradient_${x}_${y})`);
+            
+            if (isDominant) {
+                // Use dominant negative petal for the highest scoring negative emotion
+                petalElement.setAttribute("d", dominantNegativePetalPath);
+                petalElement.setAttribute("fill", `url(#dominant_negative_gradient_${x}_${y})`);
+            } else {
+                // Use regular negative petal for supporting negative emotions
+                petalElement.setAttribute("d", negativePetalPath);
+                petalElement.setAttribute("fill", `url(#negative_gradient_${x}_${y})`);
+            }
+            
             petalElement.setAttribute("transform", "translate(-37.8, -122.27)"); // Center the petal on its root
             
             petalGroup.appendChild(petalElement);
