@@ -33,15 +33,40 @@
     overlay.style.display = "none";
     overlay.setAttribute("aria-hidden", "true");
   
+    // Base rings SVG (inline so we can scale & center it)
+    const BASE_SVG = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 925.22 925.22" aria-hidden="true">
+      <g fill="none" stroke="#d1d3d4" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
+        <polyline points="811.95 158.79 463.19 462.83 652.83 42.73" />
+        <polyline points="920.28 523.56 463.19 462.83 904.49 323.87" />
+        <polyline points="862.53 693.55 463.19 462.83 463.18 923.83" />
+        <polyline points="234.5 62.7 462.97 462.08 462.97 462.08 1.96 464.16" />
+        <polyline points="462.89 1 463.19 462.83 64.42 694.25 461.81 463.4 463.19 462.83 66.53 227.56" />
+        <circle cx="463.19" cy="462.97" r="114.62" stroke-dasharray="1 5"/>
+        <circle cx="464.15" cy="461.42" r="230.86" stroke-dasharray="1 5"/>
+        <circle cx="464.15" cy="462.57" r="346.61" stroke-dasharray="1 5"/>
+        <circle cx="462.61" cy="462.61" r="461.61"/>
+      </g>
+    </svg>
+    `;
+
+    // keep handles so we can clean up on close()
+    let _observer = null;
+    let _removeResizeListener = null;
+
     function close() {
       overlay.classList.remove("open");
-      overlay.style.display = "none";            // hide no matter what
+      overlay.style.display = "none";
       overlay.setAttribute("aria-hidden", "true");
       document.body.style.overflow = "";
-      // optional: clear the left panel
+    
+      // cleanup observers/listeners
+      if (_observer) { _observer.disconnect(); _observer = null; }
+      if (_removeResizeListener) { _removeResizeListener(); _removeResizeListener = null; }
+    
       const host = overlay.querySelector("#mg-flower-host");
       if (host) host.innerHTML = "";
-    }
+    }    
   
     overlay.addEventListener("click", (e) => { if (e.target === overlay) close(); });
     overlay.querySelector("#mg-modal-close").addEventListener("click", close);
@@ -68,27 +93,100 @@
       overlay.querySelector("#mg-dominant").textContent = flower.dominantEmotionName || "—";
   
       // render left panel (robust to your current renderer)
-      const host = overlay.querySelector("#mg-flower-host");
-      host.innerHTML = "";
-      try {
-        if (window.FlowerRenderer && typeof window.FlowerRenderer.createFlower === "function") {
-          // Create a much larger flower for the modal (480x480 instead of default 80x80)
-          const el = window.FlowerRenderer.createFlower(flower, {
-            width: 480,
-            height: 480,
-            maxRadius: 180
-          });
-          el.style.position = "static";
-          el.style.left = "";
-          el.style.top = "";
-          host.appendChild(el);
-        } else {
-          host.innerHTML = "<p style='opacity:.7'>Flower renderer not loaded.</p>";
-        }
-      } catch (e) {
-        console.error("[Modal] Flower render failed:", e);
-        host.innerHTML = "<p style='opacity:.7'>Could not render flower.</p>";
-      }
+const host = overlay.querySelector("#mg-flower-host");
+host.innerHTML = "";
+
+try {
+  // stage holds both base and flower, perfectly centered
+  const stage = document.createElement("div");
+  stage.className = "mg-stage";
+
+  // base (behind flower)
+  const base = document.createElement("div");
+  base.className = "mg-base";
+  base.innerHTML = BASE_SVG;
+
+  // where the actual flower goes
+  const wrap = document.createElement("div");
+  wrap.className = "mg-flower-wrap";
+
+  if (window.FlowerRenderer && typeof window.FlowerRenderer.createFlower === "function") {
+    // larger flower in modal
+    const el = window.FlowerRenderer.createFlower(flower, {
+      width: 480,
+      height: 480,
+      maxRadius: 180
+    });
+    // let our wrapper handle positioning
+    el.style.position = "static";
+    el.style.left = "";
+    el.style.top = "";
+    wrap.appendChild(el);
+  } else {
+    wrap.innerHTML = "<p style='opacity:.7'>Flower renderer not loaded.</p>";
+  }
+
+  stage.appendChild(base);
+stage.appendChild(wrap);
+host.appendChild(stage);
+
+// ---- show overlay FIRST so layout is real ----
+document.body.style.overflow = "hidden";
+overlay.classList.add("open");
+overlay.style.display = "flex";
+overlay.setAttribute("aria-hidden", "false");
+
+// --- keep base fixed; translate the FLOWER so its origin sits on base center ---
+const alignFlowerToBase = () => {
+  const svg = wrap.querySelector("svg");
+  if (!svg) return;
+
+  // FlowerRenderer origin = width/2, height/2 (no viewBox)
+  const w =
+    parseFloat(svg.getAttribute("width")) ||
+    svg.clientWidth ||
+    svg.getBoundingClientRect().width;
+  const h =
+    parseFloat(svg.getAttribute("height")) ||
+    svg.clientHeight ||
+    svg.getBoundingClientRect().height;
+
+  const origin = { x: w / 2, y: h / 2 };
+
+  // SVG -> screen
+  const pt = svg.createSVGPoint();
+  pt.x = origin.x; pt.y = origin.y;
+  const originScreen = pt.matrixTransform(svg.getScreenCTM());
+
+  // stage center (== base center)
+  const rect = stage.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+
+  // move the FLOWER so its true origin lands on the base center
+  const dx = cx - originScreen.x;
+  const dy = cy - originScreen.y;
+  wrap.style.setProperty("--flower-tx", `${dx}px`);
+  wrap.style.setProperty("--flower-ty", `${dy}px`);
+};
+
+// Run AFTER the modal is visible so sizes are non-zero
+requestAnimationFrame(() => {
+  alignFlowerToBase();
+  _observer = new MutationObserver(alignFlowerToBase);
+  _observer.observe(wrap, { attributes: true, childList: true, subtree: true });
+  const onResize = () => alignFlowerToBase();
+  window.addEventListener("resize", onResize);
+  _removeResizeListener = () => window.removeEventListener("resize", onResize);
+});
+
+
+
+} catch (e) {
+  console.error("[Modal] Flower render failed:", e);
+  host.innerHTML = "<p style='opacity:.7'>Could not render flower.</p>";
+}
+
   
       // 🔓 Show overlay
       document.body.style.overflow = "hidden";

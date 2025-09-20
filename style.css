@@ -539,3 +539,39 @@ h1 {
   .mg-modal-inner{ grid-template-columns: 1fr; }
   .mg-quote{ font-size: 22px; }
 }
+
+/* === Modal: flower stage with centered base rings === */
+#mg-flower-host { width: 100%; max-width: 480px; display: grid; place-items: center; }
+
+.mg-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;   /* square stage so center math is easy */
+}
+
+.mg-base,
+.mg-flower-wrap {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+.mg-base {
+  pointer-events: none;
+  z-index: 0;
+}
+
+.mg-base > svg {
+  width: 100%;
+  height: 100%;
+  /* no transform here; base stays fixed */
+}
+
+.mg-flower-wrap {
+  z-index: 1;
+  --flower-tx: 0px;
+  --flower-ty: 0px;
+  transform: translate(var(--flower-tx), var(--flower-ty));
+}
+
