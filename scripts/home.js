@@ -101,9 +101,100 @@ function renderThemes(flowers) {
 }
 
 let _flowers = [];
+let currentMobileIndex = 0;
+
+function renderMobileThemes(flowers) {
+  const categories = groupFlowersByCategory(flowers);
+  const track = document.getElementById('mobile-category-track');
+  if (!track) return;
+
+  track.innerHTML = '';
+
+  const categoryNames = [
+    "Perpetual Looping", "Loss of Agency", "Sensory Overwhelm",
+    "Emotional Dysregulation", "Perceptual Barriers",
+    "Thought Entanglement", "Temporal Disconnection"
+  ];
+
+  categoryNames.forEach((name, index) => {
+    const list = categories[name];
+    if (!list || !list.length) return;
+
+    const item = document.createElement('div');
+    item.className = 'mobile-category-item';
+
+    const label = document.createElement('div');
+    label.className = 'category-label';
+    let displayName = name.replace(/ (?=[^ ]*$)/, "<br>");
+    label.innerHTML = displayName;
+    item.appendChild(label);
+
+    const button = document.createElement('button');
+    button.className = 'mobile-see-reflections-btn';
+    button.textContent = 'See Reflections';
+    button.dataset.category = name;
+    item.appendChild(button);
+
+    track.appendChild(item);
+  });
+
+  updateCarousel();
+}
+
+function updateCarousel() {
+  const track = document.getElementById('mobile-category-track');
+  const prevBtn = document.querySelector('.carousel-prev');
+  const nextBtn = document.querySelector('.carousel-next');
+
+  if (!track || !prevBtn || !nextBtn) return;
+
+  const totalItems = track.children.length;
+  const translateX = -currentMobileIndex * 100;
+  track.style.transform = `translateX(${translateX}%)`;
+
+  prevBtn.disabled = currentMobileIndex === 0;
+  nextBtn.disabled = currentMobileIndex === totalItems - 1;
+}
+
+function initMobileCarousel() {
+  const prevBtn = document.querySelector('.carousel-prev');
+  const nextBtn = document.querySelector('.carousel-next');
+
+  if (prevBtn) {
+    prevBtn.addEventListener('click', () => {
+      if (currentMobileIndex > 0) {
+        currentMobileIndex--;
+        updateCarousel();
+      }
+    });
+  }
+
+  if (nextBtn) {
+    nextBtn.addEventListener('click', () => {
+      const track = document.getElementById('mobile-category-track');
+      if (track && currentMobileIndex < track.children.length - 1) {
+        currentMobileIndex++;
+        updateCarousel();
+      }
+    });
+  }
+
+  // Add click listeners for "See Reflections" buttons
+  document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('mobile-see-reflections-btn')) {
+      const categoryName = e.target.dataset.category;
+      // Navigate to the category page
+      const categorySlug = categoryName.toLowerCase().replace(/\s+/g, '-');
+      window.location.href = `${categorySlug}.html`;
+    }
+  });
+}
+
 function createHomePage(flowers) {
   _flowers = flowers;
   renderThemes(_flowers);
+  renderMobileThemes(_flowers);
+  initMobileCarousel();
 
   // keep Reflections after Themes
   const themes = document.getElementById('themes');
