@@ -47,6 +47,14 @@
 
 html, body { background: var(--page-bg); }
 
+/* main heading */
+h1 {
+  font-family: "Satoshi Variable", system-ui;
+  font-size: 14px;
+  font-weight: 700;
+  color: #005BA6;
+}
+
 /* page wrapper creates the outer gutters */
 .wrapper{
   max-width: var(--content-max);
@@ -61,7 +69,9 @@ html, body { background: var(--page-bg); }
 /* eyebrow */
 .eyebrow{
   text-align:center;
-  font-size:12px;
+  font-size:14px;
+  font-family: "Satoshi Variable", system-ui;
+  font-weight: 400;
   letter-spacing:.12em;
   opacity:.7;
   margin:8px 0 28px;
@@ -122,7 +132,9 @@ html, body { background: var(--page-bg); }
 
 /* switch to 4 columns when the 8-col layout would clip */
 @media (max-width: 1426px){
-  #category-grid{ --cols: 4; }
+  #category-grid{
+    --cols: 4; /* Switch to 4-column mode */
+  }
   :root{ --row-gap: 64px; }  /* give rows some breathing room again */
 }
 
@@ -135,14 +147,32 @@ html, body { background: var(--page-bg); }
 }
 
 /* ================================
-   Reflections (unchanged)
+   Reflections
    ================================ */
 #reflections { margin: 64px auto 100px; text-align: center; max-width: var(--content-max); }
+
+#reflections h2 {
+  font-family: "Satoshi Variable", system-ui;
+  font-size: 14px;
+  font-weight: 400;
+}
 #shuffle-cards {
   display: flex; gap: 20px; justify-content: center; margin: 20px 0;
-  flex-wrap: wrap; /* Allow wrapping on smaller screens */
+  /* No wrapping - JavaScript handles responsive card count */
 }
-#shuffle-cards .card { border: 1px solid #ccc; padding: 12px; width: 250px; text-align: left; }
+#shuffle-cards .card {
+  padding: 0px;
+  width: 320px;
+  height: 44px;
+  text-align: left;
+  box-sizing: border-box;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  font-family: "Satoshi Variable", system-ui;
+  font-size: 16px;
+  font-weight: 400;
+}
 #shuffle-btn { padding: 10px 20px; cursor: pointer; }
 
 /* ================================

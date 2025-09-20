@@ -51,16 +51,16 @@ const LAYOUT_8 = [
   { name: "Temporal Disconnection",     colStart: 7, row: 2 },
 ];
 
-// 4-col map (same visual rhythm: 3 on top, 4 on bottom)
+// 4-col map (staggered: 3 centered on top, 4 offset on bottom)
 const LAYOUT_4 = [
-  { name: "Perpetual Looping",          colStart: 2, row: 1 },
-  { name: "Loss of Agency",             colStart: 1, row: 1 },
+  { name: "Perpetual Looping",          colStart: 1, row: 1 },
+  { name: "Loss of Agency",             colStart: 2, row: 1 },
   { name: "Sensory Overwhelm",          colStart: 3, row: 1 },
 
-  { name: "Emotional Dysregulation",    colStart: 1, row: 2 },
-  { name: "Perceptual Barriers",        colStart: 2, row: 2 },
-  { name: "Thought Entanglement",       colStart: 3, row: 2 },
-  { name: "Temporal Disconnection",     colStart: 4, row: 2 },
+  { name: "Emotional Dysregulation",    colStart: 0.5, row: 2 },
+  { name: "Perceptual Barriers",        colStart: 1.5, row: 2 },
+  { name: "Thought Entanglement",       colStart: 2.5, row: 2 },
+  { name: "Temporal Disconnection",     colStart: 3.5, row: 2 },
 ];
 
 function getColsFromCSS() {
