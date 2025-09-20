@@ -583,11 +583,16 @@ h1 {
   background: #fff;
   border-radius: 10px;
   padding: 8px 12px;
-  font: 600 13px/1 "Satoshi Variable", system-ui;
+  font: 600 13px/1 "Satoshi Variable", system-u1i;
   color: #101720;
   box-shadow: 0 8px 24px rgba(0,0,0,.12);
   white-space: nowrap;
   user-select: none;
+}
+
+/* sectors should sit under the petals while still being visible */
+.mg-flower-wrap svg .mg-sector { 
+  /* no z-index in SVG; order handles it. This rule is here just as a hook if you later add filters */
 }
 
 

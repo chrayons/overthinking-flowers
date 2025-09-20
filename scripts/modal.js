@@ -33,15 +33,23 @@
     overlay.style.display = "none";
     overlay.setAttribute("aria-hidden", "true");
   
-    // Base rings SVG (inline so we can scale & center it)
+    // Base rings SVG (inline so we can scale & center it) - boundary lines for emotion sections
     const BASE_SVG = `
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 925.22 925.22" aria-hidden="true">
       <g fill="none" stroke="#d1d3d4" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
-        <polyline points="811.95 158.79 463.19 462.83 652.83 42.73" />
-        <polyline points="920.28 523.56 463.19 462.83 904.49 323.87" />
-        <polyline points="862.53 693.55 463.19 462.83 463.18 923.83" />
-        <polyline points="234.5 62.7 462.97 462.08 462.97 462.08 1.96 464.16" />
-        <polyline points="462.89 1 463.19 462.83 64.42 694.25 461.81 463.4 463.19 462.83 66.53 227.56" />
+        <!-- Boundary lines that define emotion section edges -->
+        <polyline points="463.19 462.83 463.19 1.22" /> <!-- 0°/360° boundary -->
+        <polyline points="463.19 462.83 650.94 41.13" /> <!-- 24° boundary (fear/anger) -->
+        <polyline points="463.19 462.83 806.23 153.95" /> <!-- 48° boundary (anger/disgust) -->
+        <polyline points="463.19 462.83 902.21 320.18" /> <!-- 72° boundary (disgust/pessimism) -->
+        <polyline points="463.19 462.83 922.27 511.08" /> <!-- 96° boundary (pessimism/sadness) -->
+        <polyline points="463.19 462.83 862.96 693.63" /> <!-- 120° boundary (sadness/anticipation) -->
+        <polyline points="463.19 462.83 463.19 924.44" /> <!-- 180° boundary (anticipation/surprise) -->
+        <polyline points="463.19 462.83 63.42 693.63" /> <!-- 240° boundary (surprise/optimism) -->
+        <polyline points="463.19 462.83 1.58 462.83" /> <!-- 270° boundary (optimism/joy) -->
+        <polyline points="463.19 462.83 63.42 232.02" /> <!-- 300° boundary (joy/love) -->
+        <polyline points="463.19 462.83 232.38 63.06" /> <!-- 330° boundary (love/trust) -->
+        <!-- Concentric circles -->
         <circle cx="463.19" cy="462.97" r="114.62" stroke-dasharray="1 5"/>
         <circle cx="464.15" cy="461.42" r="230.86" stroke-dasharray="1 5"/>
         <circle cx="464.15" cy="462.57" r="346.61" stroke-dasharray="1 5"/>
@@ -147,40 +155,160 @@ try {
 
     const labelize = (k) => (k ? k.charAt(0).toUpperCase() + k.slice(1) : "");
 
+    // Create overlay layer with matching sector shapes
+    const createOverlayLayer = () => {
+      const svgEl = wrap.querySelector("svg");
+      if (!svgEl) return null;
+
+      const overlayWrap = document.createElement("div");
+      overlayWrap.className = "mg-overlay-wrap";
+      overlayWrap.style.cssText = `
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        mix-blend-mode: multiply;
+        display: grid;
+        place-items: center;
+      `;
+
+      // Create an SVG that matches the flower dimensions
+      const svgRect = svgEl.getBoundingClientRect();
+      const overlaySvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      overlaySvg.setAttribute("width", svgRect.width);
+      overlaySvg.setAttribute("height", svgRect.height);
+      overlaySvg.style.display = "block";
+
+      const centerX = svgRect.width / 2;
+      const centerY = svgRect.height / 2;
+      const maxRadius = Math.min(centerX, centerY);
+
+      // Helper function to create sector path (same as in flower renderer)
+      const describeArc = (cx, cy, r, startAngle, endAngle) => {
+        const rad = Math.PI / 180;
+        const x1 = cx + r * Math.cos((startAngle - 90) * rad);
+        const y1 = cy + r * Math.sin((startAngle - 90) * rad);
+        const x2 = cx + r * Math.cos((endAngle - 90) * rad);
+        const y2 = cy + r * Math.sin((endAngle - 90) * rad);
+        const largeArc = (endAngle - startAngle) <= 180 ? 0 : 1;
+        return `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z`;
+      };
+
+      // Create overlay sectors for each emotion
+      const emotionAngles = {
+        fear: 12, anger: 36, disgust: 60, pessimism: 84, sadness: 108,
+        anticipation: 150, surprise: 210,
+        optimism: 255, joy: 285, love: 315, trust: 345
+      };
+
+      const neutralEmotions = ['anticipation', 'surprise'];
+      const positiveEmotions = ['trust', 'optimism', 'joy', 'love'];
+      const negativeEmotions = ['fear', 'disgust', 'anger', 'sadness', 'pessimism'];
+
+      Object.entries(emotionAngles).forEach(([emotion, angle]) => {
+        const step =
+          neutralEmotions.includes(emotion) ? 60 :
+          positiveEmotions.includes(emotion) ? 30 :
+          negativeEmotions.includes(emotion) ? 24 : 30;
+
+        const start = angle - step / 2;
+        const end = angle + step / 2;
+
+        const sector = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        sector.setAttribute("d", describeArc(centerX, centerY, maxRadius, start, end));
+        sector.setAttribute("fill", "transparent");
+        sector.setAttribute("opacity", "0");
+        sector.dataset.emotion = emotion;
+        sector.classList.add("mg-overlay-sector");
+
+        overlaySvg.appendChild(sector);
+      });
+
+      overlayWrap.appendChild(overlaySvg);
+      stage.insertBefore(overlayWrap, wrap);
+      return overlayWrap;
+    };
+
     const bindTooltip = () => {
       const svgEl = wrap.querySelector("svg");
       if (!svgEl) return;
 
-      let activeEl = null;
+      const overlayWrap = createOverlayLayer();
+      let currentHover = null;
 
-      const onEnter = (e) => {
-        activeEl = e.currentTarget;
-        const emotion = labelize(activeEl.dataset.emotion || "");
-        const value = activeEl.dataset.value || "0";
-        tip.textContent = `${emotion}: ${value}%`;
-        tip.style.display = "block";
-      };
+      svgEl.addEventListener("mouseenter", (e) => {
+        if (e.target.classList.contains("mg-sector") || e.target.classList.contains("mg-petal")) {
+          const emotion = e.target.dataset.emotion;
+          const value = e.target.dataset.value || "0";
 
-      const onMove = (e) => {
-        if (!activeEl) return;
-        const r = stage.getBoundingClientRect();
-        tip.style.left = `${e.clientX - r.left + 12}px`;
-        tip.style.top  = `${e.clientY - r.top + 12}px`;
-      };
+          if (emotion && emotion !== currentHover) {
+            // Clear all previous overlays first
+            if (overlayWrap) {
+              overlayWrap.querySelectorAll(".mg-overlay-sector").forEach(sector => {
+                sector.setAttribute("fill", "transparent");
+                sector.setAttribute("opacity", "0");
+              });
+            }
 
-      const onLeave = () => {
-        activeEl = null;
+            currentHover = emotion;
+            const label = emotion.charAt(0).toUpperCase() + emotion.slice(1);
+            tip.textContent = `${label}: ${value}%`;
+            tip.style.display = "block";
+
+            // Center the tooltip
+            tip.style.left = "50%";
+            tip.style.top = "50%";
+            tip.style.transform = "translate(-50%, -50%)";
+
+            // Show colored overlay for this emotion
+            const zones = {
+              neg: ["fear", "disgust", "anger", "sadness", "pessimism"],
+              pos: ["optimism", "joy", "love", "trust"],
+              neu: ["anticipation", "surprise"]
+            };
+
+            const colors = {
+              neg: "#005BA6", // blue
+              pos: "#5EA748", // green
+              neu: "#EEDE73"  // yellow
+            };
+
+            let zone = "other";
+            for (const [zoneName, emotions] of Object.entries(zones)) {
+              if (emotions.includes(emotion)) {
+                zone = zoneName;
+                break;
+              }
+            }
+
+            if (colors[zone]) {
+              // Find the matching overlay sector and color it
+              const overlaySector = overlayWrap.querySelector(`.mg-overlay-sector[data-emotion="${emotion}"]`);
+              if (overlaySector) {
+                overlaySector.setAttribute("fill", colors[zone]);
+                overlaySector.setAttribute("opacity", "0.1");
+              }
+            }
+          }
+        }
+      }, true);
+
+      svgEl.addEventListener("mouseleave", () => {
+        currentHover = null;
         tip.style.display = "none";
-      };
 
-      svgEl.querySelectorAll(".mg-sector, .mg-petal").forEach((el) => {
-        el.addEventListener("mouseenter", onEnter);
-        el.addEventListener("mousemove", onMove);
-        el.addEventListener("mouseleave", onLeave);
+        // Clear all overlay sectors
+        if (overlayWrap) {
+          overlayWrap.querySelectorAll(".mg-overlay-sector").forEach(sector => {
+            sector.setAttribute("fill", "transparent");
+            sector.setAttribute("opacity", "0");
+          });
+        }
       });
     };
-
-    bindTooltip();
+    
+    
+    
 
     // --- keep base fixed; translate the FLOWER so its origin sits on base center ---
     const alignFlowerToBase = () => {
@@ -213,6 +341,7 @@ try {
 
     requestAnimationFrame(() => {
       alignFlowerToBase();
+      bindTooltip();
       _observer = new MutationObserver(alignFlowerToBase);
       _observer.observe(wrap, { attributes: true, childList: true, subtree: true });
       const onResize = () => {
