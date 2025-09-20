@@ -14,13 +14,19 @@
           </div>
           <div class="mg-right">
             <div class="mg-meta">
-              <div class="mg-category" id="mg-category"></div>
-              <blockquote class="mg-quote" id="mg-quote"></blockquote>
-              <ul class="mg-stats">
-                <li><span class="label">Emotional Intensity</span><span class="value" id="mg-intensity"></span></li>
-                <li><span class="label">Dominant Valence</span><span class="value" id="mg-valence"></span></li>
-                <li><span class="label">Dominant Emotion</span><span class="value" id="mg-dominant"></span></li>
-              </ul>
+              <div class="mg-text-container">
+                <div class="mg-text-left">
+                  <div class="mg-category" id="mg-category"></div>
+                  <blockquote class="mg-quote" id="mg-quote"></blockquote>
+                </div>
+                <div class="mg-text-right">
+                  <ul class="mg-stats">
+                    <li><span class="label">Emotional Intensity</span><span class="value" id="mg-intensity"></span></li>
+                    <li><span class="label">Dominant Valence</span><span class="value" id="mg-valence"></span></li>
+                    <li><span class="label">Dominant Emotion</span><span class="value" id="mg-dominant"></span></li>
+                  </ul>
+                </div>
+              </div>
               <button id="mg-back" class="mg-back">Back</button>
             </div>
           </div>

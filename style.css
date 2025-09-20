@@ -530,7 +530,7 @@ h1 {
   background: transparent;
   overflow: visible;
   /* Fine-tune centering - desktop only */
-  margin-top: -30px; /* Move desktop modal up */
+  margin-top: -50px; /* Move desktop modal up more */
 }
 
 /* Desktop modal background */
@@ -545,31 +545,92 @@ h1 {
   display: none; /* Hide the X button */
 }
 .mg-modal-inner{
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  padding: 120px 200px 120px 200px; /* Fit within desktop ellipse */
-  height: 100%;
+  display: flex;
   align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 64px; /* Exact gap between left and right */
+  /* Position content at ellipse center - desktop ellipse cx="767" cy="594.857" */
+  padding: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -48%); /* Slightly adjust for ellipse center */
+  width: 656px; /* Exact content width */
 }
-.mg-left{ display: flex; align-items: center; justify-content: center; }
-#mg-flower-host{ width: 100%; max-width: 420px; display: grid; place-items: center; }
-.mg-right{ overflow: auto; padding-right: 8px; }
+.mg-left{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 296px; /* Exact width for left side */
+  flex-shrink: 0;
+}
+#mg-flower-host{ width: 100%; max-width: 296px; display: grid; place-items: center; }
+.mg-right{
+  width: 296px; /* Exact width for right side (text) */
+  flex-shrink: 0;
+  overflow: auto;
+}
 
-.mg-category{ font: 400 13px/1.2 "Junicode", serif; letter-spacing: .12em; opacity: .8; margin-bottom: 8px; }
-.mg-quote{ font: 400 28px/1.2 "Satoshi Variable", system-ui; margin: 10px 0 22px; color: var(--text-primary); }
+.mg-category{ font: 400 24pt/1.2 "Junicode Regular Condensed", serif; letter-spacing: .1em; opacity: .8; margin-bottom: 8px; white-space: nowrap; }
+.mg-quote{ font: italic 36pt/1.2 "Satoshi Variable", system-ui; margin: 10px 0 22px; color: var(--text-primary); }
 .mg-stats{ list-style: none; padding: 0; margin: 8px 0 18px; }
-.mg-stats .label{ display: block; font: 600 11px/1.2 "Satoshi Variable", system-ui; letter-spacing: .1em; color: var(--text-secondary); }
+.mg-stats .label{ display: block; font: 400 12pt/1.2 "Junicode Regular Condensed", serif; letter-spacing: .1em; color: var(--text-primary); }
 .mg-stats .value{ font: 400 16px/1.4 "Satoshi Variable", system-ui; color: var(--text-primary); }
 .mg-back{ border: 1px solid var(--text-primary); background: var(--bg-primary); border-radius: 10px; padding: 10px 16px; cursor: pointer; }
 
-@media (max-width: 900px){
+@media (max-width: 1160px){
   .mg-modal-inner{
-    grid-template-columns: 1fr;
-    padding: 80px 60px 80px 60px; /* Fit within mobile ellipse */
+    flex-direction: column;
     gap: 20px;
+    /* Position content at mobile ellipse center - mobile ellipse cx="293" cy="467" */
+    transform: translate(-50%, -50%); /* Mobile ellipse is properly centered */
+    width: 338px; /* Exact mobile width */
+    align-items: center;
   }
-  .mg-quote{ font-size: 22px; }
+
+  /* Mobile: flower takes full width, centered */
+  .mg-left{
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Mobile: text area becomes 2-column layout */
+  .mg-right{
+    width: 100%;
+  }
+
+  .mg-meta{
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .mg-text-container{ /* The container holding both text columns */
+    display: flex;
+    gap: 16px; /* 16px spacing between columns */
+    align-items: flex-start;
+  }
+
+  /* Mobile: left text column (quote + category) */
+  .mg-text-left {
+    width: 200px;
+    flex-shrink: 0;
+  }
+
+  /* Mobile: right text column (stats) */
+  .mg-text-right {
+    width: 120px;
+    flex-shrink: 0;
+  }
+
+  /* Mobile: back button centered below */
+  .mg-back {
+    align-self: center;
+    margin-top: 16px;
+  }
+  .mg-category{ font: 400 12pt/1.2 "Junicode Regular Condensed", serif; letter-spacing: .1em; }
+  .mg-quote{ font: italic 24pt/1.2 "Satoshi Variable", system-ui; }
 
   /* Mobile modal shape */
   #mg-modal {
