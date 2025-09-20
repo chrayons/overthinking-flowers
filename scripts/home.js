@@ -71,7 +71,7 @@ const LAYOUT_4 = [
   { name: "Temporal Disconnection",     colStart: 3.5, row: 2 },
 ];
 
-// Single source of truth for the mobile order & label mapping
+// Single source of truth for mobile order & labels
 const CATEGORY_ORDER = [
   "Perpetual Looping",
   "Loss of Agency",
@@ -110,7 +110,9 @@ function renderThemes(flowers) {
 
 // ---------- mobile carousel ----------
 let _flowers = [];
-let currentMobileIndex = 0;
+let currentMobileIndex = 0;  // REAL index (0..n-1)
+let _mobileCount = 0;        // number of REAL items
+let _pendingSnap = null;     // { to: 'head' | 'tail' } during wrap
 
 function renderMobileThemes(flowers) {
   const categories = groupFlowersByCategory(flowers);
@@ -121,36 +123,47 @@ function renderMobileThemes(flowers) {
   track.innerHTML = '';
   dotsContainer.innerHTML = '';
 
-  CATEGORY_ORDER.forEach((name, index) => {
+  // Build REAL items
+  const realItems = [];
+  CATEGORY_ORDER.forEach((name, realIndex) => {
     const list = categories[name];
     if (!list || !list.length) return;
 
     const item = document.createElement('div');
     item.className = 'mobile-category-item';
-    item.dataset.index = index;
+    item.dataset.realIndex = String(realIndex);
 
     const label = document.createElement('div');
     label.className = 'category-label';
     label.innerHTML = name.replace(/ (?=[^ ]*$)/, "<br>");
     item.appendChild(label);
 
-    track.appendChild(item);
+    realItems.push(item);
 
     const dot = document.createElement('div');
     dot.className = 'dot';
-    dot.dataset.index = index;
-    dot.addEventListener('click', () => goToSlide(index));
+    dot.dataset.index = realIndex;
+    dot.addEventListener('click', () => goToSlide(realIndex));
     dotsContainer.appendChild(dot);
   });
 
-  // Default to "Emotional Dysregulation" centered, if present
-  const initial = Math.max(
-    0,
-    Math.min(
-      CATEGORY_ORDER.indexOf("Emotional Dysregulation"),
-      track.children.length - 1
-    )
-  );
+  if (realItems.length === 0) return;
+
+  _mobileCount = realItems.length;
+
+  // Add clones: [cloneLast] + REALS + [cloneFirst]
+  const cloneLast  = realItems[realItems.length - 1].cloneNode(true);
+  cloneLast.classList.add('clone'); cloneLast.dataset.clone = 'true';
+
+  const cloneFirst = realItems[0].cloneNode(true);
+  cloneFirst.classList.add('clone'); cloneFirst.dataset.clone = 'true';
+
+  track.appendChild(cloneLast);
+  realItems.forEach(el => track.appendChild(el));
+  track.appendChild(cloneFirst);
+
+  // Default to "Emotional Dysregulation" centered
+  const initial = Math.max(0, Math.min(CATEGORY_ORDER.indexOf("Emotional Dysregulation"), _mobileCount - 1));
   currentMobileIndex = initial;
 
   updateCarousel();
@@ -166,103 +179,175 @@ function updateCarousel() {
 
   const items = track.children;
   const totalItems = items.length;
-  if (!totalItems) return;
+  if (!totalItems || _mobileCount === 0) return;
 
-  // 1) Set active class
-  Array.from(items).forEach((item, index) => {
-    item.classList.toggle('active', index === currentMobileIndex);
+  // Active class on REAL item only (ignore clones)
+  Array.from(items).forEach((item) => {
+    const isReal = !item.classList.contains('clone') && item.dataset.realIndex != null;
+    if (!isReal) {
+      item.classList.remove('active');
+      return;
+    }
+    const realIndex = Number(item.dataset.realIndex);
+    item.classList.toggle('active', realIndex === currentMobileIndex);
   });
 
-  // 2) Center the active item using rects (robust with big negative margins/overlaps)
-  const activeEl = items[currentMobileIndex];
+  // Center the DOM node that corresponds to the real index (accounting for leading clone)
+  const targetDomIndex = currentMobileIndex + 1;
+  const activeEl = items[targetDomIndex];
 
-  // current translateX so we can adjust relative to it
+  // current translateX so we can adjust relatively
   const style = getComputedStyle(track);
   const m = new DOMMatrixReadOnly(style.transform === 'none' ? '' : style.transform);
   const currentTx = m.m41 || 0;
 
-  // centers in viewport coordinates
+  // centers in viewport coordinates (robust with negative margins, scaling, etc.)
   const containerRect = container.getBoundingClientRect();
   const activeRect    = activeEl.getBoundingClientRect();
   const containerCenter = containerRect.left + containerRect.width / 2;
   const activeCenter    = activeRect.left    + activeRect.width  / 2;
 
-  // move by exactly the delta so active center lines up with container center
   const delta = containerCenter - activeCenter;
   const nextTx = currentTx + delta;
   track.style.transform = `translateX(${nextTx}px)`;
 
-  // 3) Dots + buttons
+  // Dots reflect REAL index
   dots.forEach((dot, i) => dot.classList.toggle('active', i === currentMobileIndex));
-  prevBtn.disabled = currentMobileIndex === 0;
-  nextBtn.disabled = currentMobileIndex === totalItems - 1;
 
-  // 4) Update the CTA’s category
+  // Infinite carousel: arrows stay enabled
+  prevBtn.disabled = false;
+  nextBtn.disabled = false;
+
+  // Update CTA
   const seeReflectionsBtn = document.getElementById('mobile-see-reflections-btn');
   if (seeReflectionsBtn) {
-    const CATEGORY_ORDER = [
-      "Perpetual Looping",
-      "Loss of Agency",
-      "Sensory Overwhelm",
-      "Emotional Dysregulation",
-      "Perceptual Barriers",
-      "Thought Entanglement",
-      "Temporal Disconnection"
-    ];
     seeReflectionsBtn.dataset.category = CATEGORY_ORDER[currentMobileIndex] || '';
   }
 }
 
-
 function initMobileCarousel() {
   const prevBtn = document.querySelector('.carousel-prev');
   const nextBtn = document.querySelector('.carousel-next');
+  const track = document.getElementById('mobile-category-track');
+  if (!track) return;
+
+  // After animated move to a clone, snap instantly to the real item
+  track.addEventListener('transitionend', () => {
+    if (!_pendingSnap) return;
+
+    const prevTransition = track.style.transition;
+    track.style.transition = 'none'; // disable for instant snap
+
+    if (_pendingSnap.to === 'head') {
+      // moved to trailing cloneFirst -> snap to REAL first
+      currentMobileIndex = 0;
+      snapToDomIndex(currentMobileIndex + 1); // real first is at DOM index 1
+    } else if (_pendingSnap.to === 'tail') {
+      // moved to leading cloneLast -> snap to REAL last
+      currentMobileIndex = _mobileCount - 1;
+      snapToDomIndex(currentMobileIndex + 1); // real last is at DOM index _mobileCount
+    }
+
+    // force reflow, then restore transition
+    track.getBoundingClientRect();
+    track.style.transition = prevTransition;
+    _pendingSnap = null;
+  });
+
+  function snapToDomIndex(domIndex) {
+    const container = document.querySelector('.carousel-container');
+    const items = track.children;
+    const target = items[domIndex];
+    if (!container || !target) return;
+
+    const style = getComputedStyle(track);
+    const m = new DOMMatrixReadOnly(style.transform === 'none' ? '' : style.transform);
+    const currentTx = m.m41 || 0;
+
+    const cr = container.getBoundingClientRect();
+    const ar = target.getBoundingClientRect();
+    const cc = cr.left + cr.width / 2;
+    const ac = ar.left + ar.width / 2;
+
+    const delta = cc - ac;
+    const nextTx = currentTx + delta;
+    track.style.transform = `translateX(${nextTx}px)`;
+
+    // refresh active classes & dots
+    const dots = document.querySelectorAll('.dot');
+    Array.from(items).forEach((item) => {
+      const isReal = !item.classList.contains('clone') && item.dataset.realIndex != null;
+      if (!isReal) {
+        item.classList.remove('active');
+        return;
+      }
+      const realIndex = Number(item.dataset.realIndex);
+      item.classList.toggle('active', realIndex === currentMobileIndex);
+    });
+    dots.forEach((dot, i) => dot.classList.toggle('active', i === currentMobileIndex));
+  }
 
   if (prevBtn) {
     prevBtn.addEventListener('click', () => {
+      if (_mobileCount === 0) return;
+
       if (currentMobileIndex > 0) {
-        currentMobileIndex--;
+        currentMobileIndex -= 1;
         updateCarousel();
+      } else {
+        // wrap left: animate one item width to the left, then snap to real last
+        _pendingSnap = { to: 'tail' };
+        const items = track.children;
+
+        // Get current item width for consistent animation distance
+        const currentItem = items[currentMobileIndex + 1]; // +1 for leading clone
+        const itemWidth = currentItem.getBoundingClientRect().width;
+
+        const style = getComputedStyle(track);
+        const m = new DOMMatrixReadOnly(style.transform === 'none' ? '' : style.transform);
+        const currentTx = m.m41 || 0;
+
+        // Move left by one item width
+        track.style.transform = `translateX(${currentTx + itemWidth}px)`;
       }
     });
   }
+
   if (nextBtn) {
     nextBtn.addEventListener('click', () => {
-      const track = document.getElementById('mobile-category-track');
-      if (track && currentMobileIndex < track.children.length - 1) {
-        currentMobileIndex++;
+      if (_mobileCount === 0) return;
+
+      if (currentMobileIndex < _mobileCount - 1) {
+        currentMobileIndex += 1;
         updateCarousel();
+      } else {
+        // wrap right: animate one item width to the right, then snap to real first
+        _pendingSnap = { to: 'head' };
+        const items = track.children;
+
+        // Get current item width for consistent animation distance
+        const currentItem = items[currentMobileIndex + 1]; // +1 for leading clone
+        const itemWidth = currentItem.getBoundingClientRect().width;
+
+        const style = getComputedStyle(track);
+        const m = new DOMMatrixReadOnly(style.transform === 'none' ? '' : style.transform);
+        const currentTx = m.m41 || 0;
+
+        // Move right by one item width
+        track.style.transform = `translateX(${currentTx - itemWidth}px)`;
       }
     });
   }
 
-  const seeReflectionsBtn = document.getElementById('mobile-see-reflections-btn');
-  if (seeReflectionsBtn) {
-    seeReflectionsBtn.addEventListener('click', (e) => {
-      const categoryName = e.currentTarget.dataset.category;
-      if (categoryName) {
-        const categorySlug = categoryName.toLowerCase().replace(/\s+/g, '-');
-        window.location.href = `${categorySlug}.html`;
-      }
-    });
-  }
+  // (Optional) keyboard: keep as you had, or mirror wrap logic if you want keys infinite too
+}
 
-  // Optional keyboard navigation (active only when mobile section is visible)
-  document.addEventListener('keydown', (e) => {
-    const mobileSection = document.getElementById('themes-mobile');
-    if (!mobileSection || getComputedStyle(mobileSection).display === 'none') return;
-
-    if (e.key === 'ArrowLeft' && currentMobileIndex > 0) {
-      currentMobileIndex--;
-      updateCarousel();
-    } else if (e.key === 'ArrowRight') {
-      const track = document.getElementById('mobile-category-track');
-      if (track && currentMobileIndex < track.children.length - 1) {
-        currentMobileIndex++;
-        updateCarousel();
-      }
-    }
-  });
+function goToSlide(index) {
+  const track = document.getElementById('mobile-category-track');
+  if (!track || _mobileCount === 0) return;
+  // clamp to REAL range (dots always map to real indices)
+  currentMobileIndex = ((index % _mobileCount) + _mobileCount) % _mobileCount;
+  updateCarousel();
 }
 
 // ---------- bootstrap ----------
