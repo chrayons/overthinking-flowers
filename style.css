@@ -47,6 +47,18 @@
 
 html, body { background: var(--page-bg); }
 
+/* Category page titles */
+.category-title {
+  font-family: "Junicode Regular Condensed", serif;
+  font-size: 128pt;
+  color: #101720;
+  text-align: center;
+  margin: 50px auto;
+  line-height: 1.1;
+  font-weight: normal;
+  letter-spacing: 0.1em;
+}
+
 /* main heading */
 h1 {
   font-family: "Satoshi Variable", system-ui;

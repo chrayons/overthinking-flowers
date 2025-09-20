@@ -9,6 +9,10 @@ function groupFlowersByCategory(flowers) {
   }, {});
 }
 
+function categoryToFilename(categoryName) {
+  return categoryName.toLowerCase().replace(/\s+/g, '-') + '.html';
+}
+
 function createCategoryCluster(categoryName, flowers, parentGrid, colStart, row) {
   const cell = document.createElement('div');
   cell.className = 'category-cell';
@@ -230,6 +234,18 @@ function initMobileCarousel() {
   const nextBtn = document.querySelector('.carousel-next');
   const track = document.getElementById('mobile-category-track');
   if (!track) return;
+
+  // Add click handler for "See Reflections" button
+  const seeReflectionsBtn = document.getElementById('mobile-see-reflections-btn');
+  if (seeReflectionsBtn) {
+    seeReflectionsBtn.addEventListener('click', () => {
+      const categoryName = seeReflectionsBtn.dataset.category;
+      if (categoryName) {
+        const filename = categoryToFilename(categoryName);
+        window.location.href = filename;
+      }
+    });
+  }
 
   // After animated move to a clone, snap instantly to the real item
   track.addEventListener('transitionend', () => {
