@@ -122,6 +122,11 @@ h1 {
   height: var(--cell-h);
 }
 
+#category-grid,
+.category-cell {
+  overflow: visible;
+}
+
 /* center the label and the flower group inside the cell */
 .category-label{
   position: absolute;
@@ -134,8 +139,12 @@ h1 {
   line-height:1.2;
   font-family: "Junicode Regular Condensed", "Junicode", Georgia, serif;
   letter-spacing: 0.1em;
+  z-index: 2;
 }
-.category-cell .flower{ position:absolute; }
+.category-cell .flower{
+    position:absolute;
+    pointer-events: none;/* decorations shouldn't block clicks */
+  }
 
 /* Space below themes so the Shuffle row is visible on laptops */
 #themes-desktop{ margin-bottom: 28px; }

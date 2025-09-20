@@ -27,75 +27,93 @@ function createCategoryCluster(categoryName, flowers, parentGrid) {
   const label = document.createElement('div');
   label.className = 'category-label';
   label.innerHTML = categoryName.replace(/ (?=[^ ]*$)/, "<br>");
+  label.style.zIndex = '2';
   cell.appendChild(label);
 
-  // draw ring (fixed size — we do NOT scale)
-  const maxFlowers = Math.min(flowers.length, 25);
-  const centerX = 144;  // half of 288 (cell width)
-  const centerY = 99;   // half of 198 (cell height)
-  const radius  = 75;
+  // ---- layout config (desktop cell) ----
+const maxFlowers = Math.min(flowers.length, 25);
+const centerX = 144;  // half of 288
+const centerY = 99;   // half of 198
 
-  flowers.slice(0, maxFlowers).forEach((flower, i) => {
-    const angle = (i / maxFlowers) * 2 * Math.PI;
-    const x = centerX + radius * Math.cos(angle);
-    const y = centerY + radius * Math.sin(angle);
-    const el = FlowerRenderer.createFlower(flower, 0, 0);
-    el.classList.add('flower');
+// Ellipse radii (wider than tall)
+const aBase = 100; // bump this to “take more space”
+const bBase = 0.6 * aBase;
 
-    // Create custom animation from center to final position
-    const startX = centerX - 40; // Start at label center
-    const startY = centerY - 40;
-    const endX = x - 40; // End at ring position
-    const endY = y - 40;
+const GOLDEN = 137.50776405 * (Math.PI / 180);
 
-    // Create unique animation for this flower
-    const animationName = `radiate-${Date.now()}-${i}`;
-    const keyframes = `
-      @keyframes ${animationName} {
-        0% {
-          left: ${startX}px;
-          top: ${startY}px;
-          transform: scale(0.3);
-          opacity: 0;
-        }
-        100% {
-          left: ${endX}px;
-          top: ${endY}px;
-          transform: scale(1);
-          opacity: 1;
-        }
-      }
-    `;
+flowers.slice(0, maxFlowers).forEach((flower, i) => {
+  // --- ORGANIC POSITION ---
+  let theta = (i * GOLDEN) % (Math.PI * 2);
+  theta += (Math.random() - 0.5) * (Math.PI / 12); // ±15°
 
-    // Add keyframes to document
-    const style = document.createElement('style');
-    style.textContent = keyframes;
-    document.head.appendChild(style);
+  const aWarp = aBase * (1 + 0.2 * Math.cos(2 * theta));
+  const bWarp = bBase * (1 + 0.5 * Math.sin(4 * theta));
 
-    // Apply animation
-    el.style.animationName = animationName;
-    el.classList.add('animate-entrance');
+  const x = centerX + aWarp * Math.cos(theta);
+  const y = centerY + bWarp * Math.sin(theta);
 
-    // Start at center position
-    el.style.left = startX + 'px';
-    el.style.top = startY + 'px';
+  // bigger spread with tiny chance of a “wow” bloom
+  let baseScale = 0.55 + Math.random() * 0.95;      // 0.55–1.50 (wider range than before)
+  const sideBias = 0.9 + 0.25 * Math.abs(Math.cos(theta)); // a touch more horizontal bias
+  let scale = baseScale * sideBias;
 
-    // Remove animation class after completion and set final position
-    setTimeout(() => {
-      el.classList.remove('animate-entrance');
-      el.style.animationName = '';
-      // Ensure flower stays at final position
-      el.style.left = endX + 'px';
-      el.style.top = endY + 'px';
-      el.style.transform = 'scale(1)';
-      el.style.opacity = '1';
-    }, 800);
+  // occasional superstar (about 1 in 10)
+  if (Math.random() < 0.10) scale *= 1.25;          // bump 25%
 
-    cell.appendChild(el);
-  });
+  // keep things sane
+  scale = Math.min(1.9, scale);
 
-  parentGrid.appendChild(cell);
-}
+  // no rotation
+  const rot = 0;
+
+
+  const el = FlowerRenderer.createFlower(flower, 0, 0);
+  el.classList.add('flower');
+  el.style.position = 'absolute';
+  el.style.pointerEvents = 'none';
+  el.style.zIndex = '1';
+  // IMPORTANT: don’t force width/height; let the SVG use its own box
+  // (remove any previous el.style.width/height lines)
+
+  // --- Animate from label center to final (CENTER-BASED!) ---
+  const startX = centerX;
+  const startY = centerY;
+  const endX   = x;
+  const endY   = y;
+
+  const animationName = `radiate-${Date.now()}-${i}`;
+  const keyframes = `
+    @keyframes ${animationName} {
+      0%   { left:${startX}px; top:${startY}px; transform:translate(-50%,-50%) scale(0.3); opacity:0; }
+      100% { left:${endX}px;   top:${endY}px;   transform:translate(-50%,-50%) rotate(${rot}deg) scale(${scale}); opacity:1; }
+    }
+  `;
+  const style = document.createElement('style');
+  style.textContent = keyframes;
+  document.head.appendChild(style);
+
+  // start at center
+  el.style.left = `${startX}px`;
+  el.style.top  = `${startY}px`;
+  el.style.opacity = '0';
+  el.style.animationName = animationName;
+  el.classList.add('animate-entrance');
+
+  // lock final state after animation
+  setTimeout(() => {
+    el.classList.remove('animate-entrance');
+    el.style.animationName = '';
+    el.style.left = `${endX}px`;
+    el.style.top  = `${endY}px`;
+    el.style.transform = `translate(-50%,-50%) scale(${scale})`;
+    el.style.opacity = '1';
+  }, 800);
+
+  cell.appendChild(el);
+});
+
+parentGrid.appendChild(cell); // ← add this
+} // ← and this (end of createCategoryCluster)
 
 // Order to render categories (CSS controls placement)
 const CATEGORY_ORDER = [
