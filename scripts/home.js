@@ -17,6 +17,13 @@ function createCategoryCluster(categoryName, flowers, parentGrid) {
   const cell = document.createElement('div');
   cell.className = 'category-cell';
 
+  // Make entire cell clickable - navigate to category page
+  cell.style.cursor = 'pointer';
+  cell.addEventListener('click', () => {
+    const filename = categoryToFilename(categoryName);
+    window.location.href = filename;
+  });
+
   const label = document.createElement('div');
   label.className = 'category-label';
   label.innerHTML = categoryName.replace(/ (?=[^ ]*$)/, "<br>");
@@ -34,8 +41,56 @@ function createCategoryCluster(categoryName, flowers, parentGrid) {
     const y = centerY + radius * Math.sin(angle);
     const el = FlowerRenderer.createFlower(flower, 0, 0);
     el.classList.add('flower');
-    el.style.left = (x - 40) + 'px';
-    el.style.top  = (y - 40) + 'px';
+
+    // Create custom animation from center to final position
+    const startX = centerX - 40; // Start at label center
+    const startY = centerY - 40;
+    const endX = x - 40; // End at ring position
+    const endY = y - 40;
+
+    // Create unique animation for this flower
+    const animationName = `radiate-${Date.now()}-${i}`;
+    const keyframes = `
+      @keyframes ${animationName} {
+        0% {
+          left: ${startX}px;
+          top: ${startY}px;
+          transform: scale(0.3);
+          opacity: 0;
+        }
+        100% {
+          left: ${endX}px;
+          top: ${endY}px;
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+    `;
+
+    // Add keyframes to document
+    const style = document.createElement('style');
+    style.textContent = keyframes;
+    document.head.appendChild(style);
+
+    // Apply animation
+    el.style.animationName = animationName;
+    el.classList.add('animate-entrance');
+
+    // Start at center position
+    el.style.left = startX + 'px';
+    el.style.top = startY + 'px';
+
+    // Remove animation class after completion and set final position
+    setTimeout(() => {
+      el.classList.remove('animate-entrance');
+      el.style.animationName = '';
+      // Ensure flower stays at final position
+      el.style.left = endX + 'px';
+      el.style.top = endY + 'px';
+      el.style.transform = 'scale(1)';
+      el.style.opacity = '1';
+    }, 800);
+
     cell.appendChild(el);
   });
 

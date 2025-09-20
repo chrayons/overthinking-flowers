@@ -161,7 +161,23 @@ h1 {
   height: var(--cell-h);
   grid-column: span 2;
 }
-.category-cell .flower{ position:absolute; }
+
+.category-cell .flower{
+  position: absolute;
+  transition: opacity 0.3s ease;
+}
+
+/* Hover effect: fade out flowers on non-hovered categories */
+#category-grid:hover .category-cell:not(:hover) .flower {
+  opacity: 0 !important;
+}
+
+/* Flower radiate from center animation */
+.category-cell .flower.animate-entrance {
+  animation-duration: 0.8s;
+  animation-timing-function: ease-out;
+  animation-fill-mode: forwards;
+}
 
 /* --- Explicit placement: 3 on top, 4 on bottom --- */
 #category-grid > .category-cell:nth-of-type(1){ grid-column: 2 / span 2; }
