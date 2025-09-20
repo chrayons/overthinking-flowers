@@ -164,11 +164,17 @@ h1 {
 
 .category-cell .flower{
   position: absolute;
+  opacity: 1; /* Always visible by default */
   transition: opacity 0.3s ease;
 }
 
-/* Hover effect: fade out flowers on non-hovered categories */
-#category-grid:hover .category-cell:not(:hover) .flower {
+/* Hover effect: only hide other flowers when directly hovering a category cell */
+.category-cell:hover ~ .category-cell .flower {
+  opacity: 0 !important;
+}
+
+/* Use CSS :has() to only trigger when actually hovering a category */
+#category-grid:has(.category-cell:hover) .category-cell:not(:hover) .flower {
   opacity: 0 !important;
 }
 
