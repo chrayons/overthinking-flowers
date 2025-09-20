@@ -1,3 +1,35 @@
+/* ===== FONT IMPORTS ===== */
+@import url("./Satoshi/WEB/css/satoshi.css");
+
+/* ===== FONT DECLARATIONS ===== */
+@font-face {
+  font-family: "Junicode";
+  src: url("./Junicode/Junicode-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Junicode Regular Condensed";
+  src: url("./Junicode/Junicode-RegularCondensed.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Junicode";
+  src: url("./Junicode/Junicode-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Junicode";
+  src: url("./Junicode/Junicode-Italic.ttf") format("truetype");
+  font-weight: 400;
+  font-style: italic;
+}
+
 /* ===== THEME GRID (centered, fixed-size cells, laptop-first) ===== */
 :root{
   --content-max: 1374px;     /* width of the central content area for large screens */
@@ -74,8 +106,7 @@ html, body { background: var(--page-bg); }
 }
 .category-cell .flower{
   position:absolute;
-  left:50%; top:50%;
-  transform: translate(-50%, -50%);
+  /* positioning handled by JavaScript */
 }
 
 /* Space below themes so the Shuffle row is visible on laptops */
