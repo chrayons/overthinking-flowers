@@ -168,23 +168,24 @@ h1 {
   
   .carousel-container {
     width: 100%;
-    overflow: hidden;
+    overflow: hidden;         /* mask neighbors */
     position: relative;
-    height: 120px; /* Enough height for the largest text */
+    height: 120px;
     display: flex;
     align-items: center;
-    justify-content: center;
-    perspective: 1000px; /* Add 3D perspective for depth effect */
+    justify-content: center;  /* this is OK now; JS accounts for it */
+    perspective: 1000px;
   }
   
   .carousel-track {
     display: flex;
     align-items: center;
-    justify-content: flex-start; /* Changed to flex-start for proper left alignment */
+    justify-content: flex-start;
     transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     width: max-content;
-    transform-origin: left center; /* Set transform origin for proper sliding */
-  }
+    transform-origin: left center;
+    will-change: transform;   /* smoother */
+  }  
   
   .mobile-category-item {
     flex-shrink: 0;
@@ -197,6 +198,7 @@ h1 {
     text-align: center;
     transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     position: relative;
+    margin: 0 -40px;
   }
   
   /* Default state - side items (20pt, blurred, behind) */
@@ -214,8 +216,6 @@ h1 {
     position: static;
     width: auto;
     opacity: 0.6;
-    border: 1px solid blue; /* Debug border */
-    background: rgba(255,0,0,0.1); /* Debug background */
   }
 
   /* Active state - center item (48pt, no blur, forward) */
@@ -225,18 +225,7 @@ h1 {
     filter: blur(0px);
     transform: scale(1) translateZ(0px);
     opacity: 1;
-  }
-
-  /* Hide items that are far from center using CSS overflow */
-  .carousel-container {
-    width: 100%;
-    overflow: hidden;
-    position: relative;
-    height: 120px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    perspective: 1000px;
+    z-index: 2;
   }
   
   /* Hide buttons on non-active items */
@@ -329,6 +318,16 @@ h1 {
   
   .dot:hover:not(.active) {
     background: #8B98A5;
+  }
+
+  /* MOBILE: full-bleed carousel (edge-to-edge) */
+  @media (max-width: 775px){
+    .carousel-container{
+      width: 100vw;                           /* span the viewport */
+      margin-left: calc(50% - 50vw);          /* break out of wrapper padding */
+      margin-right: calc(50% - 50vw);
+      overflow: hidden;                       /* keep masks tight to the edges */
+    }
   }
 
 /* ================================

@@ -1,6 +1,7 @@
 // home.js
 console.log("Home page loading...");
 
+// ---------- helpers ----------
 function groupFlowersByCategory(flowers) {
   return flowers.reduce((groups, flower) => {
     (groups[flower.category] ||= []).push(flower);
@@ -16,8 +17,7 @@ function createCategoryCluster(categoryName, flowers, parentGrid, colStart, row)
 
   const label = document.createElement('div');
   label.className = 'category-label';
-  let displayName = categoryName.replace(/ (?=[^ ]*$)/, "<br>");
-  label.innerHTML = displayName;
+  label.innerHTML = categoryName.replace(/ (?=[^ ]*$)/, "<br>");
   cell.appendChild(label);
 
   // draw ring (fixed size — we do NOT scale)
@@ -30,7 +30,7 @@ function createCategoryCluster(categoryName, flowers, parentGrid, colStart, row)
     const angle = (i / maxFlowers) * 2 * Math.PI;
     const x = centerX + radius * Math.cos(angle);
     const y = centerY + radius * Math.sin(angle);
-    const el = FlowerRenderer.createFlower(flower);
+    const el = FlowerRenderer.createFlower(flower, 0, 0);
     el.classList.add('flower');
     el.style.left = (x - 40) + 'px';
     el.style.top  = (y - 40) + 'px';
@@ -40,7 +40,7 @@ function createCategoryCluster(categoryName, flowers, parentGrid, colStart, row)
   parentGrid.appendChild(cell);
 }
 
-// 8-col map (centered layout)
+// ---------- layout maps ----------
 const LAYOUT_8 = [
   { name: "Perpetual Looping",          colStart: 2, row: 1 },
   { name: "Loss of Agency",             colStart: 4, row: 1 },
@@ -51,30 +51,38 @@ const LAYOUT_8 = [
   { name: "Temporal Disconnection",     colStart: 7, row: 2 },
 ];
 
-// 6-col map (staggered: 3 on top, 4 equally spaced on bottom)
 const LAYOUT_6 = [
   { name: "Perpetual Looping",          colStart: 1, row: 1 },
   { name: "Loss of Agency",             colStart: 3, row: 1 },
   { name: "Sensory Overwhelm",          colStart: 5, row: 1 },
-
   { name: "Emotional Dysregulation",    colStart: 0, row: 2 },
   { name: "Perceptual Barriers",        colStart: 2, row: 2 },
   { name: "Thought Entanglement",       colStart: 4, row: 2 },
   { name: "Temporal Disconnection",     colStart: 6, row: 2 },
 ];
 
-// 4-col map (staggered: 3 centered on top, 4 offset on bottom)
 const LAYOUT_4 = [
   { name: "Perpetual Looping",          colStart: 1, row: 1 },
   { name: "Loss of Agency",             colStart: 2, row: 1 },
   { name: "Sensory Overwhelm",          colStart: 3, row: 1 },
-
   { name: "Emotional Dysregulation",    colStart: 0.5, row: 2 },
   { name: "Perceptual Barriers",        colStart: 1.5, row: 2 },
   { name: "Thought Entanglement",       colStart: 2.5, row: 2 },
   { name: "Temporal Disconnection",     colStart: 3.5, row: 2 },
 ];
 
+// Single source of truth for the mobile order & label mapping
+const CATEGORY_ORDER = [
+  "Perpetual Looping",
+  "Loss of Agency",
+  "Sensory Overwhelm",
+  "Emotional Dysregulation",
+  "Perceptual Barriers",
+  "Thought Entanglement",
+  "Temporal Disconnection"
+];
+
+// ---------- desktop grid ----------
 function getColsFromCSS() {
   const grid = document.getElementById('category-grid');
   const styles = getComputedStyle(grid);
@@ -100,149 +108,111 @@ function renderThemes(flowers) {
   });
 }
 
+// ---------- mobile carousel ----------
 let _flowers = [];
 let currentMobileIndex = 0;
 
-// ENHANCED MOBILE CAROUSEL FUNCTIONS (UPDATED)
 function renderMobileThemes(flowers) {
+  const categories = groupFlowersByCategory(flowers);
   const track = document.getElementById('mobile-category-track');
   const dotsContainer = document.getElementById('carousel-dots');
+  if (!track || !dotsContainer) return;
 
-  if (!track || !dotsContainer) {
-    console.error('Mobile carousel elements not found');
-    return;
-  }
-
-  // Clear existing content
   track.innerHTML = '';
   dotsContainer.innerHTML = '';
 
-  const categoryNames = [
-    "Perpetual Looping", "Loss of Agency", "Sensory Overwhelm",
-    "Emotional Dysregulation", "Perceptual Barriers",
-    "Thought Entanglement", "Temporal Disconnection"
-  ];
+  CATEGORY_ORDER.forEach((name, index) => {
+    const list = categories[name];
+    if (!list || !list.length) return;
 
-  // Create items with simple structure
-  categoryNames.forEach((name, index) => {
-    // Create category item
     const item = document.createElement('div');
     item.className = 'mobile-category-item';
+    item.dataset.index = index;
 
     const label = document.createElement('div');
     label.className = 'category-label';
-    label.textContent = name;
-
+    label.innerHTML = name.replace(/ (?=[^ ]*$)/, "<br>");
     item.appendChild(label);
+
     track.appendChild(item);
 
-    // Create dot
     const dot = document.createElement('div');
     dot.className = 'dot';
+    dot.dataset.index = index;
     dot.addEventListener('click', () => goToSlide(index));
     dotsContainer.appendChild(dot);
   });
 
-  console.log('Created', track.children.length, 'items');
-  currentMobileIndex = 0;
+  // Default to "Emotional Dysregulation" centered, if present
+  const initial = Math.max(
+    0,
+    Math.min(
+      CATEGORY_ORDER.indexOf("Emotional Dysregulation"),
+      track.children.length - 1
+    )
+  );
+  currentMobileIndex = initial;
+
   updateCarousel();
 }
 
 function updateCarousel() {
+  const container = document.querySelector('.carousel-container');
   const track = document.getElementById('mobile-category-track');
+  const prevBtn = document.querySelector('.carousel-prev');
+  const nextBtn = document.querySelector('.carousel-next');
   const dots = document.querySelectorAll('.dot');
+  if (!container || !track || !prevBtn || !nextBtn) return;
 
-  console.log('=== UPDATE CAROUSEL ===');
-  console.log('currentMobileIndex:', currentMobileIndex);
+  const items = track.children;
+  const totalItems = items.length;
+  if (!totalItems) return;
 
-  if (!track) {
-    console.error('Track not found');
-    return;
-  }
-
-  const items = Array.from(track.children);
-  console.log('Found items:', items.length);
-
-  // Validate currentMobileIndex
-  if (currentMobileIndex < 0 || currentMobileIndex >= items.length) {
-    console.error('Invalid currentMobileIndex:', currentMobileIndex);
-    currentMobileIndex = 0;
-  }
-
-  // Center the active item: move track so active item is in viewport center
-  const containerWidth = track.parentElement.offsetWidth;
-  const itemWidth = 300;
-  const centerOffset = (containerWidth / 2) - (itemWidth / 2);
-  const translateX = centerOffset - (currentMobileIndex * itemWidth);
-
-  console.log(`Container: ${containerWidth}px, centering item ${currentMobileIndex}`);
-  console.log(`TranslateX: ${translateX}px`);
-  track.style.transform = `translateX(${translateX}px)`;
-
-  // Update active states and visibility
-  items.forEach((item, index) => {
-    // Calculate relative position to current active item (with circular wrapping)
-    let relativePos = index - currentMobileIndex;
-    const totalItems = items.length;
-
-    // Handle circular wrapping
-    if (relativePos > totalItems / 2) relativePos -= totalItems;
-    if (relativePos < -totalItems / 2) relativePos += totalItems;
-
-    const isActive = index === currentMobileIndex;
-    const isVisible = Math.abs(relativePos) <= 1; // Show center + immediate neighbors only
-
-    console.log(`Item ${index}: relativePos=${relativePos}, active=${isActive}, visible=${isVisible}`);
-
-    // Clear all classes and add fresh
-    item.className = 'mobile-category-item';
-    if (isActive) {
-      item.classList.add('active');
-    }
-
-    // Show/hide based on position
-    item.style.visibility = isVisible ? 'visible' : 'hidden';
-    item.style.opacity = isVisible ? '1' : '0';
-
-    // Style the label
-    const label = item.querySelector('.category-label');
-    if (label) {
-      if (isActive) {
-        // Center item: large and clear
-        label.style.fontSize = '48px';
-        label.style.color = '#101720';
-        label.style.filter = 'blur(0px)';
-        label.style.background = 'lightgreen';
-        label.style.border = '3px solid red';
-      } else if (isVisible) {
-        // Side items: small and blurred
-        label.style.fontSize = '20px';
-        label.style.color = '#AFBCC7';
-        label.style.filter = 'blur(4px)';
-        label.style.background = 'lightblue';
-        label.style.border = '1px solid blue';
-      }
-    }
+  // 1) Set active class
+  Array.from(items).forEach((item, index) => {
+    item.classList.toggle('active', index === currentMobileIndex);
   });
 
-  // Update dots
-  dots.forEach((dot, index) => {
-    dot.classList.toggle('active', index === currentMobileIndex);
-  });
+  // 2) Center the active item using rects (robust with big negative margins/overlaps)
+  const activeEl = items[currentMobileIndex];
 
-  console.log('=== END UPDATE ===');
-}
+  // current translateX so we can adjust relative to it
+  const style = getComputedStyle(track);
+  const m = new DOMMatrixReadOnly(style.transform === 'none' ? '' : style.transform);
+  const currentTx = m.m41 || 0;
 
-function goToSlide(index) {
-  const track = document.getElementById('mobile-category-track');
-  if (!track) return;
+  // centers in viewport coordinates
+  const containerRect = container.getBoundingClientRect();
+  const activeRect    = activeEl.getBoundingClientRect();
+  const containerCenter = containerRect.left + containerRect.width / 2;
+  const activeCenter    = activeRect.left    + activeRect.width  / 2;
 
-  const totalItems = track.children.length;
-  if (index >= 0 && index < totalItems) {
-    currentMobileIndex = index;
-    updateCarousel();
+  // move by exactly the delta so active center lines up with container center
+  const delta = containerCenter - activeCenter;
+  const nextTx = currentTx + delta;
+  track.style.transform = `translateX(${nextTx}px)`;
+
+  // 3) Dots + buttons
+  dots.forEach((dot, i) => dot.classList.toggle('active', i === currentMobileIndex));
+  prevBtn.disabled = currentMobileIndex === 0;
+  nextBtn.disabled = currentMobileIndex === totalItems - 1;
+
+  // 4) Update the CTA’s category
+  const seeReflectionsBtn = document.getElementById('mobile-see-reflections-btn');
+  if (seeReflectionsBtn) {
+    const CATEGORY_ORDER = [
+      "Perpetual Looping",
+      "Loss of Agency",
+      "Sensory Overwhelm",
+      "Emotional Dysregulation",
+      "Perceptual Barriers",
+      "Thought Entanglement",
+      "Temporal Disconnection"
+    ];
+    seeReflectionsBtn.dataset.category = CATEGORY_ORDER[currentMobileIndex] || '';
   }
 }
+
 
 function initMobileCarousel() {
   const prevBtn = document.querySelector('.carousel-prev');
@@ -250,63 +220,52 @@ function initMobileCarousel() {
 
   if (prevBtn) {
     prevBtn.addEventListener('click', () => {
-      const track = document.getElementById('mobile-category-track');
-      if (track) {
-        const totalItems = track.children.length;
-        currentMobileIndex = (currentMobileIndex - 1 + totalItems) % totalItems;
+      if (currentMobileIndex > 0) {
+        currentMobileIndex--;
         updateCarousel();
       }
     });
   }
-
   if (nextBtn) {
     nextBtn.addEventListener('click', () => {
       const track = document.getElementById('mobile-category-track');
-      if (track) {
-        const totalItems = track.children.length;
-        currentMobileIndex = (currentMobileIndex + 1) % totalItems;
+      if (track && currentMobileIndex < track.children.length - 1) {
+        currentMobileIndex++;
         updateCarousel();
       }
     });
   }
 
-  // Add click listener for "See Reflections" button
   const seeReflectionsBtn = document.getElementById('mobile-see-reflections-btn');
   if (seeReflectionsBtn) {
     seeReflectionsBtn.addEventListener('click', (e) => {
-      const categoryName = e.target.dataset.category;
+      const categoryName = e.currentTarget.dataset.category;
       if (categoryName) {
-        // Navigate to the category page
         const categorySlug = categoryName.toLowerCase().replace(/\s+/g, '-');
         window.location.href = `${categorySlug}.html`;
       }
     });
   }
 
-  // Add keyboard navigation (optional enhancement)
+  // Optional keyboard navigation (active only when mobile section is visible)
   document.addEventListener('keydown', (e) => {
-    // Only handle arrows when mobile carousel is visible
     const mobileSection = document.getElementById('themes-mobile');
     if (!mobileSection || getComputedStyle(mobileSection).display === 'none') return;
 
-    if (e.key === 'ArrowLeft') {
-      const track = document.getElementById('mobile-category-track');
-      if (track) {
-        const totalItems = track.children.length;
-        currentMobileIndex = (currentMobileIndex - 1 + totalItems) % totalItems;
-        updateCarousel();
-      }
+    if (e.key === 'ArrowLeft' && currentMobileIndex > 0) {
+      currentMobileIndex--;
+      updateCarousel();
     } else if (e.key === 'ArrowRight') {
       const track = document.getElementById('mobile-category-track');
-      if (track) {
-        const totalItems = track.children.length;
-        currentMobileIndex = (currentMobileIndex + 1) % totalItems;
+      if (track && currentMobileIndex < track.children.length - 1) {
+        currentMobileIndex++;
         updateCarousel();
       }
     }
   });
 }
 
+// ---------- bootstrap ----------
 function createHomePage(flowers) {
   _flowers = flowers;
   renderThemes(_flowers);
@@ -319,11 +278,14 @@ function createHomePage(flowers) {
   if (themes && reflections) themes.insertAdjacentElement('afterend', reflections);
 }
 
-// re-render when the breakpoint flips (debounced)
+// re-render (debounced) and keep mobile centered on resize
 let _t;
 window.addEventListener('resize', () => {
   clearTimeout(_t);
-  _t = setTimeout(() => renderThemes(_flowers), 150);
+  _t = setTimeout(() => {
+    renderThemes(_flowers);
+    updateCarousel(); // keep the active mobile item centered after a resize
+  }, 150);
 });
 
 // Load + init
