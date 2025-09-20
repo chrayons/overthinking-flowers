@@ -575,3 +575,19 @@ h1 {
   transform: translate(var(--flower-tx), var(--flower-ty));
 }
 
+/* Hover tooltip for flower sections */
+.mg-tooltip {
+  position: absolute;
+  z-index: 5;
+  pointer-events: none;
+  background: #fff;
+  border-radius: 10px;
+  padding: 8px 12px;
+  font: 600 13px/1 "Satoshi Variable", system-ui;
+  color: #101720;
+  box-shadow: 0 8px 24px rgba(0,0,0,.12);
+  white-space: nowrap;
+  user-select: none;
+}
+
+

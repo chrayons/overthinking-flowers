@@ -158,6 +158,18 @@ function createFlower(flowerData, options = {}) {
             y: centerY + length * Math.sin(radians)
         };
     }
+
+    // Helper: describe a circular sector as an SVG path (center → arc → back to center)
+    function describeArc(cx, cy, r, startAngle, endAngle) {
+        const rad = Math.PI / 180;
+        const x1 = cx + r * Math.cos((startAngle - 90) * rad);
+        const y1 = cy + r * Math.sin((startAngle - 90) * rad);
+        const x2 = cx + r * Math.cos((endAngle   - 90) * rad);
+        const y2 = cy + r * Math.sin((endAngle   - 90) * rad);
+        const largeArc = (endAngle - startAngle) <= 180 ? 0 : 1;
+        return `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z`;
+    }
+    
     
     // Find dominant emotion (highest intensity)
     const dominantEmotion = Object.keys(flowerData.emotions).reduce((max, emotion) => 
@@ -170,6 +182,29 @@ function createFlower(flowerData, options = {}) {
         const angle = emotionAngles[emotion];
         const isDominant = emotion === dominantEmotion;
         const length = intensity * maxRadius;
+
+        // --- invisible sector (pie slice) for hover anywhere in the section ---
+        // choose slice width by zone (matches your static layout comments)
+        const step =
+        neutralEmotions.includes(emotion)  ? 60 :
+        positiveEmotions.includes(emotion) ? 30 :
+        negativeEmotions.includes(emotion) ? 24 : 360 / Object.keys(emotionAngles).length;
+
+        const start = angle - step / 2;
+        const end   = angle + step / 2;
+
+        const sector = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        sector.setAttribute("d", describeArc(centerX, centerY, maxRadius, start, end));
+        sector.setAttribute("fill", "rgba(0,0,0,0)"); // transparent but hit-testable
+        sector.setAttribute("stroke", "none");
+        sector.setAttribute("pointer-events", "all");
+        sector.classList.add("mg-sector");
+        sector.dataset.emotion = emotion;
+        sector.dataset.value = String(Math.round(flowerData.emotions[emotion] || 0));
+
+        // Put the sector behind petals so visuals stay the same
+        svg.appendChild(sector);
+
         
         if (neutralEmotions.includes(emotion)) {
             // Neutral emotion petal
@@ -181,6 +216,11 @@ function createFlower(flowerData, options = {}) {
                 translate(0, -${length * 0.5}) 
                 scale(${petalScale})
             `);
+            // make the petal itself hoverable with the same data as the sector
+            petalGroup.classList.add("mg-petal");
+            petalGroup.dataset.emotion = emotion;
+            petalGroup.dataset.value = String(Math.round(flowerData.emotions[emotion] || 0));
+
             
             const petalElement = document.createElementNS("http://www.w3.org/2000/svg", "path");
             petalElement.setAttribute("d", isDominant ? dominantNeutralPetalPath : neutralPetalPath);
@@ -200,6 +240,11 @@ function createFlower(flowerData, options = {}) {
                 translate(0, -${length * 0.5}) 
                 scale(${petalScale})
             `);
+            // make the petal itself hoverable with the same data as the sector
+            petalGroup.classList.add("mg-petal");
+            petalGroup.dataset.emotion = emotion;
+            petalGroup.dataset.value = String(Math.round(flowerData.emotions[emotion] || 0));
+
             
             const petalElement = document.createElementNS("http://www.w3.org/2000/svg", "path");
             petalElement.setAttribute("d", isDominant ? dominantPositivePetalPath : positivePetalPath);
@@ -219,6 +264,12 @@ function createFlower(flowerData, options = {}) {
                 translate(0, -${length * 0.5}) 
                 scale(${petalScale})
             `);
+
+            // make the petal itself hoverable with the same data as the sector
+            petalGroup.classList.add("mg-petal");
+            petalGroup.dataset.emotion = emotion;
+            petalGroup.dataset.value = String(Math.round(flowerData.emotions[emotion] || 0));
+
             
             const petalElement = document.createElementNS("http://www.w3.org/2000/svg", "path");
             petalElement.setAttribute("d", isDominant ? dominantNegativePetalPath : negativePetalPath);

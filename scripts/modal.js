@@ -110,82 +110,140 @@ try {
   const wrap = document.createElement("div");
   wrap.className = "mg-flower-wrap";
 
+  // 1) put stage in the DOM first, so it has layout
+  stage.appendChild(base);
+  stage.appendChild(wrap);
+  host.appendChild(stage);
+
+  // 2) show overlay NOW so sizes are non-zero
+  document.body.style.overflow = "hidden";
+  overlay.classList.add("open");
+  overlay.style.display = "flex";
+  overlay.setAttribute("aria-hidden", "false");
+
+  // 3) measure stage and compute the correct max radius
+  const rect = stage.getBoundingClientRect();
+  const stageSize = Math.min(rect.width, rect.height);
+  // Outer solid ring should be 100% → radius = stageSize / 2
+  const maxRadius = stageSize / 2;
+
+  // 4) create the flower to match the stage
   if (window.FlowerRenderer && typeof window.FlowerRenderer.createFlower === "function") {
-    // larger flower in modal
     const el = window.FlowerRenderer.createFlower(flower, {
-      width: 480,
-      height: 480,
-      maxRadius: 180
+      width: stageSize,
+      height: stageSize,
+      maxRadius: maxRadius
     });
-    // let our wrapper handle positioning
     el.style.position = "static";
     el.style.left = "";
     el.style.top = "";
     wrap.appendChild(el);
+
+    // --- tooltip pill for hover feedback ---
+    const tip = document.createElement("div");
+    tip.className = "mg-tooltip";
+    tip.style.display = "none";
+    stage.appendChild(tip);
+
+    const labelize = (k) => (k ? k.charAt(0).toUpperCase() + k.slice(1) : "");
+
+    const bindTooltip = () => {
+      const svgEl = wrap.querySelector("svg");
+      if (!svgEl) return;
+
+      let activeEl = null;
+
+      const onEnter = (e) => {
+        activeEl = e.currentTarget;
+        const emotion = labelize(activeEl.dataset.emotion || "");
+        const value = activeEl.dataset.value || "0";
+        tip.textContent = `${emotion}: ${value}%`;
+        tip.style.display = "block";
+      };
+
+      const onMove = (e) => {
+        if (!activeEl) return;
+        const r = stage.getBoundingClientRect();
+        tip.style.left = `${e.clientX - r.left + 12}px`;
+        tip.style.top  = `${e.clientY - r.top + 12}px`;
+      };
+
+      const onLeave = () => {
+        activeEl = null;
+        tip.style.display = "none";
+      };
+
+      svgEl.querySelectorAll(".mg-sector, .mg-petal").forEach((el) => {
+        el.addEventListener("mouseenter", onEnter);
+        el.addEventListener("mousemove", onMove);
+        el.addEventListener("mouseleave", onLeave);
+      });
+    };
+
+    bindTooltip();
+
+    // --- keep base fixed; translate the FLOWER so its origin sits on base center ---
+    const alignFlowerToBase = () => {
+      const svg = wrap.querySelector("svg");
+      if (!svg) return;
+
+      const w =
+        parseFloat(svg.getAttribute("width")) ||
+        svg.clientWidth ||
+        svg.getBoundingClientRect().width;
+      const h =
+        parseFloat(svg.getAttribute("height")) ||
+        svg.clientHeight ||
+        svg.getBoundingClientRect().height;
+
+      const origin = { x: w / 2, y: h / 2 };
+      const pt = svg.createSVGPoint();
+      pt.x = origin.x; pt.y = origin.y;
+      const originScreen = pt.matrixTransform(svg.getScreenCTM());
+
+      const r = stage.getBoundingClientRect();
+      const cx = r.left + r.width / 2;
+      const cy = r.top + r.height / 2;
+
+      const dx = cx - originScreen.x;
+      const dy = cy - originScreen.y;
+      wrap.style.setProperty("--flower-tx", `${dx}px`);
+      wrap.style.setProperty("--flower-ty", `${dy}px`);
+    };
+
+    requestAnimationFrame(() => {
+      alignFlowerToBase();
+      _observer = new MutationObserver(alignFlowerToBase);
+      _observer.observe(wrap, { attributes: true, childList: true, subtree: true });
+      const onResize = () => {
+        // if the modal can resize, recompute size & re-render once
+        const r2 = stage.getBoundingClientRect();
+        const size2 = Math.min(r2.width, r2.height);
+        if (size2 !== stageSize) {
+          wrap.innerHTML = "";
+          const el2 = window.FlowerRenderer.createFlower(flower, {
+            width: size2,
+            height: size2,
+            maxRadius: size2 / 2
+          });
+          el2.style.position = "static";
+          wrap.appendChild(el2);
+          bindTooltip();
+        }
+        alignFlowerToBase();
+      };
+      window.addEventListener("resize", onResize);
+      _removeResizeListener = () => window.removeEventListener("resize", onResize);
+    });
+
   } else {
     wrap.innerHTML = "<p style='opacity:.7'>Flower renderer not loaded.</p>";
   }
-
-  stage.appendChild(base);
-stage.appendChild(wrap);
-host.appendChild(stage);
-
-// ---- show overlay FIRST so layout is real ----
-document.body.style.overflow = "hidden";
-overlay.classList.add("open");
-overlay.style.display = "flex";
-overlay.setAttribute("aria-hidden", "false");
-
-// --- keep base fixed; translate the FLOWER so its origin sits on base center ---
-const alignFlowerToBase = () => {
-  const svg = wrap.querySelector("svg");
-  if (!svg) return;
-
-  // FlowerRenderer origin = width/2, height/2 (no viewBox)
-  const w =
-    parseFloat(svg.getAttribute("width")) ||
-    svg.clientWidth ||
-    svg.getBoundingClientRect().width;
-  const h =
-    parseFloat(svg.getAttribute("height")) ||
-    svg.clientHeight ||
-    svg.getBoundingClientRect().height;
-
-  const origin = { x: w / 2, y: h / 2 };
-
-  // SVG -> screen
-  const pt = svg.createSVGPoint();
-  pt.x = origin.x; pt.y = origin.y;
-  const originScreen = pt.matrixTransform(svg.getScreenCTM());
-
-  // stage center (== base center)
-  const rect = stage.getBoundingClientRect();
-  const cx = rect.left + rect.width / 2;
-  const cy = rect.top + rect.height / 2;
-
-  // move the FLOWER so its true origin lands on the base center
-  const dx = cx - originScreen.x;
-  const dy = cy - originScreen.y;
-  wrap.style.setProperty("--flower-tx", `${dx}px`);
-  wrap.style.setProperty("--flower-ty", `${dy}px`);
-};
-
-// Run AFTER the modal is visible so sizes are non-zero
-requestAnimationFrame(() => {
-  alignFlowerToBase();
-  _observer = new MutationObserver(alignFlowerToBase);
-  _observer.observe(wrap, { attributes: true, childList: true, subtree: true });
-  const onResize = () => alignFlowerToBase();
-  window.addEventListener("resize", onResize);
-  _removeResizeListener = () => window.removeEventListener("resize", onResize);
-});
-
-
-
 } catch (e) {
   console.error("[Modal] Flower render failed:", e);
   host.innerHTML = "<p style='opacity:.7'>Could not render flower.</p>";
 }
+
 
   
       // 🔓 Show overlay
