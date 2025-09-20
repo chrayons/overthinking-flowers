@@ -73,9 +73,9 @@
     }
   
     function generateNewCards(flowers) {
-      const cardCount = getCardCount();
+      const maxCards = 3; // Always generate 3 cards regardless of screen size
       const banned = new Set(recentIds);
-      const picks = sampleUnique(flowers, cardCount, banned);
+      const picks = sampleUnique(flowers, maxCards, banned);
 
       // update recent buffer (keep last 9 IDs so immediate reshuffles feel fresh)
       picks.forEach(p => recentIds.push(p.id));

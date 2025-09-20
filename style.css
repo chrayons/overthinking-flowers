@@ -130,12 +130,19 @@ h1 {
   }
 }
 
-/* switch to 4 columns when the 8-col layout would clip */
+/* switch to 6 columns for medium screens */
 @media (max-width: 1426px){
+  #category-grid{
+    --cols: 6; /* Switch to 6-column mode */
+  }
+  :root{ --row-gap: 64px; }  /* give rows some breathing room again */
+}
+
+/* switch to 4 columns for smaller screens */
+@media (max-width: 1300px){
   #category-grid{
     --cols: 4; /* Switch to 4-column mode */
   }
-  :root{ --row-gap: 64px; }  /* give rows some breathing room again */
 }
 
 /* Mobile: hide grid, show your mobile-only UI (unchanged behavior) */

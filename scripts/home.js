@@ -51,6 +51,18 @@ const LAYOUT_8 = [
   { name: "Temporal Disconnection",     colStart: 7, row: 2 },
 ];
 
+// 6-col map (staggered: 3 on top, 4 offset on bottom)
+const LAYOUT_6 = [
+  { name: "Perpetual Looping",          colStart: 1, row: 1 },
+  { name: "Loss of Agency",             colStart: 3, row: 1 },
+  { name: "Sensory Overwhelm",          colStart: 5, row: 1 },
+
+  { name: "Emotional Dysregulation",    colStart: 0, row: 2 },
+  { name: "Perceptual Barriers",        colStart: 2, row: 2 },
+  { name: "Thought Entanglement",       colStart: 4, row: 2 },
+  { name: "Temporal Disconnection",     colStart: 6, row: 2 },
+];
+
 // 4-col map (staggered: 3 centered on top, 4 offset on bottom)
 const LAYOUT_4 = [
   { name: "Perpetual Looping",          colStart: 1, row: 1 },
@@ -72,7 +84,9 @@ function getColsFromCSS() {
 
 function pickLayout() {
   const cols = getColsFromCSS();
-  return cols >= 8 ? LAYOUT_8 : LAYOUT_4;
+  if (cols >= 8) return LAYOUT_8;
+  if (cols >= 6) return LAYOUT_6;
+  return LAYOUT_4;
 }
 
 function renderThemes(flowers) {
