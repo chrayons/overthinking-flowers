@@ -445,7 +445,7 @@ h1 {
 }
 #shuffle-cards {
   display: flex; gap: 20px; justify-content: center; margin: 20px 0;
-  /* No wrapping - JavaScript handles responsive card count */
+  /* Always shows 3 cards - CSS media queries handle responsive visibility */
 }
 #shuffle-cards .card {
   padding: 0px;
@@ -460,6 +460,22 @@ h1 {
   font-size: 16px;
   font-weight: 400;
 }
+
+/* Responsive card visibility: 3→2→1 cards */
+/* Hide 3rd card when screen is too narrow for 3 cards */
+@media (max-width: 1141px) {
+  #shuffle-cards .card[data-card-index="2"] {
+    display: none;
+  }
+}
+
+/* Hide 2nd card when screen is too narrow for 2 cards */
+@media (max-width: 775px) {
+  #shuffle-cards .card[data-card-index="1"] {
+    display: none;
+  }
+}
+
 #shuffle-btn { padding: 10px 20px; cursor: pointer; }
 
 /* ================================

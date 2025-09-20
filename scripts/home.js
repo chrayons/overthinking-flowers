@@ -318,13 +318,12 @@ function createHomePage(flowers) {
   if (themes && reflections) themes.insertAdjacentElement('afterend', reflections);
 }
 
-// re-render (debounced) and keep mobile centered on resize
+// keep mobile carousel centered on resize (no desktop re-render needed - CSS handles it)
 let _t;
 window.addEventListener('resize', () => {
   clearTimeout(_t);
   _t = setTimeout(() => {
-    renderThemes(_flowers); // no positions; CSS will adapt breakpoints
-    updateCarousel();
+    updateCarousel(); // only update mobile carousel positioning
   }, 150);
 });
 

@@ -3,14 +3,7 @@
     const recentIds = [];   // simple session buffer to avoid immediate repeats
     let currentPicks = [];  // store current cards to avoid regenerating on resize
 
-    function getCardCount() {
-        const width = window.innerWidth;
-        // Each card: 346px total (320px + 24px padding + 2px border), gap: 20px, margins: 64px
-        // 3 cards need: 1142px, 2 cards need: 776px, 1 card needs: 410px
-        if (width >= 1142) return 3;  // Show 3 cards
-        if (width >= 776) return 2;   // Show 2 cards
-        return 1;                     // Show 1 card (mobile)
-    }
+    // getCardCount removed - CSS now handles responsive visibility
   
     function sampleUnique(list, cardCount, bannedIds = new Set()) {
       const pool = list.filter(x => !bannedIds.has(x.id));
@@ -90,12 +83,11 @@
       if (!container) return;
       container.innerHTML = "";
 
-      const cardCount = getCardCount();
-      const cardsToShow = currentPicks.slice(0, cardCount);
-
-      cardsToShow.forEach(f => {
+      // Always show all 3 cards - CSS will hide/show them responsively
+      currentPicks.forEach((f, index) => {
         const card = document.createElement("div");
         card.className = "card";
+        card.dataset.cardIndex = index; // Add index for CSS targeting
 
         // Calculate available width: 320px card - 24px padding = 296px
         const availableWidth = 296;
@@ -132,14 +124,7 @@
     const Shuffle = {
       init(flowers) {
         bindButton(flowers);
-        generateNewCards(flowers); // initial draw
-
-        // Re-display cards when window is resized (just change count, not content)
-        let resizeTimeout;
-        window.addEventListener('resize', () => {
-          clearTimeout(resizeTimeout);
-          resizeTimeout = setTimeout(() => displayCards(), 150);
-        });
+        generateNewCards(flowers); // initial draw - CSS handles responsive behavior
       },
       refresh(flowers) { generateNewCards(flowers); }
     };
