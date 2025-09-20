@@ -1,4 +1,4 @@
-// home.js
+// home.js — CSS-only layout version (no gridColumn/gridRow from JS)
 console.log("Home page loading...");
 
 // ---------- helpers ----------
@@ -13,11 +13,9 @@ function categoryToFilename(categoryName) {
   return categoryName.toLowerCase().replace(/\s+/g, '-') + '.html';
 }
 
-function createCategoryCluster(categoryName, flowers, parentGrid, colStart, row) {
+function createCategoryCluster(categoryName, flowers, parentGrid) {
   const cell = document.createElement('div');
   cell.className = 'category-cell';
-  cell.style.gridColumn = `${colStart} / span 2`;
-  cell.style.gridRow = `${row}`;
 
   const label = document.createElement('div');
   label.className = 'category-label';
@@ -26,9 +24,9 @@ function createCategoryCluster(categoryName, flowers, parentGrid, colStart, row)
 
   // draw ring (fixed size — we do NOT scale)
   const maxFlowers = Math.min(flowers.length, 25);
-  const centerX = 144;  // half of 288 (new cell width)
-  const centerY = 99;   // half of 198 (new cell height)
-  const radius  = 75;   // slightly reduced radius to fit new cell size
+  const centerX = 144;  // half of 288 (cell width)
+  const centerY = 99;   // half of 198 (cell height)
+  const radius  = 75;
 
   flowers.slice(0, maxFlowers).forEach((flower, i) => {
     const angle = (i / maxFlowers) * 2 * Math.PI;
@@ -44,38 +42,7 @@ function createCategoryCluster(categoryName, flowers, parentGrid, colStart, row)
   parentGrid.appendChild(cell);
 }
 
-// ---------- layout maps ----------
-const LAYOUT_8 = [
-  { name: "Perpetual Looping",          colStart: 2, row: 1 },
-  { name: "Loss of Agency",             colStart: 4, row: 1 },
-  { name: "Sensory Overwhelm",          colStart: 6, row: 1 },
-  { name: "Emotional Dysregulation",    colStart: 1, row: 2 },
-  { name: "Perceptual Barriers",        colStart: 3, row: 2 },
-  { name: "Thought Entanglement",       colStart: 5, row: 2 },
-  { name: "Temporal Disconnection",     colStart: 7, row: 2 },
-];
-
-const LAYOUT_6 = [
-  { name: "Perpetual Looping",          colStart: 1, row: 1 },
-  { name: "Loss of Agency",             colStart: 3, row: 1 },
-  { name: "Sensory Overwhelm",          colStart: 5, row: 1 },
-  { name: "Emotional Dysregulation",    colStart: 0, row: 2 },
-  { name: "Perceptual Barriers",        colStart: 2, row: 2 },
-  { name: "Thought Entanglement",       colStart: 4, row: 2 },
-  { name: "Temporal Disconnection",     colStart: 6, row: 2 },
-];
-
-const LAYOUT_4 = [
-  { name: "Perpetual Looping",          colStart: 1, row: 1 },
-  { name: "Loss of Agency",             colStart: 2, row: 1 },
-  { name: "Sensory Overwhelm",          colStart: 3, row: 1 },
-  { name: "Emotional Dysregulation",    colStart: 0.5, row: 2 },
-  { name: "Perceptual Barriers",        colStart: 1.5, row: 2 },
-  { name: "Thought Entanglement",       colStart: 2.5, row: 2 },
-  { name: "Temporal Disconnection",     colStart: 3.5, row: 2 },
-];
-
-// Single source of truth for mobile order & labels
+// Order to render categories (CSS controls placement)
 const CATEGORY_ORDER = [
   "Perpetual Looping",
   "Loss of Agency",
@@ -86,33 +53,22 @@ const CATEGORY_ORDER = [
   "Temporal Disconnection"
 ];
 
-// ---------- desktop grid ----------
-function getColsFromCSS() {
-  const grid = document.getElementById('category-grid');
-  const styles = getComputedStyle(grid);
-  const cols = parseInt(styles.getPropertyValue('--cols') || '8', 10);
-  return Number.isFinite(cols) ? cols : 8;
-}
-
-function pickLayout() {
-  const cols = getColsFromCSS();
-  if (cols >= 8) return LAYOUT_8;
-  if (cols >= 6) return LAYOUT_6;
-  return LAYOUT_4;
-}
-
+// ---------- render desktop grid (no positions set here) ----------
 function renderThemes(flowers) {
   const categories = groupFlowersByCategory(flowers);
   const grid = document.getElementById('category-grid');
+  if (!grid) return;
   grid.innerHTML = '';
 
-  pickLayout().forEach(({ name, colStart, row }) => {
+  CATEGORY_ORDER.forEach((name) => {
     const list = categories[name];
-    if (list && list.length) createCategoryCluster(name, list, grid, colStart, row);
+    if (list && list.length) {
+      createCategoryCluster(name, list, grid);
+    }
   });
 }
 
-// ---------- mobile carousel ----------
+// ---------- mobile carousel (unchanged) ----------
 let _flowers = [];
 let currentMobileIndex = 0;  // REAL index (0..n-1)
 let _mobileCount = 0;        // number of REAL items
@@ -200,12 +156,10 @@ function updateCarousel() {
   const targetDomIndex = currentMobileIndex + 1;
   const activeEl = items[targetDomIndex];
 
-  // current translateX so we can adjust relatively
   const style = getComputedStyle(track);
   const m = new DOMMatrixReadOnly(style.transform === 'none' ? '' : style.transform);
   const currentTx = m.m41 || 0;
 
-  // centers in viewport coordinates (robust with negative margins, scaling, etc.)
   const containerRect = container.getBoundingClientRect();
   const activeRect    = activeEl.getBoundingClientRect();
   const containerCenter = containerRect.left + containerRect.width / 2;
@@ -255,16 +209,13 @@ function initMobileCarousel() {
     track.style.transition = 'none'; // disable for instant snap
 
     if (_pendingSnap.to === 'head') {
-      // moved to trailing cloneFirst -> snap to REAL first
       currentMobileIndex = 0;
-      snapToDomIndex(currentMobileIndex + 1); // real first is at DOM index 1
+      snapToDomIndex(currentMobileIndex + 1);
     } else if (_pendingSnap.to === 'tail') {
-      // moved to leading cloneLast -> snap to REAL last
       currentMobileIndex = _mobileCount - 1;
-      snapToDomIndex(currentMobileIndex + 1); // real last is at DOM index _mobileCount
+      snapToDomIndex(currentMobileIndex + 1);
     }
 
-    // force reflow, then restore transition
     track.getBoundingClientRect();
     track.style.transition = prevTransition;
     _pendingSnap = null;
@@ -289,7 +240,6 @@ function initMobileCarousel() {
     const nextTx = currentTx + delta;
     track.style.transform = `translateX(${nextTx}px)`;
 
-    // refresh active classes & dots
     const dots = document.querySelectorAll('.dot');
     Array.from(items).forEach((item) => {
       const isReal = !item.classList.contains('clone') && item.dataset.realIndex != null;
@@ -311,19 +261,15 @@ function initMobileCarousel() {
         currentMobileIndex -= 1;
         updateCarousel();
       } else {
-        // wrap left: animate one item width to the left, then snap to real last
         _pendingSnap = { to: 'tail' };
         const items = track.children;
-
-        // Get current item width for consistent animation distance
-        const currentItem = items[currentMobileIndex + 1]; // +1 for leading clone
+        const currentItem = items[currentMobileIndex + 1];
         const itemWidth = currentItem.getBoundingClientRect().width;
 
         const style = getComputedStyle(track);
         const m = new DOMMatrixReadOnly(style.transform === 'none' ? '' : style.transform);
         const currentTx = m.m41 || 0;
 
-        // Move left by one item width
         track.style.transform = `translateX(${currentTx + itemWidth}px)`;
       }
     });
@@ -337,31 +283,24 @@ function initMobileCarousel() {
         currentMobileIndex += 1;
         updateCarousel();
       } else {
-        // wrap right: animate one item width to the right, then snap to real first
         _pendingSnap = { to: 'head' };
         const items = track.children;
-
-        // Get current item width for consistent animation distance
-        const currentItem = items[currentMobileIndex + 1]; // +1 for leading clone
+        const currentItem = items[currentMobileIndex + 1];
         const itemWidth = currentItem.getBoundingClientRect().width;
 
         const style = getComputedStyle(track);
         const m = new DOMMatrixReadOnly(style.transform === 'none' ? '' : style.transform);
         const currentTx = m.m41 || 0;
 
-        // Move right by one item width
         track.style.transform = `translateX(${currentTx - itemWidth}px)`;
       }
     });
   }
-
-  // (Optional) keyboard: keep as you had, or mirror wrap logic if you want keys infinite too
 }
 
 function goToSlide(index) {
   const track = document.getElementById('mobile-category-track');
   if (!track || _mobileCount === 0) return;
-  // clamp to REAL range (dots always map to real indices)
   currentMobileIndex = ((index % _mobileCount) + _mobileCount) % _mobileCount;
   updateCarousel();
 }
@@ -369,8 +308,8 @@ function goToSlide(index) {
 // ---------- bootstrap ----------
 function createHomePage(flowers) {
   _flowers = flowers;
-  renderThemes(_flowers);
-  renderMobileThemes(_flowers);
+  renderThemes(_flowers);          // desktop grid (CSS controls layout)
+  renderMobileThemes(_flowers);    // mobile carousel
   initMobileCarousel();
 
   // keep Reflections after Themes
@@ -384,8 +323,8 @@ let _t;
 window.addEventListener('resize', () => {
   clearTimeout(_t);
   _t = setTimeout(() => {
-    renderThemes(_flowers);
-    updateCarousel(); // keep the active mobile item centered after a resize
+    renderThemes(_flowers); // no positions; CSS will adapt breakpoints
+    updateCarousel();
   }, 150);
 });
 
