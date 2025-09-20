@@ -510,26 +510,48 @@ h1 {
    Modal (unchanged)
    ================================ */
 #mg-modal-overlay{
-  position: fixed; inset: 0; display: none;
-  align-items: center; justify-content: center;
-  background: rgba(10,12,15,0.45); backdrop-filter: blur(2px);
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  display: none;
+  background: rgba(248, 248, 255, 0.8); /* 80% white overlay */
   z-index: 9999;
 }
-#mg-modal-overlay.open{ display: flex; }
+
+#mg-modal-overlay.open{ display: block; }
 
 #mg-modal{
-  width: min(980px, 92vw);
-  max-height: 86vh; overflow: hidden;
-  background: var(--bg-primary); border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0,0,0,.25);
-  position: relative;
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 1200px; /* Smaller container = more click-outside area */
+  height: 900px; /* Smaller container = more click-outside area */
+  max-width: 80vw;
+  max-height: 80vh;
+  background: transparent;
+  overflow: visible;
+  /* Fine-tune centering - desktop only */
+  margin-top: -30px; /* Move desktop modal up */
+}
+
+/* Desktop modal background */
+#mg-modal::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url('data:image/svg+xml,<svg width="1534" height="1190" viewBox="0 0 1534 1190" fill="none" xmlns="http://www.w3.org/2000/svg"><foreignObject x="0.521744" y="0.521744" width="1532.96" height="1188.67"><div xmlns="http://www.w3.org/1999/xhtml" style="backdrop-filter:blur(43.98px);clip-path:url(%23bgblur_0_405_2788_clip_path);height:100%25;width:100%25"></div></foreignObject><g filter="url(%23filter0_fn_405_2788)" data-figma-bg-blur-radius="87.9565"><ellipse cx="767" cy="594.857" rx="578" ry="405.857" fill="%23F8F8FF"/></g><defs><filter id="filter0_fn_405_2788" x="0.521744" y="0.521744" width="1532.96" height="1188.67" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur stdDeviation="94.2391" result="effect1_foregroundBlur_405_2788"/><feTurbulence type="fractalNoise" baseFrequency="3.3333332538604736 3.3333332538604736" stitchTiles="stitch" numOctaves="3" result="noise" seed="4632" /><feComponentTransfer in="noise" result="coloredNoise1"><feFuncR type="linear" slope="2" intercept="-0.5" /><feFuncG type="linear" slope="2" intercept="-0.5" /><feFuncB type="linear" slope="2" intercept="-0.5" /><feFuncA type="discrete" tableValues="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 "/></feComponentTransfer><feComposite operator="in" in2="effect1_foregroundBlur_405_2788" in="coloredNoise1" result="noise1Clipped" /><feComponentTransfer in="noise1Clipped" result="color1"><feFuncA type="table" tableValues="0 0.2" /></feComponentTransfer><feMerge result="effect2_noise_405_2788"><feMergeNode in="effect1_foregroundBlur_405_2788" /><feMergeNode in="color1" /></feMerge></filter><clipPath id="bgblur_0_405_2788_clip_path" transform="translate(-0.521744 -0.521744)"><ellipse cx="767" cy="594.857" rx="578" ry="405.857"/></clipPath></defs></svg>') center/contain no-repeat;
+  z-index: -1;
 }
 #mg-modal-close{
-  position: absolute; top: 10px; right: 12px;
-  border: none; background: transparent;
-  font-size: 28px; line-height: 1; cursor: pointer;
+  display: none; /* Hide the X button */
 }
-.mg-modal-inner{ display: grid; grid-template-columns: 1fr 1fr; gap: 24px; padding: 28px; }
+.mg-modal-inner{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  padding: 120px 200px 120px 200px; /* Fit within desktop ellipse */
+  height: 100%;
+  align-items: center;
+}
 .mg-left{ display: flex; align-items: center; justify-content: center; }
 #mg-flower-host{ width: 100%; max-width: 420px; display: grid; place-items: center; }
 .mg-right{ overflow: auto; padding-right: 8px; }
@@ -544,18 +566,32 @@ h1 {
 @media (max-width: 900px){
   .mg-modal-inner{
     grid-template-columns: 1fr;
-    padding: 20px; /* Reduce padding on mobile */
+    padding: 80px 60px 80px 60px; /* Fit within mobile ellipse */
+    gap: 20px;
   }
   .mg-quote{ font-size: 22px; }
 
+  /* Mobile modal shape */
+  #mg-modal {
+    width: 450px; /* Smaller container = more click-outside area */
+    height: 700px; /* Smaller container = more click-outside area */
+    max-width: 80vw;
+    max-height: 80vh;
+  }
+
+  /* Mobile modal background */
+  #mg-modal::before {
+    background: url('data:image/svg+xml,<svg width="586" height="934" viewBox="0 0 586 934" fill="none" xmlns="http://www.w3.org/2000/svg"><foreignObject x="0.713665" y="0.713665" width="584.573" height="932.573"><div xmlns="http://www.w3.org/1999/xhtml" style="backdrop-filter:blur(12.43px);clip-path:url(%23bgblur_0_690_9692_clip_path);height:100%25;width:100%25"></div></foreignObject><g filter="url(%23filter0_fn_690_9692)" data-figma-bg-blur-radius="24.867"><ellipse cx="293" cy="467" rx="239" ry="413" fill="%23F8F8FF"/></g><defs><filter id="filter0_fn_690_9692" x="0.713665" y="0.713665" width="584.573" height="932.573" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur stdDeviation="26.6432" result="effect1_foregroundBlur_690_9692"/><feTurbulence type="fractalNoise" baseFrequency="11.790281295776367 11.790281295776367" stitchTiles="stitch" numOctaves="3" result="noise" seed="4632" /><feComponentTransfer in="noise" result="coloredNoise1"><feFuncR type="linear" slope="2" intercept="-0.5" /><feFuncG type="linear" slope="2" intercept="-0.5" /><feFuncB type="linear" slope="2" intercept="-0.5" /><feFuncA type="discrete" tableValues="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 "/></feComponentTransfer><feComposite operator="in" in2="effect1_foregroundBlur_690_9692" in="coloredNoise1" result="noise1Clipped" /><feComponentTransfer in="noise1Clipped" result="color1"><feFuncA type="table" tableValues="0 0.2" /></feComponentTransfer><feMerge result="effect2_noise_690_9692"><feMergeNode in="effect1_foregroundBlur_690_9692" /><feMergeNode in="color1" /></feMerge></filter><clipPath id="bgblur_0_690_9692_clip_path" transform="translate(-0.713665 -0.713665)"><ellipse cx="293" cy="467" rx="239" ry="413"/></clipPath></defs></svg>') center/contain no-repeat;
+  }
+
   /* Ensure flower has enough space on mobile */
   #mg-flower-host {
-    max-width: calc(100vw - 80px); /* More room for padding */
-    max-height: 40vh; /* Limit height on mobile */
+    max-width: calc(100vw - 80px);
+    max-height: 40vh;
   }
 
   .mg-left {
-    padding: 15px; /* Add padding around flower container */
+    padding: 15px;
   }
 
   .mg-stage {
@@ -563,11 +599,11 @@ h1 {
     max-height: 100%;
   }
 
-  /* Ensure modal doesn't get too close to screen edges */
+  /* Close button hidden on mobile too */
+
+  /* Reset desktop margin adjustment for mobile */
   #mg-modal {
-    margin: 10px;
-    width: calc(100vw - 20px);
-    max-width: calc(100vw - 20px);
+    margin-top: 0; /* Mobile positioning is fine as-is */
   }
 }
 
