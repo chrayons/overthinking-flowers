@@ -22,9 +22,9 @@ function createCategoryCluster(categoryName, flowers, parentGrid, colStart, row)
 
   // draw ring (fixed size — we do NOT scale)
   const maxFlowers = Math.min(flowers.length, 25);
-  const centerX = 160;  // half of 320
-  const centerY = 110;  // half of 220
-  const radius  = 80;
+  const centerX = 144;  // half of 288 (new cell width)
+  const centerY = 99;   // half of 198 (new cell height)
+  const radius  = 75;   // slightly reduced radius to fit new cell size
 
   flowers.slice(0, maxFlowers).forEach((flower, i) => {
     const angle = (i / maxFlowers) * 2 * Math.PI;
@@ -40,7 +40,7 @@ function createCategoryCluster(categoryName, flowers, parentGrid, colStart, row)
   parentGrid.appendChild(cell);
 }
 
-// 8-col map (your original)
+// 8-col map (centered layout)
 const LAYOUT_8 = [
   { name: "Perpetual Looping",          colStart: 2, row: 1 },
   { name: "Loss of Agency",             colStart: 4, row: 1 },
