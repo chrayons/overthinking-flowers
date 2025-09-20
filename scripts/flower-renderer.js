@@ -30,18 +30,21 @@ function createFlower(flowerData, options = {}) {
         height = 80,
         maxRadius = 30,
         emotionAngles = {
-            // Default angles if not provided
-            trust: 0,
-            optimism: 45,
-            joy: 90,
-            love: 135,
-            anticipation: 180,
-            surprise: 225,
-            fear: 270,
-            disgust: 315,
-            anger: 0,      // You'll need to set proper angles
-            sadness: 45,
-            pessimism: 90
+            // Static emotion positioning (NEVER change this order)
+            // Negative zone: 0° to 120° (5 petals, 24° spacing each)
+            fear: 12,
+            anger: 36,
+            disgust: 60,
+            pessimism: 84,
+            sadness: 108,
+            // Neutral zone: 120° to 240° (2 petals, 60° spacing each)
+            anticipation: 150,
+            surprise: 210,
+            // Positive zone: 240° to 360° (4 petals, 30° spacing each)
+            optimism: 255,
+            joy: 285,
+            love: 315,
+            trust: 345
         },
         emotionColors = {
             // Fallback colors for line petals

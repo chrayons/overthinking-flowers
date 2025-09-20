@@ -155,90 +155,181 @@ h1 {
 }
 
 /* ================================
-   Mobile Carousel
+   Enhanced Mobile Carousel
    ================================ */
-.mobile-carousel {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin: 20px 0;
-}
+   .mobile-carousel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    margin: 20px 0;
+    position: relative;
+  }
+  
+  .carousel-container {
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+    height: 120px; /* Enough height for the largest text */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    perspective: 1000px; /* Add 3D perspective for depth effect */
+  }
+  
+  .carousel-track {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start; /* Changed to flex-start for proper left alignment */
+    transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    width: max-content;
+    transform-origin: left center; /* Set transform origin for proper sliding */
+  }
+  
+  .mobile-category-item {
+    flex-shrink: 0;
+    width: 300px; /* Fixed width for each item */
+    height: 120px; /* Add explicit height to match container */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    position: relative;
+  }
+  
+  /* Default state - side items (20pt, blurred, behind) */
+  .mobile-category-item .category-label {
+    font-family: "Junicode Regular Condensed", "Junicode", Georgia, serif;
+    font-size: 20px;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    color: #AFBCC7;
+    filter: blur(4px);
+    transform: scale(0.8) translateZ(-50px);
+    transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    margin-bottom: 20px;
+    line-height: 1.2;
+    position: static;
+    width: auto;
+    opacity: 0.6;
+    border: 1px solid blue; /* Debug border */
+    background: rgba(255,0,0,0.1); /* Debug background */
+  }
 
-.carousel-arrow {
-  background: none;
-  border: 1px solid #ccc;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  cursor: pointer;
-  flex-shrink: 0;
-}
+  /* Active state - center item (48pt, no blur, forward) */
+  .mobile-category-item.active .category-label {
+    font-size: 48px;
+    color: #101720;
+    filter: blur(0px);
+    transform: scale(1) translateZ(0px);
+    opacity: 1;
+  }
 
-.carousel-arrow:hover {
-  background: #f0f0f0;
-}
-
-.carousel-arrow:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.carousel-container {
-  flex: 1;
-  overflow: hidden;
-}
-
-.carousel-track {
-  display: flex;
-  transition: transform 0.3s ease;
-}
-
-.mobile-category-item {
-  flex-shrink: 0;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-
-.mobile-category-item .category-label {
-  position: static;
-  transform: none;
-  width: auto;
-  font-family: "Junicode Regular Condensed", "Junicode", Georgia, serif;
-  font-size: 24px;
-  font-weight: 400;
-  letter-spacing: 0.1em;
-  margin-bottom: 20px;
-}
-
-.mobile-see-reflections-btn {
-  background: none;
-  border: 1px solid #005BA6;
-  color: #005BA6;
-  font-family: "Satoshi Variable", system-ui;
-  font-size: 14px;
-  font-weight: 400;
-  padding: 12px 24px;
-  border-radius: 6px;
-  cursor: pointer;
-  min-height: 44px; /* Touch target size */
-  min-width: 120px;
-}
-
-.mobile-see-reflections-btn:hover {
-  background: #005BA6;
-  color: white;
-}
-
-.mobile-see-reflections-btn:active {
-  transform: translateY(1px);
-}
+  /* Hide items that are far from center using CSS overflow */
+  .carousel-container {
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    perspective: 1000px;
+  }
+  
+  /* Hide buttons on non-active items */
+  .mobile-category-item .mobile-see-reflections-btn {
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.4s ease;
+  }
+  
+  .mobile-category-item.active .mobile-see-reflections-btn {
+    opacity: 1;
+    visibility: visible;
+  }
+  
+  .mobile-see-reflections-btn {
+    background: none;
+    border: 1px solid #005BA6;
+    color: #005BA6;
+    font-family: "Satoshi Variable", system-ui;
+    font-size: 14px;
+    font-weight: 400;
+    padding: 12px 24px;
+    border-radius: 6px;
+    cursor: pointer;
+    min-height: 44px;
+    min-width: 120px;
+    transition: all 0.3s ease;
+  }
+  
+  .mobile-see-reflections-btn:hover {
+    background: #005BA6;
+    color: white;
+  }
+  
+  .mobile-see-reflections-btn:active {
+    transform: translateY(1px);
+  }
+  
+  /* Carousel arrows */
+  .carousel-arrows {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+  }
+  
+  .carousel-arrow {
+    background: none;
+    border: 1px solid #ccc;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .carousel-arrow:hover:not(:disabled) {
+    background: #f0f0f0;
+    border-color: #999;
+  }
+  
+  .carousel-arrow:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+  
+  /* Dots indicator */
+  .carousel-dots {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+  }
+  
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #AFBCC7;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .dot.active {
+    background: #101720;
+    transform: scale(1.2);
+  }
+  
+  .dot:hover:not(.active) {
+    background: #8B98A5;
+  }
 
 /* ================================
    Reflections

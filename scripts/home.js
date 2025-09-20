@@ -30,7 +30,7 @@ function createCategoryCluster(categoryName, flowers, parentGrid, colStart, row)
     const angle = (i / maxFlowers) * 2 * Math.PI;
     const x = centerX + radius * Math.cos(angle);
     const y = centerY + radius * Math.sin(angle);
-    const el = FlowerRenderer.createFlower(flower, 0, 0);
+    const el = FlowerRenderer.createFlower(flower);
     el.classList.add('flower');
     el.style.left = (x - 40) + 'px';
     el.style.top  = (y - 40) + 'px';
@@ -51,7 +51,7 @@ const LAYOUT_8 = [
   { name: "Temporal Disconnection",     colStart: 7, row: 2 },
 ];
 
-// 6-col map (staggered: 3 on top, 4 offset on bottom)
+// 6-col map (staggered: 3 on top, 4 equally spaced on bottom)
 const LAYOUT_6 = [
   { name: "Perpetual Looping",          colStart: 1, row: 1 },
   { name: "Loss of Agency",             colStart: 3, row: 1 },
@@ -103,12 +103,19 @@ function renderThemes(flowers) {
 let _flowers = [];
 let currentMobileIndex = 0;
 
+// ENHANCED MOBILE CAROUSEL FUNCTIONS (UPDATED)
 function renderMobileThemes(flowers) {
-  const categories = groupFlowersByCategory(flowers);
   const track = document.getElementById('mobile-category-track');
-  if (!track) return;
+  const dotsContainer = document.getElementById('carousel-dots');
 
+  if (!track || !dotsContainer) {
+    console.error('Mobile carousel elements not found');
+    return;
+  }
+
+  // Clear existing content
   track.innerHTML = '';
+  dotsContainer.innerHTML = '';
 
   const categoryNames = [
     "Perpetual Looping", "Loss of Agency", "Sensory Overwhelm",
@@ -116,44 +123,125 @@ function renderMobileThemes(flowers) {
     "Thought Entanglement", "Temporal Disconnection"
   ];
 
+  // Create items with simple structure
   categoryNames.forEach((name, index) => {
-    const list = categories[name];
-    if (!list || !list.length) return;
-
+    // Create category item
     const item = document.createElement('div');
     item.className = 'mobile-category-item';
 
     const label = document.createElement('div');
     label.className = 'category-label';
-    let displayName = name.replace(/ (?=[^ ]*$)/, "<br>");
-    label.innerHTML = displayName;
+    label.textContent = name;
+
     item.appendChild(label);
-
-    const button = document.createElement('button');
-    button.className = 'mobile-see-reflections-btn';
-    button.textContent = 'See Reflections';
-    button.dataset.category = name;
-    item.appendChild(button);
-
     track.appendChild(item);
+
+    // Create dot
+    const dot = document.createElement('div');
+    dot.className = 'dot';
+    dot.addEventListener('click', () => goToSlide(index));
+    dotsContainer.appendChild(dot);
   });
 
+  console.log('Created', track.children.length, 'items');
+  currentMobileIndex = 0;
   updateCarousel();
 }
 
 function updateCarousel() {
   const track = document.getElementById('mobile-category-track');
-  const prevBtn = document.querySelector('.carousel-prev');
-  const nextBtn = document.querySelector('.carousel-next');
+  const dots = document.querySelectorAll('.dot');
 
-  if (!track || !prevBtn || !nextBtn) return;
+  console.log('=== UPDATE CAROUSEL ===');
+  console.log('currentMobileIndex:', currentMobileIndex);
+
+  if (!track) {
+    console.error('Track not found');
+    return;
+  }
+
+  const items = Array.from(track.children);
+  console.log('Found items:', items.length);
+
+  // Validate currentMobileIndex
+  if (currentMobileIndex < 0 || currentMobileIndex >= items.length) {
+    console.error('Invalid currentMobileIndex:', currentMobileIndex);
+    currentMobileIndex = 0;
+  }
+
+  // Center the active item: move track so active item is in viewport center
+  const containerWidth = track.parentElement.offsetWidth;
+  const itemWidth = 300;
+  const centerOffset = (containerWidth / 2) - (itemWidth / 2);
+  const translateX = centerOffset - (currentMobileIndex * itemWidth);
+
+  console.log(`Container: ${containerWidth}px, centering item ${currentMobileIndex}`);
+  console.log(`TranslateX: ${translateX}px`);
+  track.style.transform = `translateX(${translateX}px)`;
+
+  // Update active states and visibility
+  items.forEach((item, index) => {
+    // Calculate relative position to current active item (with circular wrapping)
+    let relativePos = index - currentMobileIndex;
+    const totalItems = items.length;
+
+    // Handle circular wrapping
+    if (relativePos > totalItems / 2) relativePos -= totalItems;
+    if (relativePos < -totalItems / 2) relativePos += totalItems;
+
+    const isActive = index === currentMobileIndex;
+    const isVisible = Math.abs(relativePos) <= 1; // Show center + immediate neighbors only
+
+    console.log(`Item ${index}: relativePos=${relativePos}, active=${isActive}, visible=${isVisible}`);
+
+    // Clear all classes and add fresh
+    item.className = 'mobile-category-item';
+    if (isActive) {
+      item.classList.add('active');
+    }
+
+    // Show/hide based on position
+    item.style.visibility = isVisible ? 'visible' : 'hidden';
+    item.style.opacity = isVisible ? '1' : '0';
+
+    // Style the label
+    const label = item.querySelector('.category-label');
+    if (label) {
+      if (isActive) {
+        // Center item: large and clear
+        label.style.fontSize = '48px';
+        label.style.color = '#101720';
+        label.style.filter = 'blur(0px)';
+        label.style.background = 'lightgreen';
+        label.style.border = '3px solid red';
+      } else if (isVisible) {
+        // Side items: small and blurred
+        label.style.fontSize = '20px';
+        label.style.color = '#AFBCC7';
+        label.style.filter = 'blur(4px)';
+        label.style.background = 'lightblue';
+        label.style.border = '1px solid blue';
+      }
+    }
+  });
+
+  // Update dots
+  dots.forEach((dot, index) => {
+    dot.classList.toggle('active', index === currentMobileIndex);
+  });
+
+  console.log('=== END UPDATE ===');
+}
+
+function goToSlide(index) {
+  const track = document.getElementById('mobile-category-track');
+  if (!track) return;
 
   const totalItems = track.children.length;
-  const translateX = -currentMobileIndex * 100;
-  track.style.transform = `translateX(${translateX}%)`;
-
-  prevBtn.disabled = currentMobileIndex === 0;
-  nextBtn.disabled = currentMobileIndex === totalItems - 1;
+  if (index >= 0 && index < totalItems) {
+    currentMobileIndex = index;
+    updateCarousel();
+  }
 }
 
 function initMobileCarousel() {
@@ -162,8 +250,10 @@ function initMobileCarousel() {
 
   if (prevBtn) {
     prevBtn.addEventListener('click', () => {
-      if (currentMobileIndex > 0) {
-        currentMobileIndex--;
+      const track = document.getElementById('mobile-category-track');
+      if (track) {
+        const totalItems = track.children.length;
+        currentMobileIndex = (currentMobileIndex - 1 + totalItems) % totalItems;
         updateCarousel();
       }
     });
@@ -172,20 +262,47 @@ function initMobileCarousel() {
   if (nextBtn) {
     nextBtn.addEventListener('click', () => {
       const track = document.getElementById('mobile-category-track');
-      if (track && currentMobileIndex < track.children.length - 1) {
-        currentMobileIndex++;
+      if (track) {
+        const totalItems = track.children.length;
+        currentMobileIndex = (currentMobileIndex + 1) % totalItems;
         updateCarousel();
       }
     });
   }
 
-  // Add click listeners for "See Reflections" buttons
-  document.addEventListener('click', (e) => {
-    if (e.target.classList.contains('mobile-see-reflections-btn')) {
+  // Add click listener for "See Reflections" button
+  const seeReflectionsBtn = document.getElementById('mobile-see-reflections-btn');
+  if (seeReflectionsBtn) {
+    seeReflectionsBtn.addEventListener('click', (e) => {
       const categoryName = e.target.dataset.category;
-      // Navigate to the category page
-      const categorySlug = categoryName.toLowerCase().replace(/\s+/g, '-');
-      window.location.href = `${categorySlug}.html`;
+      if (categoryName) {
+        // Navigate to the category page
+        const categorySlug = categoryName.toLowerCase().replace(/\s+/g, '-');
+        window.location.href = `${categorySlug}.html`;
+      }
+    });
+  }
+
+  // Add keyboard navigation (optional enhancement)
+  document.addEventListener('keydown', (e) => {
+    // Only handle arrows when mobile carousel is visible
+    const mobileSection = document.getElementById('themes-mobile');
+    if (!mobileSection || getComputedStyle(mobileSection).display === 'none') return;
+
+    if (e.key === 'ArrowLeft') {
+      const track = document.getElementById('mobile-category-track');
+      if (track) {
+        const totalItems = track.children.length;
+        currentMobileIndex = (currentMobileIndex - 1 + totalItems) % totalItems;
+        updateCarousel();
+      }
+    } else if (e.key === 'ArrowRight') {
+      const track = document.getElementById('mobile-category-track');
+      if (track) {
+        const totalItems = track.children.length;
+        currentMobileIndex = (currentMobileIndex + 1) % totalItems;
+        updateCarousel();
+      }
     }
   });
 }

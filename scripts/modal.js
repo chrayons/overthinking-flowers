@@ -71,13 +71,16 @@
       const host = overlay.querySelector("#mg-flower-host");
       host.innerHTML = "";
       try {
-        if (window.FlowerRenderer && typeof window.FlowerRenderer.createFlowerIn === "function") {
-          window.FlowerRenderer.createFlowerIn(host, flower, 320);
-        } else if (window.FlowerRenderer && typeof window.FlowerRenderer.createFlowerSVG === "function") {
-          host.appendChild(window.FlowerRenderer.createFlowerSVG(flower, 320));
-        } else if (window.FlowerRenderer && typeof window.FlowerRenderer.createFlower === "function") {
-          const el = window.FlowerRenderer.createFlower(flower, -10000, -10000);
-          el.style.position = "static"; el.style.left = ""; el.style.top = "";
+        if (window.FlowerRenderer && typeof window.FlowerRenderer.createFlower === "function") {
+          // Create a much larger flower for the modal (480x480 instead of default 80x80)
+          const el = window.FlowerRenderer.createFlower(flower, {
+            width: 480,
+            height: 480,
+            maxRadius: 180
+          });
+          el.style.position = "static";
+          el.style.left = "";
+          el.style.top = "";
           host.appendChild(el);
         } else {
           host.innerHTML = "<p style='opacity:.7'>Flower renderer not loaded.</p>";
