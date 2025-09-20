@@ -138,17 +138,18 @@ h1 {
   :root{ --row-gap: 64px; }  /* give rows some breathing room again */
 }
 
-/* switch to 4 columns for smaller screens */
-@media (max-width: 1300px){
+/* switch to 4 columns for smaller screens (aligned with 2-card breakpoint) */
+@media (max-width: 1141px){
   #category-grid{
     --cols: 4; /* Switch to 4-column mode */
+    --gap: 40px; /* Increase horizontal spacing between categories */
   }
 }
 
-/* Mobile: hide grid, show your mobile-only UI (unchanged behavior) */
+/* Mobile: hide grid, show your mobile-only UI (aligned with 1-card breakpoint) */
 #themes-desktop{ display:block; }
 #themes-mobile { display:none;  }
-@media (max-width: 720px){
+@media (max-width: 775px){
   #themes-desktop{ display:none; }
   #themes-mobile { display:block; }
 }
