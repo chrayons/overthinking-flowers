@@ -129,17 +129,15 @@ try {
   overlay.style.display = "flex";
   overlay.setAttribute("aria-hidden", "false");
 
-  // 3) measure stage and compute the correct max radius
-  const rect = stage.getBoundingClientRect();
-  const stageSize = Math.min(rect.width, rect.height);
-  // Outer solid ring should be 100% → radius = stageSize / 2
-  const maxRadius = stageSize / 2;
+  // 3) use fixed size instead of measuring stage
+  const fixedSize = 247;
+  const maxRadius = fixedSize / 2;
 
-  // 4) create the flower to match the stage
+  // 4) create the flower at fixed size
   if (window.FlowerRenderer && typeof window.FlowerRenderer.createFlower === "function") {
     const el = window.FlowerRenderer.createFlower(flower, {
-      width: stageSize,
-      height: stageSize,
+      width: fixedSize,
+      height: fixedSize,
       maxRadius: maxRadius
     });
     el.style.position = "static";
@@ -172,16 +170,15 @@ try {
         place-items: center;
       `;
 
-      // Create an SVG that matches the flower dimensions
-      const svgRect = svgEl.getBoundingClientRect();
+      // Create an SVG with fixed dimensions
       const overlaySvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-      overlaySvg.setAttribute("width", svgRect.width);
-      overlaySvg.setAttribute("height", svgRect.height);
+      overlaySvg.setAttribute("width", 247);
+      overlaySvg.setAttribute("height", 247);
       overlaySvg.style.display = "block";
 
-      const centerX = svgRect.width / 2;
-      const centerY = svgRect.height / 2;
-      const maxRadius = Math.min(centerX, centerY);
+      const centerX = 247 / 2;
+      const centerY = 247 / 2;
+      const maxRadius = 247 / 2;
 
       // Helper function to create sector path (same as in flower renderer)
       const describeArc = (cx, cy, r, startAngle, endAngle) => {
@@ -229,11 +226,89 @@ try {
       return overlayWrap;
     };
 
+    // Create fade overlay layer on top of everything
+    const createFadeOverlay = () => {
+      const svgEl = wrap.querySelector("svg");
+      if (!svgEl) return null;
+
+      const fadeWrap = document.createElement("div");
+      fadeWrap.className = "mg-fade-wrap";
+      fadeWrap.style.cssText = `
+        position: absolute;
+        inset: 0;
+        z-index: 10;
+        pointer-events: none;
+        display: grid;
+        place-items: center;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+      `;
+
+      // Create an SVG with fixed dimensions
+      const fadeSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      fadeSvg.setAttribute("width", 247);
+      fadeSvg.setAttribute("height", 247);
+      fadeSvg.style.display = "block";
+
+      const centerX = 247 / 2;
+      const centerY = 247 / 2;
+      const maxRadius = 247 / 2;
+
+      // Helper function to create sector path (same as in flower renderer)
+      const describeArc = (cx, cy, r, startAngle, endAngle) => {
+        const rad = Math.PI / 180;
+        const x1 = cx + r * Math.cos((startAngle - 90) * rad);
+        const y1 = cy + r * Math.sin((startAngle - 90) * rad);
+        const x2 = cx + r * Math.cos((endAngle - 90) * rad);
+        const y2 = cy + r * Math.sin((endAngle - 90) * rad);
+        const largeArc = (endAngle - startAngle) <= 180 ? 0 : 1;
+        return `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z`;
+      };
+
+      // Create fade sectors for each emotion (everything except active one will be white)
+      // Reduce radius to keep outer circle border visible
+      const fadeRadius = maxRadius - 2; // Subtract stroke width (2px)
+
+      const emotionAngles = {
+        fear: 12, anger: 36, disgust: 60, pessimism: 84, sadness: 108,
+        anticipation: 150, surprise: 210,
+        optimism: 255, joy: 285, love: 315, trust: 345
+      };
+
+      const neutralEmotions = ['anticipation', 'surprise'];
+      const positiveEmotions = ['trust', 'optimism', 'joy', 'love'];
+      const negativeEmotions = ['fear', 'disgust', 'anger', 'sadness', 'pessimism'];
+
+      Object.entries(emotionAngles).forEach(([emotion, angle]) => {
+        const step =
+          neutralEmotions.includes(emotion) ? 60 :
+          positiveEmotions.includes(emotion) ? 30 :
+          negativeEmotions.includes(emotion) ? 24 : 30;
+
+        const start = angle - step / 2;
+        const end = angle + step / 2;
+
+        const sector = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        sector.setAttribute("d", describeArc(centerX, centerY, fadeRadius, start, end));
+        sector.setAttribute("fill", "#F8F8FF"); // Primary background fade color
+        sector.setAttribute("opacity", "0.75"); // 75% opacity
+        sector.dataset.emotion = emotion;
+        sector.classList.add("mg-fade-sector");
+
+        fadeSvg.appendChild(sector);
+      });
+
+      fadeWrap.appendChild(fadeSvg);
+      stage.appendChild(fadeWrap); // On top of everything
+      return fadeWrap;
+    };
+
     const bindTooltip = () => {
       const svgEl = wrap.querySelector("svg");
       if (!svgEl) return;
 
       const overlayWrap = createOverlayLayer();
+      const fadeWrap = createFadeOverlay();
       let currentHover = null;
 
       svgEl.addEventListener("mouseenter", (e) => {
@@ -289,6 +364,22 @@ try {
                 overlaySector.setAttribute("opacity", "0.1");
               }
             }
+
+            // Show fade overlay and hide the active sector
+            if (fadeWrap) {
+              fadeWrap.style.opacity = "1"; // Show the fade overlay
+
+              // First, restore all fade sectors to visible
+              fadeWrap.querySelectorAll(".mg-fade-sector").forEach(sector => {
+                sector.style.opacity = "0.75";
+              });
+
+              // Then hide only the active sector so it doesn't get faded
+              const activeFadeSector = fadeWrap.querySelector(`.mg-fade-sector[data-emotion="${emotion}"]`);
+              if (activeFadeSector) {
+                activeFadeSector.style.opacity = "0";
+              }
+            }
           }
         }
       }, true);
@@ -302,6 +393,16 @@ try {
           overlayWrap.querySelectorAll(".mg-overlay-sector").forEach(sector => {
             sector.setAttribute("fill", "transparent");
             sector.setAttribute("opacity", "0");
+          });
+        }
+
+        // Hide fade overlay and restore all sectors
+        if (fadeWrap) {
+          fadeWrap.style.opacity = "0"; // Hide the fade overlay
+
+          // Restore all fade sectors
+          fadeWrap.querySelectorAll(".mg-fade-sector").forEach(sector => {
+            sector.style.opacity = "0.75";
           });
         }
       });
@@ -344,25 +445,9 @@ try {
       bindTooltip();
       _observer = new MutationObserver(alignFlowerToBase);
       _observer.observe(wrap, { attributes: true, childList: true, subtree: true });
-      const onResize = () => {
-        // if the modal can resize, recompute size & re-render once
-        const r2 = stage.getBoundingClientRect();
-        const size2 = Math.min(r2.width, r2.height);
-        if (size2 !== stageSize) {
-          wrap.innerHTML = "";
-          const el2 = window.FlowerRenderer.createFlower(flower, {
-            width: size2,
-            height: size2,
-            maxRadius: size2 / 2
-          });
-          el2.style.position = "static";
-          wrap.appendChild(el2);
-          bindTooltip();
-        }
-        alignFlowerToBase();
-      };
-      window.addEventListener("resize", onResize);
-      _removeResizeListener = () => window.removeEventListener("resize", onResize);
+
+      // No resize handler needed - flower is fixed size
+      _removeResizeListener = () => {}; // Empty function for compatibility
     });
 
   } else {
