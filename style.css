@@ -51,18 +51,32 @@
   --cols:   8;               /* desktop/laptop: 8 columns (each cell spans 2) */
 }
 
-html, body { background: var(--page-bg); }
+html, body {
+  background: var(--page-bg);
+  margin: 0;
+  padding: 0;
+}
+
+/* Category page layout - centers title in main content area */
+.category-page-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh; /* Use available space below header */
+  padding: 0;
+}
 
 /* Category page titles */
 .category-title {
   font-family: "Junicode Regular Condensed", serif;
   font-size: 128px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 128px;
+  letter-spacing: 12.8px;
   color: var(--text-primary);
   text-align: center;
-  margin: 50px auto;
-  line-height: 1.1;
-  font-weight: normal;
-  letter-spacing: 0.1em;
+  margin: 0;
 }
 
 /* main heading */
@@ -78,6 +92,7 @@ h1 {
   margin: 0;
   background: var(--page-bg);
   padding: 0 16px; /* Add some horizontal padding for better readability */
+  cursor: pointer; /* Make it look clickable */
 }
 
 /* page wrapper creates the outer gutters */
