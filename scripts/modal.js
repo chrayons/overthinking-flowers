@@ -87,6 +87,30 @@
     overlay.querySelector("#mg-back").addEventListener("click", close);
     document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
   
+    function adjustMetaphorFontSize(quoteElement) {
+      // Only apply dynamic sizing on desktop (check viewport width)
+      if (window.innerWidth < 768) return; // Keep mobile as-is
+
+      // Reset to default 36pt to measure height
+      quoteElement.style.fontSize = "36pt";
+      quoteElement.style.lineHeight = "1.2";
+
+      // Force a layout recalculation
+      quoteElement.offsetHeight;
+
+      // Measure the height with 36pt font
+      const height = quoteElement.offsetHeight;
+
+      // Calculate approximate height of 3 lines at 36pt with 1.2 line-height
+      // 36pt = 48px, so 3 lines = 48 * 1.2 * 3 = 172.8px
+      const threeLineHeight = 48 * 1.2 * 3;
+
+      // If height exceeds 3 lines, reduce to 24pt
+      if (height > threeLineHeight) {
+        quoteElement.style.fontSize = "24pt";
+      }
+    }
+
     function openById(id) {
       const key = String(id);
       const f = _flowers.find(x => String(x.id) === key);
@@ -100,7 +124,10 @@
     function open(flower) {
       // fill right panel
       overlay.querySelector("#mg-category").textContent = flower.category || "";
-      overlay.querySelector("#mg-quote").textContent = `“${flower.text}”`;
+
+      const quoteElement = overlay.querySelector("#mg-quote");
+      quoteElement.textContent = `"${flower.text}"`;
+
       overlay.querySelector("#mg-intensity").textContent =
         Number.isFinite(flower.emotionalIntensity) ? `${flower.emotionalIntensity}%` : "—";
       overlay.querySelector("#mg-valence").textContent = flower.dominantValence || "—";
@@ -134,6 +161,14 @@ try {
   overlay.classList.add("open");
   overlay.style.display = "flex";
   overlay.setAttribute("aria-hidden", "false");
+
+  // Apply dynamic font sizing after modal is displayed and layout is complete
+  requestAnimationFrame(() => {
+    const quoteElement = overlay.querySelector("#mg-quote");
+    if (quoteElement) {
+      adjustMetaphorFontSize(quoteElement);
+    }
+  });
 
   // 3) use fixed size instead of measuring stage
   const fixedSize = 247;

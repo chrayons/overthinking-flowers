@@ -71,6 +71,13 @@ h1 {
   font-size: 14px;
   font-weight: 700;
   color: #005BA6;
+  position: fixed;
+  top: 32px; /* 8*4 px from top */
+  left: 32px; /* Align to left side */
+  z-index: 1000;
+  margin: 0;
+  background: var(--page-bg);
+  padding: 0 16px; /* Add some horizontal padding for better readability */
 }
 
 /* page wrapper creates the outer gutters */
@@ -82,6 +89,7 @@ h1 {
     calc((100vw - var(--content-max)) / 2),
     var(--side-max)
   );
+  padding-top: 136px; /* Desktop content starts 136px from top (includes space for fixed header) */
 }
 
 /* eyebrow */
@@ -291,6 +299,7 @@ h1 {
 @media (max-width: 775px){
   #themes-desktop{ display:none; }
   #themes-mobile { display:block; }
+  .wrapper { padding-top: 240px; } /* Mobile content starts 240px from top */
 }
 
 
