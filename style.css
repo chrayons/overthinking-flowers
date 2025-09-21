@@ -298,8 +298,32 @@ h1 {
 #themes-mobile { display:none;  }
 @media (max-width: 775px){
   #themes-desktop{ display:none; }
-  #themes-mobile { display:block; }
+  #themes-mobile { display:block; padding-bottom: 96px; } /* 96px space after themes section on mobile */
   .wrapper { padding-top: 240px; } /* Mobile content starts 240px from top */
+
+  /* Make shuffle button use mobile styling */
+  #shuffle-btn {
+    width: 155px;
+    height: 38px;
+    background: #F8F8FF;
+    border: 1px solid #005BA6;
+    border-radius: 5px;
+    font-family: "Satoshi Variable", system-ui;
+    font-size: 14px;
+    font-weight: 400;
+    color: #005BA6;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+  }
+
+  #shuffle-btn:hover {
+    background: #005BA6;
+    color: #F8F8FF;
+  }
+
+  #shuffle-btn:active {
+    transform: translateY(1px);
+  }
 }
 
 
@@ -389,29 +413,7 @@ h1 {
   visibility: visible;
 }
 
-.mobile-see-reflections-btn {
-  background: none;
-  border: 1px solid #005BA6;
-  color: #005BA6;
-  font-family: "Satoshi Variable", system-ui;
-  font-size: 14px;
-  font-weight: 400;
-  padding: 12px 24px;
-  border-radius: 6px;
-  cursor: pointer;
-  min-height: 44px;
-  min-width: 120px;
-  transition: all 0.3s ease;
-}
-
-.mobile-see-reflections-btn:hover {
-  background: #005BA6;
-  color: var(--bg-primary);
-}
-
-.mobile-see-reflections-btn:active {
-  transform: translateY(1px);
-}
+/* Mobile see reflections button now uses template class - see HTML for btn-mobile-blue class */
 
 /* Carousel arrows */
 .carousel-arrows {
@@ -522,7 +524,101 @@ h1 {
   }
 }
 
-#shuffle-btn { padding: 10px 20px; cursor: pointer; }
+/* ================================
+   Reusable Button Templates
+   ================================ */
+
+/* Primary Button Template (White with Blue Border) */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 320px;
+  height: 38px;
+  background: #F8F8FF;
+  border: 1px solid #005BA6;
+  border-radius: 5px;
+  font-family: "Satoshi Variable", system-ui;
+  font-size: 14px;
+  font-weight: 400;
+  color: #005BA6;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.btn-primary:hover {
+  background: #005BA6;
+  color: #F8F8FF;
+}
+
+.btn-primary:active {
+  transform: translateY(1px);
+}
+
+/* Mobile Blue Button Template */
+.btn-mobile-blue {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 155px;
+  height: 38px;
+  background: #005BA6;
+  border: 1px solid #005BA6;
+  border-radius: 5px;
+  font-family: "Satoshi Variable", system-ui;
+  font-size: 14px;
+  font-weight: 400;
+  color: #F8F8FF;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.btn-mobile-blue:hover {
+  background: #004080;
+  border-color: #004080;
+}
+
+.btn-mobile-blue:active {
+  transform: translateY(1px);
+}
+
+/* Mobile White Button Template */
+.btn-mobile-white {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 155px;
+  height: 38px;
+  background: #F8F8FF;
+  border: 1px solid #005BA6;
+  border-radius: 5px;
+  font-family: "Satoshi Variable", system-ui;
+  font-size: 14px;
+  font-weight: 400;
+  color: #005BA6;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.btn-mobile-white:hover {
+  background: #005BA6;
+  color: #F8F8FF;
+}
+
+.btn-mobile-white:active {
+  transform: translateY(1px);
+}
+
+/* Apply button template to shuffle button */
+#shuffle-btn {
+  padding: 0; /* Reset default padding */
+}
 
 /* ================================
    Modal (unchanged)

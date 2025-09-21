@@ -116,9 +116,26 @@
       });
     }
   
+    function updateButtonText() {
+      const btn = document.getElementById("shuffle-btn");
+      if (!btn) return;
+
+      // Check if we're on mobile (775px breakpoint matches CSS)
+      const isMobile = window.innerWidth <= 775;
+      btn.textContent = isMobile ? "Reveal Another" : "Shuffle Thoughts";
+    }
+
     function bindButton(flowers) {
       const btn = document.getElementById("shuffle-btn");
-      if (btn) btn.addEventListener("click", () => generateNewCards(flowers));
+      if (btn) {
+        btn.addEventListener("click", () => generateNewCards(flowers));
+
+        // Set initial text
+        updateButtonText();
+
+        // Update text on resize
+        window.addEventListener("resize", updateButtonText);
+      }
     }
   
     const Shuffle = {
