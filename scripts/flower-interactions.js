@@ -124,8 +124,6 @@ const FlowerInteractions = {
     // Enable pointer events on container so it can receive mouse events
     container.style.pointerEvents = 'auto';
 
-    let lastCheckedFlower = null;
-
     // Helper function to check if mouse is within a flower's bounds
     const getFlowerAtPosition = (e) => {
       for (let i = 0; i < this.flowers.length; i++) {
