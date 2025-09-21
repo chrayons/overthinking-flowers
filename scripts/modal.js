@@ -14,20 +14,31 @@
           </div>
           <div class="mg-right">
             <div class="mg-meta">
+              <!-- Container 1: Category and Metaphor -->
               <div class="mg-text-container">
                 <div class="mg-text-left">
                   <div class="mg-category" id="mg-category"></div>
                   <blockquote class="mg-quote" id="mg-quote"></blockquote>
                 </div>
                 <div class="mg-text-right">
-                  <ul class="mg-stats">
-                    <li><span class="label">Emotional Intensity</span><span class="value" id="mg-intensity"></span></li>
-                    <li><span class="label">Dominant Valence</span><span class="value" id="mg-valence"></span></li>
-                    <li><span class="label">Dominant Emotion</span><span class="value" id="mg-dominant"></span></li>
+                  <!-- Stats for mobile only -->
+                  <ul class="mg-stats mg-stats-mobile">
+                    <li><span class="label">Emotional Intensity</span><span class="value" id="mg-intensity-mobile"></span></li>
+                    <li><span class="label">Dominant Valence</span><span class="value" id="mg-valence-mobile"></span></li>
+                    <li><span class="label">Dominant Emotion</span><span class="value" id="mg-dominant-mobile"></span></li>
                   </ul>
                 </div>
               </div>
-              <button id="mg-back" class="mg-back">Back</button>
+
+              <!-- Container 2: Stats for desktop -->
+              <ul class="mg-stats mg-stats-desktop">
+                <li><span class="label">Emotional Intensity</span><span class="value" id="mg-intensity"></span></li>
+                <li><span class="label">Dominant Valence</span><span class="value" id="mg-valence"></span></li>
+                <li><span class="label">Dominant Emotion</span><span class="value" id="mg-dominant"></span></li>
+              </ul>
+
+              <!-- Container 3: Back Button -->
+              <button id="mg-back" class="btn-back">Back</button>
             </div>
           </div>
         </div>
@@ -98,10 +109,10 @@
       if (useMobileModal) {
         // Mobile-style modal: left container max 200px width, font sizes: 16pt, 12pt, 8pt
         quoteElement.style.width = "200px";
-        quoteElement.style.height = "120px";
+        quoteElement.style.height = "120px"; // Keep height for measurement
         quoteElement.style.overflow = "hidden";
         quoteElement.style.display = "flex";
-        quoteElement.style.alignItems = "center";
+        quoteElement.style.alignItems = "flex-start"; // Top-aligned
         quoteElement.style.justifyContent = "flex-start";
         quoteElement.style.textAlign = "left";
 
@@ -126,20 +137,23 @@
           // Apply the best fitting size
           quoteElement.style.font = `italic ${bestSize}pt/1.2 'Satoshi Variable', system-ui`;
 
+          // Now set height to hug content
+          quoteElement.style.height = "auto";
+
           console.log('Mobile font sizing result:', {
             text: quoteElement.textContent.substring(0, 50) + '...',
             finalSize: bestSize + 'pt',
-            containerSize: '200px × 120px'
+            containerSize: '200px × auto'
           });
         }, 10);
 
       } else {
         // Desktop: 296px × 144px container, font sizes: 32pt, 24pt, 16pt, 12pt
         quoteElement.style.width = "296px";
-        quoteElement.style.height = "144px";
+        quoteElement.style.height = "144px"; // Keep height for measurement
         quoteElement.style.overflow = "hidden";
         quoteElement.style.display = "flex";
-        quoteElement.style.alignItems = "center";
+        quoteElement.style.alignItems = "flex-start"; // Top-aligned
         quoteElement.style.justifyContent = "flex-start";
         quoteElement.style.textAlign = "left";
 
@@ -164,10 +178,13 @@
           // Apply the best fitting size
           quoteElement.style.font = `italic ${bestSize}pt/1.2 'Satoshi Variable', system-ui`;
 
+          // Now set height to hug content
+          quoteElement.style.height = "auto";
+
           console.log('Desktop font sizing result:', {
             text: quoteElement.textContent.substring(0, 50) + '...',
             finalSize: bestSize + 'pt',
-            containerSize: '296px × 144px'
+            containerSize: '296px × auto'
           });
         }, 10);
       }
@@ -190,10 +207,17 @@
       const quoteElement = overlay.querySelector("#mg-quote");
       quoteElement.textContent = `"${flower.text}"`;
 
+      // Populate desktop stats
       overlay.querySelector("#mg-intensity").textContent =
-        Number.isFinite(flower.emotionalIntensity) ? `${flower.emotionalIntensity}%` : "—";
+        Number.isFinite(flower.emotionalIntensity) ? `${Math.round(flower.emotionalIntensity)}%` : "—";
       overlay.querySelector("#mg-valence").textContent = flower.dominantValence || "—";
       overlay.querySelector("#mg-dominant").textContent = flower.dominantEmotionName || "—";
+
+      // Populate mobile stats (same data)
+      overlay.querySelector("#mg-intensity-mobile").textContent =
+        Number.isFinite(flower.emotionalIntensity) ? `${Math.round(flower.emotionalIntensity)}%` : "—";
+      overlay.querySelector("#mg-valence-mobile").textContent = flower.dominantValence || "—";
+      overlay.querySelector("#mg-dominant-mobile").textContent = flower.dominantEmotionName || "—";
   
       // render left panel (robust to your current renderer)
 const host = overlay.querySelector("#mg-flower-host");
@@ -442,7 +466,7 @@ try {
 
             currentHover = emotion;
             const label = emotion.charAt(0).toUpperCase() + emotion.slice(1);
-            tip.textContent = `${label}: ${value}%`;
+            tip.textContent = `${label}: ${Math.round(parseFloat(value) || 0)}%`;
             tip.style.display = "block";
 
             // Center the tooltip

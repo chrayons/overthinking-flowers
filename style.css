@@ -615,6 +615,35 @@ h1 {
   transform: translateY(1px);
 }
 
+/* Back Button Template */
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 38px;
+  background: #F8F8FF;
+  border: 1px solid #101720;
+  border-radius: 5px;
+  font-family: "Satoshi Variable", system-ui;
+  font-size: 14px;
+  font-weight: 400;
+  color: #101720;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.btn-back:hover {
+  background: #101720;
+  color: #F8F8FF;
+}
+
+.btn-back:active {
+  transform: translateY(1px);
+}
+
 /* Apply button template to shuffle button */
 #shuffle-btn {
   padding: 0; /* Reset default padding */
@@ -669,7 +698,7 @@ h1 {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -48%); /* Slightly adjust for ellipse center */
+  transform: translate(-50%, -50%); /* Center consistently */
   width: 656px; /* Exact content width */
 }
 .mg-left{
@@ -691,7 +720,52 @@ h1 {
 .mg-stats{ list-style: none; padding: 0; margin: 8px 0 18px; }
 .mg-stats .label{ display: block; font: 400 12pt/1.2 "Junicode Regular Condensed", serif; letter-spacing: .1em; color: var(--text-primary); }
 .mg-stats .value{ font: 400 16px/1.4 "Satoshi Variable", system-ui; color: var(--text-primary); }
-.mg-back{ border: 1px solid var(--text-primary); background: var(--bg-primary); border-radius: 10px; padding: 10px 16px; cursor: pointer; }
+/* Desktop Modal Right Side Layout */
+.mg-meta {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Container 1: Category and Metaphor */
+.mg-text-container {
+  margin-bottom: 56px; /* 56px space to stats container */
+}
+
+/* Desktop: Override the text-left to be full width (not just for mobile) */
+.mg-text-left {
+  width: 100%;
+}
+
+/* Desktop: Hide the text-right stats on desktop (they'll be repositioned) */
+.mg-text-right {
+  display: none;
+}
+
+/* Desktop: Show desktop stats, hide mobile stats */
+.mg-stats-desktop {
+  display: block;
+}
+
+.mg-stats-mobile {
+  display: none;
+}
+
+/* Container 2: Stats - Add direct styling to the mg-stats list */
+.mg-stats {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 36px 0; /* 36px space to back button */
+}
+
+.mg-stats li {
+  margin-bottom: 24px; /* 24px space between stat items */
+}
+
+.mg-stats li:last-child {
+  margin-bottom: 0; /* Remove margin from last item */
+}
+
+/* Back button now uses universal .btn-back class */
 
 @media (max-width: 1160px){
   .mg-modal-inner{
@@ -724,6 +798,7 @@ h1 {
     display: flex;
     gap: 16px; /* 16px spacing between columns */
     align-items: flex-start;
+    margin-bottom: 36px; /* 36px space to back button - same as desktop */
   }
 
   /* Mobile: left text column (quote + category) */
@@ -736,14 +811,55 @@ h1 {
   .mg-text-right {
     width: 120px;
     flex-shrink: 0;
+    display: block; /* Show on mobile */
   }
 
-  /* Mobile: back button centered below */
-  .mg-back {
-    align-self: center;
-    margin-top: 16px;
+  /* Mobile: Show mobile stats, hide desktop stats */
+  .mg-stats-mobile {
+    display: block;
   }
-  .mg-category{ font: 400 12pt/1.2 "Junicode Regular Condensed", serif; letter-spacing: .1em; }
+
+  .mg-stats-desktop {
+    display: none;
+  }
+
+  /* Mobile: Override stats margin to match desktop spacing */
+  .mg-stats {
+    margin: 0 0 0 0; /* Remove bottom margin from stats */
+  }
+
+  /* Mobile: back button centered below with consistent spacing */
+  .btn-back {
+    align-self: center;
+    margin-top: 0; /* Spacing comes from text-container margin-bottom */
+  }
+  /* Mobile: Category styling */
+  .mg-category{
+    color: var(--Black, #101720);
+    font-family: "Junicode Regular Condensed", serif;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    letter-spacing: 1.2px;
+    text-transform: capitalize;
+    white-space: nowrap;
+  }
+
+  /* Mobile: Stats labels styling */
+  .mg-stats .label {
+    color: var(--Black, #101720);
+    font-family: "Junicode Regular Condensed", serif;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    letter-spacing: 1.2px;
+    text-transform: capitalize;
+    white-space: nowrap;
+    display: block; /* Label on its own line, value below */
+  }
+
   .mg-quote{ font: italic 24pt/1.2 "Satoshi Variable", system-ui; }
 
   /* Mobile modal shape */
