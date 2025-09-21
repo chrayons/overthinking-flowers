@@ -675,8 +675,8 @@ h1 {
   transform: translate(-50%, -50%);
   width: 1200px; /* Smaller container = more click-outside area */
   height: 900px; /* Smaller container = more click-outside area */
-  max-width: 80vw;
-  max-height: 80vh;
+  /* Remove responsive constraints for desktop - use fixed size for stability */
+  /* max-width and max-height will be added back in mobile media query */
   background: transparent;
   overflow: visible;
   /* Fine-tune centering - desktop only */

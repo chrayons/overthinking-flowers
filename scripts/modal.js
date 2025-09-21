@@ -118,34 +118,33 @@
 
         const mobileFontSizes = [16, 12, 8];
 
-        setTimeout(() => {
-          let bestSize = 8; // fallback
+        // Removed setTimeout - do synchronously
+        let bestSize = 8; // fallback
 
-          for (const size of mobileFontSizes) {
-            quoteElement.style.font = `italic ${size}pt/1.2 'Satoshi Variable', system-ui`;
+        for (const size of mobileFontSizes) {
+          quoteElement.style.font = `italic ${size}pt/1.2 'Satoshi Variable', system-ui`;
 
-            // Force layout recalculation
-            quoteElement.offsetHeight;
+          // Force layout recalculation
+          quoteElement.offsetHeight;
 
-            // Check if text fits within mobile container
-            if (quoteElement.scrollHeight <= 120 && quoteElement.scrollWidth <= 200) {
-              bestSize = size;
-              break;
-            }
+          // Check if text fits within mobile container
+          if (quoteElement.scrollHeight <= 120 && quoteElement.scrollWidth <= 200) {
+            bestSize = size;
+            break;
           }
+        }
 
-          // Apply the best fitting size
-          quoteElement.style.font = `italic ${bestSize}pt/1.2 'Satoshi Variable', system-ui`;
+        // Apply the best fitting size
+        quoteElement.style.font = `italic ${bestSize}pt/1.2 'Satoshi Variable', system-ui`;
 
-          // Now set height to hug content
-          quoteElement.style.height = "auto";
+        // Now set height to hug content
+        quoteElement.style.height = "auto";
 
-          console.log('Mobile font sizing result:', {
-            text: quoteElement.textContent.substring(0, 50) + '...',
-            finalSize: bestSize + 'pt',
-            containerSize: '200px × auto'
-          });
-        }, 10);
+        console.log('Mobile font sizing result:', {
+          text: quoteElement.textContent.substring(0, 50) + '...',
+          finalSize: bestSize + 'pt',
+          containerSize: '200px × auto'
+        });
 
       } else {
         // Desktop: 296px × 144px container, font sizes: 32pt, 24pt, 16pt, 12pt
@@ -159,34 +158,33 @@
 
         const desktopFontSizes = [32, 24, 16, 12];
 
-        setTimeout(() => {
-          let bestSize = 12; // fallback
+        // Removed setTimeout - do synchronously
+        let bestSize = 12; // fallback
 
-          for (const size of desktopFontSizes) {
-            quoteElement.style.font = `italic ${size}pt/1.2 'Satoshi Variable', system-ui`;
+        for (const size of desktopFontSizes) {
+          quoteElement.style.font = `italic ${size}pt/1.2 'Satoshi Variable', system-ui`;
 
-            // Force layout recalculation
-            quoteElement.offsetHeight;
+          // Force layout recalculation
+          quoteElement.offsetHeight;
 
-            // Check if text fits within desktop container
-            if (quoteElement.scrollHeight <= 144 && quoteElement.scrollWidth <= 296) {
-              bestSize = size;
-              break;
-            }
+          // Check if text fits within desktop container
+          if (quoteElement.scrollHeight <= 144 && quoteElement.scrollWidth <= 296) {
+            bestSize = size;
+            break;
           }
+        }
 
-          // Apply the best fitting size
-          quoteElement.style.font = `italic ${bestSize}pt/1.2 'Satoshi Variable', system-ui`;
+        // Apply the best fitting size
+        quoteElement.style.font = `italic ${bestSize}pt/1.2 'Satoshi Variable', system-ui`;
 
-          // Now set height to hug content
-          quoteElement.style.height = "auto";
+        // Now set height to hug content
+        quoteElement.style.height = "auto";
 
-          console.log('Desktop font sizing result:', {
-            text: quoteElement.textContent.substring(0, 50) + '...',
-            finalSize: bestSize + 'pt',
-            containerSize: '296px × auto'
-          });
-        }, 10);
+        console.log('Desktop font sizing result:', {
+          text: quoteElement.textContent.substring(0, 50) + '...',
+          finalSize: bestSize + 'pt',
+          containerSize: '296px × auto'
+        });
       }
     }
 
@@ -242,13 +240,12 @@ try {
   stage.appendChild(wrap);
   host.appendChild(stage);
 
-  // 2) show overlay NOW so sizes are non-zero
-  overlay.classList.add("open");
+  // 2) prepare overlay for measurement (hidden initially)
   overlay.style.display = "flex";
-  overlay.setAttribute("aria-hidden", "false");
+  overlay.style.visibility = "hidden"; // Hidden but in layout for measurements
 
-  // Apply dynamic font sizing after modal is displayed and layout is complete
-  requestAnimationFrame(() => {
+  // Prepare font sizing function (will be called later with flower positioning)
+  const setupFontSizing = () => {
     const quoteElement = overlay.querySelector("#mg-quote");
     if (quoteElement) {
       adjustMetaphorFontSize(quoteElement);
@@ -263,10 +260,12 @@ try {
           currentlyMobile = nowMobile;
           adjustMetaphorFontSize(quoteElement);
         }
+        // Prevent any other resize-triggered font adjustments within the same mode
+        // Desktop has fixed 296px width so no recalculation needed during desktop resize
       };
       window.addEventListener("resize", _modalResizeListener);
     }
-  });
+  };
 
   // 3) use fixed size instead of measuring stage
   const fixedSize = 247;
@@ -580,29 +579,46 @@ try {
     };
 
     requestAnimationFrame(() => {
-      alignFlowerToBase();
-      bindTooltip();
+      // Do ALL positioning and sizing in one frame
+      setupFontSizing(); // Font sizing first
+      alignFlowerToBase(); // Then flower positioning
+      bindTooltip(); // Then tooltip setup
+
       _observer = new MutationObserver(alignFlowerToBase);
       _observer.observe(wrap, { attributes: true, childList: true, subtree: true });
 
       // No resize handler needed - flower is fixed size
       _removeResizeListener = () => {}; // Empty function for compatibility
+
+      // 🔓 Show overlay AFTER everything is positioned AND sized
+      overlay.style.visibility = "visible"; // Make visible
+      overlay.classList.add("open");
+      overlay.setAttribute("aria-hidden", "false");
     });
 
   } else {
     wrap.innerHTML = "<p style='opacity:.7'>Flower renderer not loaded.</p>";
+
+    // Show overlay even if flower fails (but still do font sizing)
+    requestAnimationFrame(() => {
+      setupFontSizing(); // Do font sizing even without flower
+      overlay.style.visibility = "visible";
+      overlay.classList.add("open");
+      overlay.setAttribute("aria-hidden", "false");
+    });
   }
 } catch (e) {
   console.error("[Modal] Flower render failed:", e);
   host.innerHTML = "<p style='opacity:.7'>Could not render flower.</p>";
+
+  // Show overlay even if flower fails (but still do font sizing)
+  requestAnimationFrame(() => {
+    setupFontSizing(); // Do font sizing even without flower
+    overlay.style.visibility = "visible";
+    overlay.classList.add("open");
+    overlay.setAttribute("aria-hidden", "false");
+  });
 }
-
-
-  
-      // 🔓 Show overlay
-      overlay.classList.add("open");
-      overlay.style.display = "flex";
-      overlay.setAttribute("aria-hidden", "false");
     }
   
     const Modal = {
