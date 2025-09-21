@@ -715,7 +715,7 @@ h1 {
   height: 100%;
   gap: 64px; /* Exact gap between left and right */
   /* Position content at ellipse center - desktop ellipse cx="767" cy="594.857" */
-  padding: 0;
+  padding: 8px 0; /* Minimal vertical padding to prevent clipping */
   position: absolute;
   top: 50%;
   left: 50%;
@@ -728,12 +728,14 @@ h1 {
   justify-content: center;
   width: 296px; /* Exact width for left side */
   flex-shrink: 0;
+  padding: 4px 0; /* Minimal vertical padding to prevent clipping */
 }
-#mg-flower-host{ width: 100%; max-width: 296px; display: grid; place-items: center; }
+#mg-flower-host{ width: 100%; max-width: 296px; display: grid; place-items: center; overflow: visible; }
 .mg-right{
   width: 296px; /* Exact width for right side (text) */
   flex-shrink: 0;
-  overflow: auto;
+  overflow: visible;
+  padding: 4px 0; /* Minimal vertical padding to prevent clipping */
 }
 
 .mg-category{ font: 400 24px/1.2 "Junicode Regular Condensed", serif; letter-spacing: 2.4px; text-align: justify; color: var(--text-primary); opacity: .8; margin-bottom: 8px; white-space: nowrap; }
