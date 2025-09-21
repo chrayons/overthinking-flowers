@@ -53,10 +53,24 @@ const FlowerInteractions = {
 
   // Add click handler to open modal
   addClickHandler: function(flowerElement, flowerData) {
-    flowerElement.addEventListener('click', () => {
-      // Use existing Modal system
-      if (window.Modal) {
-        Modal.open(flowerData);
+    flowerElement.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      // Debug Modal availability
+      console.log('Click detected. Checking Modal system:');
+      console.log('window.Modal exists:', !!window.Modal);
+      console.log('Modal object:', window.Modal);
+      console.log('Modal.open exists:', !!(window.Modal && typeof window.Modal.open === 'function'));
+
+      // Use existing Modal system (same as shuffle.js)
+      if (window.Modal && typeof window.Modal.openById === 'function') {
+        console.log('Opening modal for flower ID:', flowerData.id, 'text:', flowerData.text);
+        window.Modal.openById(flowerData.id);
+      } else {
+        console.warn('Modal system not available or not properly initialized');
+        console.warn('Available window properties:', Object.keys(window).filter(k => k.toLowerCase().includes('modal')));
+        console.warn('window.Modal:', window.Modal);
       }
     });
   },

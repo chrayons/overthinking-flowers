@@ -1,4 +1,6 @@
 // scripts/modal.js
+console.log('Modal.js script is loading...');
+try {
 (function (global) {
     let _flowers = [];
   
@@ -44,7 +46,15 @@
         </div>
       </div>
     `;
-    document.body.appendChild(overlay);
+
+    // Wait for DOM to be ready before appending to body
+    if (document.body) {
+      document.body.appendChild(overlay);
+    } else {
+      document.addEventListener('DOMContentLoaded', () => {
+        document.body.appendChild(overlay);
+      });
+    }
   
     // 🔒 Hide by default even without CSS
     overlay.style.display = "none";
@@ -626,5 +636,10 @@ try {
       open, openById, close
     };
     global.Modal = Modal;
+    console.log('Modal.js script loaded successfully. Modal object created:', Modal);
   })(window);
+} catch (error) {
+  console.error('Error in modal.js:', error);
+  console.error('Error stack:', error.stack);
+}
   

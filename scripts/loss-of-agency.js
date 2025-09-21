@@ -86,11 +86,19 @@ fetch('../data.json')
   .then(r => r.json())
   .then(rawData => {
     const flowers = parseFlowerData(rawData);
-    createLossOfAgencyLayout(flowers);
 
-    // Initialize modal system
+    // Debug: Check what's available
+    console.log('Available window objects:', Object.keys(window).filter(k => k.includes('Modal') || k.includes('modal')));
+    console.log('window.Modal:', window.Modal);
+
+    // Initialize modal system FIRST
     if (window.Modal) {
+      console.log('Initializing Modal with', flowers.length, 'flowers');
       Modal.init(flowers);
+    } else {
+      console.warn('Modal not available during initialization');
     }
+
+    createLossOfAgencyLayout(flowers);
   })
   .catch(err => console.error("Error loading data for Loss of Agency:", err));

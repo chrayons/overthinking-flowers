@@ -73,7 +73,12 @@ fetch('../data.json')
   .then(r => r.json())
   .then(rawData => {
     const flowers = parseFlowerData(rawData);
+
+    // Initialize modal system FIRST
+    if (window.Modal) {
+      Modal.init(flowers);
+    }
+
     createEmotionalDysregulationLayout(flowers);
-    if (window.Modal) Modal.init(flowers);
   })
   .catch(err => console.error("Error loading data for Emotional Dysregulation:", err));
