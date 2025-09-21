@@ -1,5 +1,5 @@
 // emotional-dysregulation.js
-// Displays flowers for the "Emotional Dysregulation" category with chaotic positioning
+// Displays flowers for the "Emotional Dysregulation" category with golden spiral positioning
 
 console.log("Emotional Dysregulation page loading...");
 
@@ -16,22 +16,45 @@ function createEmotionalDysregulationLayout(flowers) {
   const centerX = containerRect.width / 2;
   const centerY = containerRect.height / 2;
 
-  // Chaotic cluster positioning to represent emotional dysregulation
+  // Golden spiral positioning (tighter spiral for emotional dysregulation) with full container spread
+  const GOLDEN = 137.50776405 * (Math.PI / 180);
+  const aBase = Math.min(containerRect.width, containerRect.height) * 0.35; // Tighter for emotional effect
+  const bBase = 0.6 * aBase;
+  const placedFlowers = [];
+  const flowerSize = 350;
+
   categoryFlowers.forEach((flowerData, index) => {
-    const flowerElement = FlowerRenderer.createFlower(flowerData, 0, 0);
+    const flowerElement = FlowerRenderer.createFlower(flowerData, {
+      width: 350,
+      height: 350,
+      maxRadius: 160
+    });
     flowerElement.classList.add('flower');
 
-    // Chaotic positioning - multiple clusters with high randomness
-    const clusterIndex = index % 3; // 3 clusters
-    const clusterAngles = [30, 150, 270]; // Spread clusters around
-    const baseAngle = clusterAngles[clusterIndex] * (Math.PI / 180);
-    const clusterRadius = 80 + Math.random() * 100;
+    let attempts = 0;
+    let x, y;
+    let validPosition = false;
 
-    let x = centerX + Math.cos(baseAngle) * clusterRadius + (Math.random() - 0.5) * 120;
-    let y = centerY + Math.sin(baseAngle) * clusterRadius + (Math.random() - 0.5) * 120;
+    while (!validPosition && attempts < 50) {
+      let theta = ((index + attempts * 0.1) * GOLDEN) % (Math.PI * 2);
+      const aWarp = aBase * (1 + 0.2 * Math.cos(2 * theta));
+      const bWarp = bBase * (1 + 0.5 * Math.sin(4 * theta));
 
-    x = Math.max(50, Math.min(containerRect.width - 50, x));
-    y = Math.max(50, Math.min(containerRect.height - 50, y));
+      x = centerX + aWarp * Math.cos(theta);
+      y = centerY + bWarp * Math.sin(theta);
+
+      validPosition = true;
+      for (const placedFlower of placedFlowers) {
+        const distance = Math.sqrt((x - placedFlower.x) ** 2 + (y - placedFlower.y) ** 2);
+        if (distance < flowerSize * 0.8) {
+          validPosition = false;
+          break;
+        }
+      }
+      attempts++;
+    }
+
+    placedFlowers.push({ x, y });
 
     flowerElement.style.position = 'absolute';
     flowerElement.style.left = x + 'px';

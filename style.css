@@ -82,6 +82,34 @@ html, body {
   position: absolute;
   pointer-events: auto; /* Re-enable interactions for individual flowers */
   z-index: 1;
+  /* Responsive scaling: flowers shrink from 350px to minimum 90px */
+  width: clamp(90px, 25vw, 350px);
+  height: clamp(90px, 25vw, 350px);
+}
+
+/* Scale the entire flower container to create responsive spacing */
+@media (max-width: 1200px) {
+  #flower-container {
+    transform: scale(0.9);
+  }
+}
+
+@media (max-width: 1000px) {
+  #flower-container {
+    transform: scale(0.8);
+  }
+}
+
+@media (max-width: 800px) {
+  #flower-container {
+    transform: scale(0.7);
+  }
+}
+
+@media (max-width: 600px) {
+  #flower-container {
+    transform: scale(0.6);
+  }
 }
 
 /* Category page titles */
