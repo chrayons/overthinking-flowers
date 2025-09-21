@@ -16,53 +16,70 @@
       return picks;
     }
   
-    function clampSnippetToFit(text, maxWidth) {
-      const suffix = "... See the Flower";
-      const availableWidth = maxWidth;
-
-      // Create a temporary element to measure text width
+    function clampSnippetToFit(text, maxWidth, maxHeight = 52) {
+      // Create a temporary element that exactly matches the card styling
       const measureEl = document.createElement('span');
       measureEl.style.visibility = 'hidden';
       measureEl.style.position = 'absolute';
-      measureEl.style.whiteSpace = 'nowrap';
-      measureEl.style.font = window.getComputedStyle(document.body).font;
+      measureEl.style.top = '-9999px';
+      measureEl.style.width = maxWidth + 'px';
+      measureEl.style.fontFamily = '"Satoshi Variable", system-ui';
+      measureEl.style.fontSize = '16px';
+      measureEl.style.fontWeight = '400';
+      measureEl.style.lineHeight = '1.3';
+      measureEl.style.overflow = 'hidden';
+      measureEl.style.wordWrap = 'break-word';
+      measureEl.style.boxSizing = 'border-box';
       document.body.appendChild(measureEl);
 
-      // Measure suffix width
-      measureEl.textContent = suffix;
-      const suffixWidth = measureEl.offsetWidth;
+      // First, check if the complete text + "See the Flower" fits without truncation
+      measureEl.textContent = text + " See the Flower";
+      if (measureEl.offsetHeight <= maxHeight) {
+        document.body.removeChild(measureEl);
+        return { text: text, needsTruncation: false };
+      }
 
-      // Available width for the main text
-      const textMaxWidth = availableWidth - suffixWidth;
+      // If full text doesn't fit, find the maximum that fits with "... See the Flower"
+      const suffix = "... See the Flower";
 
-      // Binary search to find the maximum text that fits
-      let left = 0;
-      let right = text.length;
+      // Use a more aggressive approach - test larger chunks
       let bestFit = "";
+      let testLength = text.length;
 
-      while (left <= right) {
-        const mid = Math.floor((left + right) / 2);
-        const testText = text.slice(0, mid);
+      // Start from full text and work backwards in larger steps
+      while (testLength > 0) {
+        const testText = text.slice(0, testLength);
+        measureEl.textContent = testText + " " + suffix;
 
-        measureEl.textContent = testText;
-        const testWidth = measureEl.offsetWidth;
-
-        if (testWidth <= textMaxWidth) {
+        if (measureEl.offsetHeight <= maxHeight) {
           bestFit = testText;
-          left = mid + 1;
+          break;
+        }
+
+        // Reduce by word boundaries for more natural cuts
+        const lastSpace = testText.lastIndexOf(" ");
+        if (lastSpace > 0) {
+          testLength = lastSpace;
         } else {
-          right = mid - 1;
+          testLength = Math.floor(testLength * 0.8); // Reduce by 20% if no spaces
         }
       }
 
-      // Cut on word boundary if possible
-      const lastSpace = bestFit.lastIndexOf(" ");
-      if (lastSpace > bestFit.length * 0.7) { // Only cut on space if it's not too far back
-        bestFit = bestFit.slice(0, lastSpace);
+      // If we still don't have a fit, fall back to character-by-character
+      if (!bestFit) {
+        for (let i = text.length; i > 0; i--) {
+          const testText = text.slice(0, i);
+          measureEl.textContent = testText + " " + suffix;
+
+          if (measureEl.offsetHeight <= maxHeight) {
+            bestFit = testText;
+            break;
+          }
+        }
       }
 
       document.body.removeChild(measureEl);
-      return bestFit.trim();
+      return { text: bestFit.trim(), needsTruncation: true };
     }
   
     function generateNewCards(flowers) {
@@ -89,16 +106,22 @@
         card.className = "card";
         card.dataset.cardIndex = index; // Add index for CSS targeting
 
-        // Calculate available width: 320px card - 24px padding = 296px
+        // Calculate available width and height: 320px card width, 52px height
         const availableWidth = 296;
-        const clampedText = clampSnippetToFit(f.text, availableWidth);
+        const availableHeight = 52;
+        const result = clampSnippetToFit(f.text, availableWidth, availableHeight);
 
         const text = document.createElement("span");
         text.className = "snippet";
-        text.style.whiteSpace = "nowrap";
         text.style.overflow = "hidden";
+        text.style.lineHeight = "1.3";
 
-        text.textContent = clampedText + "... ";
+        // Only add "..." if the text was actually truncated
+        if (result.needsTruncation) {
+          text.textContent = result.text + "... ";
+        } else {
+          text.textContent = result.text + " ";
+        }
 
         const link = document.createElement("a");
         link.textContent = "See the Flower";
