@@ -67,17 +67,21 @@
     // keep handles so we can clean up on close()
     let _observer = null;
     let _removeResizeListener = null;
+    let _modalResizeListener = null;
 
     function close() {
       overlay.classList.remove("open");
       overlay.style.display = "none";
       overlay.setAttribute("aria-hidden", "true");
-      document.body.style.overflow = "";
     
       // cleanup observers/listeners
       if (_observer) { _observer.disconnect(); _observer = null; }
       if (_removeResizeListener) { _removeResizeListener(); _removeResizeListener = null; }
-    
+      if (_modalResizeListener) {
+        window.removeEventListener("resize", _modalResizeListener);
+        _modalResizeListener = null;
+      }
+
       const host = overlay.querySelector("#mg-flower-host");
       if (host) host.innerHTML = "";
     }    
@@ -88,26 +92,84 @@
     document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
   
     function adjustMetaphorFontSize(quoteElement) {
-      // Only apply dynamic sizing on desktop (check viewport width)
-      if (window.innerWidth < 768) return; // Keep mobile as-is
+      // Use mobile-style modal for both 1-2-1-2-1 layout (≤1160px) and mobile (≤775px)
+      const useMobileModal = window.innerWidth <= 1160;
 
-      // Reset to default 36pt to measure height
-      quoteElement.style.fontSize = "36pt";
-      quoteElement.style.lineHeight = "1.2";
+      if (useMobileModal) {
+        // Mobile-style modal: left container max 200px width, font sizes: 16pt, 12pt, 8pt
+        quoteElement.style.width = "200px";
+        quoteElement.style.height = "120px";
+        quoteElement.style.overflow = "hidden";
+        quoteElement.style.display = "flex";
+        quoteElement.style.alignItems = "center";
+        quoteElement.style.justifyContent = "flex-start";
+        quoteElement.style.textAlign = "left";
 
-      // Force a layout recalculation
-      quoteElement.offsetHeight;
+        const mobileFontSizes = [16, 12, 8];
 
-      // Measure the height with 36pt font
-      const height = quoteElement.offsetHeight;
+        setTimeout(() => {
+          let bestSize = 8; // fallback
 
-      // Calculate approximate height of 3 lines at 36pt with 1.2 line-height
-      // 36pt = 48px, so 3 lines = 48 * 1.2 * 3 = 172.8px
-      const threeLineHeight = 48 * 1.2 * 3;
+          for (const size of mobileFontSizes) {
+            quoteElement.style.font = `italic ${size}pt/1.2 'Satoshi Variable', system-ui`;
 
-      // If height exceeds 3 lines, reduce to 24pt
-      if (height > threeLineHeight) {
-        quoteElement.style.fontSize = "24pt";
+            // Force layout recalculation
+            quoteElement.offsetHeight;
+
+            // Check if text fits within mobile container
+            if (quoteElement.scrollHeight <= 120 && quoteElement.scrollWidth <= 200) {
+              bestSize = size;
+              break;
+            }
+          }
+
+          // Apply the best fitting size
+          quoteElement.style.font = `italic ${bestSize}pt/1.2 'Satoshi Variable', system-ui`;
+
+          console.log('Mobile font sizing result:', {
+            text: quoteElement.textContent.substring(0, 50) + '...',
+            finalSize: bestSize + 'pt',
+            containerSize: '200px × 120px'
+          });
+        }, 10);
+
+      } else {
+        // Desktop: 296px × 144px container, font sizes: 32pt, 24pt, 16pt, 12pt
+        quoteElement.style.width = "296px";
+        quoteElement.style.height = "144px";
+        quoteElement.style.overflow = "hidden";
+        quoteElement.style.display = "flex";
+        quoteElement.style.alignItems = "center";
+        quoteElement.style.justifyContent = "flex-start";
+        quoteElement.style.textAlign = "left";
+
+        const desktopFontSizes = [32, 24, 16, 12];
+
+        setTimeout(() => {
+          let bestSize = 12; // fallback
+
+          for (const size of desktopFontSizes) {
+            quoteElement.style.font = `italic ${size}pt/1.2 'Satoshi Variable', system-ui`;
+
+            // Force layout recalculation
+            quoteElement.offsetHeight;
+
+            // Check if text fits within desktop container
+            if (quoteElement.scrollHeight <= 144 && quoteElement.scrollWidth <= 296) {
+              bestSize = size;
+              break;
+            }
+          }
+
+          // Apply the best fitting size
+          quoteElement.style.font = `italic ${bestSize}pt/1.2 'Satoshi Variable', system-ui`;
+
+          console.log('Desktop font sizing result:', {
+            text: quoteElement.textContent.substring(0, 50) + '...',
+            finalSize: bestSize + 'pt',
+            containerSize: '296px × 144px'
+          });
+        }, 10);
       }
     }
 
@@ -157,7 +219,6 @@ try {
   host.appendChild(stage);
 
   // 2) show overlay NOW so sizes are non-zero
-  document.body.style.overflow = "hidden";
   overlay.classList.add("open");
   overlay.style.display = "flex";
   overlay.setAttribute("aria-hidden", "false");
@@ -167,6 +228,19 @@ try {
     const quoteElement = overlay.querySelector("#mg-quote");
     if (quoteElement) {
       adjustMetaphorFontSize(quoteElement);
+
+      // Track current breakpoint state to only update when it actually changes
+      let currentlyMobile = window.innerWidth <= 1160;
+
+      // Add resize listener that only triggers when crossing the 1160px breakpoint
+      _modalResizeListener = () => {
+        const nowMobile = window.innerWidth <= 1160;
+        if (nowMobile !== currentlyMobile) {
+          currentlyMobile = nowMobile;
+          adjustMetaphorFontSize(quoteElement);
+        }
+      };
+      window.addEventListener("resize", _modalResizeListener);
     }
   });
 
@@ -502,7 +576,6 @@ try {
 
   
       // 🔓 Show overlay
-      document.body.style.overflow = "hidden";
       overlay.classList.add("open");
       overlay.style.display = "flex";
       overlay.setAttribute("aria-hidden", "false");
