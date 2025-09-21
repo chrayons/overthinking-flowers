@@ -2,19 +2,302 @@
 // Handles hover effects, tooltips, and click behavior for flowers on category pages
 
 const FlowerInteractions = {
+  // Store all flower data for global hover detection
+  flowers: [],
+  currentHoveredFlower: null,
+  tooltip: null,
+  globalHandlersAdded: false,
+
   // Add interactive behavior to a flower element
   addBehavior: function(flowerElement, flowerData) {
     if (!flowerElement || !flowerData) return;
 
-    // Make flower clickable
-    flowerElement.style.cursor = 'pointer';
-    flowerElement.style.pointerEvents = 'auto'; // Override any pointer-events: none
+    // Replace default hover areas with custom ones that match petal shapes
+    const bounds = this.replaceHoverAreas(flowerElement, flowerData);
 
-    // Add hover effects
-    this.addHoverEffects(flowerElement, flowerData);
+    // Store flower data for global handling
+    this.flowers.push({
+      element: flowerElement,
+      data: flowerData,
+      bounds: bounds
+    });
 
-    // Add click handler
-    this.addClickHandler(flowerElement, flowerData);
+    // Add global mouse handlers once, but delay to ensure all flowers are loaded
+    if (!this.globalHandlersAdded) {
+      // Use setTimeout to wait until all flowers are processed
+      setTimeout(() => {
+        if (!this.globalHandlersAdded) {
+          this.addGlobalMouseHandlers();
+          this.globalHandlersAdded = true;
+        }
+      }, 100);
+    }
+  },
+
+  // Replace default hover areas with ones that match actual petal shapes
+  replaceHoverAreas: function(flowerElement, flowerData) {
+    // flowerElement might be the SVG itself, or contain an SVG
+    const svg = flowerElement.tagName === 'svg' ? flowerElement : flowerElement.querySelector('svg');
+    if (!svg) return;
+
+    // Remove existing sectors and disable hover on petals
+    const existingSectors = svg.querySelectorAll('.mg-sector');
+    existingSectors.forEach(sector => sector.remove());
+
+    // Disable pointer events on the entire SVG first
+    svg.style.pointerEvents = 'none';
+
+    // Disable pointer events on all petal elements so only our custom hover area works
+    const petals = svg.querySelectorAll('.mg-petal, path, g');
+    petals.forEach(petal => {
+      petal.style.pointerEvents = 'none';
+    });
+
+    // Calculate the actual bounding box of the visible flower
+    const width = parseInt(svg.getAttribute('width')) || 350;
+    const height = parseInt(svg.getAttribute('height')) || 350;
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const maxRadius = width / 2.2;
+
+    // Find the actual bounds of visible petals
+    const emotionAngles = {
+      fear: 12, anger: 36, disgust: 60, pessimism: 84, sadness: 108,
+      anticipation: 150, surprise: 210,
+      optimism: 255, joy: 285, love: 315, trust: 345
+    };
+
+    let minX = centerX, maxX = centerX, minY = centerY, maxY = centerY;
+
+    // Calculate actual bounds based on visible petals
+    Object.keys(flowerData.emotions).forEach(emotion => {
+      const intensity = flowerData.emotions[emotion] / 100;
+      if (intensity <= 0.01) return; // Skip tiny emotions
+
+      const angle = emotionAngles[emotion];
+      const petalLength = intensity * maxRadius;
+
+      // Calculate end point of this petal
+      const radians = (angle - 90) * Math.PI / 180;
+      const x = centerX + petalLength * Math.cos(radians);
+      const y = centerY + petalLength * Math.sin(radians);
+
+      minX = Math.min(minX, x);
+      maxX = Math.max(maxX, x);
+      minY = Math.min(minY, y);
+      maxY = Math.max(maxY, y);
+    });
+
+    // Add padding around the actual flower shape
+    const padding = 15;
+    minX -= padding;
+    maxX += padding;
+    minY -= padding;
+    maxY += padding;
+
+    // Create invisible hover area (no visual debugging, but still functional)
+    const hoverRect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    hoverRect.setAttribute("x", minX);
+    hoverRect.setAttribute("y", minY);
+    hoverRect.setAttribute("width", maxX - minX);
+    hoverRect.setAttribute("height", maxY - minY);
+    hoverRect.setAttribute("fill", "rgba(0,0,0,0)"); // Invisible
+    hoverRect.setAttribute("stroke", "none");
+    hoverRect.setAttribute("pointer-events", "none"); // Let global handler manage this
+    hoverRect.classList.add("mg-sector");
+
+    // Insert at beginning so it's behind petals
+    svg.insertBefore(hoverRect, svg.firstChild);
+
+    // Return the bounds for use in hover detection
+    return { minX, minY, maxX, maxY };
+  },
+
+  // Add global mouse handlers that check all flowers
+  addGlobalMouseHandlers: function() {
+    const container = document.getElementById('flower-container');
+    if (!container) {
+      console.log('No flower-container found!');
+      return;
+    }
+
+    // Enable pointer events on container so it can receive mouse events
+    container.style.pointerEvents = 'auto';
+
+    let lastCheckedFlower = null;
+
+    // Helper function to check if mouse is within a flower's bounds
+    const getFlowerAtPosition = (e) => {
+      for (let i = 0; i < this.flowers.length; i++) {
+        const flower = this.flowers[i];
+        const svg = flower.element.tagName === 'svg' ? flower.element : flower.element.querySelector('svg');
+        if (!svg) continue;
+
+        const rect = svg.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        if (x >= flower.bounds.minX && x <= flower.bounds.maxX &&
+            y >= flower.bounds.minY && y <= flower.bounds.maxY) {
+          return flower;
+        }
+      }
+      return null;
+    };
+
+    // Throttled mouse move handler for better performance
+    let throttleTimeout = null;
+    container.addEventListener('mousemove', (e) => {
+      // Throttle to ~30fps max for better performance
+      if (throttleTimeout) return;
+
+      throttleTimeout = setTimeout(() => {
+        throttleTimeout = null;
+        const hoveredFlower = getFlowerAtPosition(e);
+
+        if (hoveredFlower !== this.currentHoveredFlower) {
+          // Flower changed - handle exit and enter
+          if (this.currentHoveredFlower) {
+            // Exit previous flower
+            this.currentHoveredFlower.element.style.cursor = '';
+            if (this.tooltip) {
+              document.body.removeChild(this.tooltip);
+              this.tooltip = null;
+            }
+            this.restoreOtherFlowers();
+          }
+
+          if (hoveredFlower) {
+            // Enter new flower
+            hoveredFlower.element.style.cursor = 'pointer';
+            this.tooltip = this.createTooltip(hoveredFlower.data.text, e);
+            document.body.appendChild(this.tooltip);
+            this.fadeOtherFlowers(hoveredFlower.element);
+          }
+
+          this.currentHoveredFlower = hoveredFlower;
+        } else if (hoveredFlower && this.tooltip) {
+          // Still on same flower - update tooltip position
+          this.updateTooltipPosition(this.tooltip, e);
+        }
+      }, 16); // ~60fps max
+    });
+
+    // Global click handler
+    container.addEventListener('click', (e) => {
+      const clickedFlower = getFlowerAtPosition(e);
+      if (clickedFlower) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (window.Modal && typeof window.Modal.openById === 'function') {
+          console.log('Opening modal for flower ID:', clickedFlower.data.id);
+          window.Modal.openById(clickedFlower.data.id);
+        }
+      }
+    });
+
+    // Clean up when mouse leaves container
+    container.addEventListener('mouseleave', () => {
+      if (this.currentHoveredFlower) {
+        this.currentHoveredFlower.element.style.cursor = '';
+        if (this.tooltip) {
+          document.body.removeChild(this.tooltip);
+          this.tooltip = null;
+        }
+        this.restoreOtherFlowers();
+        this.currentHoveredFlower = null;
+      }
+    });
+  },
+
+  // Add custom hover effects that only trigger within bounds
+  addCustomHoverEffects: function(flowerElement, flowerData, bounds) {
+    let tooltip = null;
+    let isHovering = false;
+
+    // Helper function to check if mouse is within bounds
+    const isWithinBounds = (e) => {
+      // Get SVG element bounds
+      const svg = flowerElement.tagName === 'svg' ? flowerElement : flowerElement.querySelector('svg');
+      if (!svg) return false;
+
+      const rect = svg.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      return x >= bounds.minX && x <= bounds.maxX && y >= bounds.minY && y <= bounds.maxY;
+    };
+
+    // Mouse move: check if we're entering or leaving the bounds
+    flowerElement.addEventListener('mousemove', (e) => {
+      const withinBounds = isWithinBounds(e);
+
+      if (withinBounds && !isHovering) {
+        // Entering bounds - show tooltip and fade other flowers
+        isHovering = true;
+        flowerElement.style.cursor = 'pointer';
+        tooltip = this.createTooltip(flowerData.text, e);
+        document.body.appendChild(tooltip);
+        this.fadeOtherFlowers(flowerElement);
+      } else if (!withinBounds && isHovering) {
+        // Leaving bounds - hide tooltip and restore other flowers
+        isHovering = false;
+        flowerElement.style.cursor = '';
+        if (tooltip) {
+          document.body.removeChild(tooltip);
+          tooltip = null;
+        }
+        this.restoreOtherFlowers();
+      } else if (withinBounds && tooltip) {
+        // Still within bounds - update tooltip position
+        this.updateTooltipPosition(tooltip, e);
+      }
+    });
+
+    // Mouse leave: clean up if we leave the entire element
+    flowerElement.addEventListener('mouseleave', () => {
+      if (isHovering) {
+        isHovering = false;
+        flowerElement.style.cursor = '';
+        if (tooltip) {
+          document.body.removeChild(tooltip);
+          tooltip = null;
+        }
+        this.restoreOtherFlowers();
+      }
+    });
+  },
+
+  // Add custom click handler that only triggers within bounds
+  addCustomClickHandler: function(flowerElement, flowerData, bounds) {
+    // Helper function to check if mouse is within bounds
+    const isWithinBounds = (e) => {
+      // Get SVG element bounds
+      const svg = flowerElement.tagName === 'svg' ? flowerElement : flowerElement.querySelector('svg');
+      if (!svg) return false;
+
+      const rect = svg.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      return x >= bounds.minX && x <= bounds.maxX && y >= bounds.minY && y <= bounds.maxY;
+    };
+
+    flowerElement.addEventListener('click', (e) => {
+      if (!isWithinBounds(e)) return; // Only handle clicks within bounds
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      // Use existing Modal system
+      if (window.Modal && typeof window.Modal.openById === 'function') {
+        console.log('Opening modal for flower ID:', flowerData.id, 'text:', flowerData.text);
+        window.Modal.openById(flowerData.id);
+      } else {
+        console.warn('Modal system not available');
+      }
+    });
   },
 
   // Handle hover effects: tooltip + receding background for other flowers
