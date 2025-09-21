@@ -190,6 +190,11 @@ const FlowerInteractions = {
 
     // Global click handler
     container.addEventListener('click', (e) => {
+      // Don't intercept clicks on buttons or links
+      if (e.target.matches('a, button, .btn-return-home')) {
+        return; // Let the default behavior happen
+      }
+
       const clickedFlower = getFlowerAtPosition(e);
       if (clickedFlower) {
         e.preventDefault();

@@ -4,7 +4,7 @@
 console.log("Loss of Agency page loading...");
 
 // --- helpers to persist/restore a layout by viewport “bucket” ---
-const LOA_LAYOUT_VERSION = 'v13'; // bump to invalidate cached positions when you change logic
+const LOA_LAYOUT_VERSION = 'v14'; // bump to invalidate cached positions when you change logic
 
 function layoutKey() {
   // Much larger buckets to prevent frequent recalculation
@@ -130,9 +130,7 @@ function createLossOfAgencyLayout(flowers) {
   const ry = viewportHeight * ryPercent;
 
   // Try to restore an existing layout for this viewport bucket
-  // TEMP: Cache disabled for development - always recalculate fresh positions
-  // const restored = restoreLayout();
-  const restored = null;
+  const restored = restoreLayout();
 
   // Constants
   const GOLDEN = 155.50776405 * (Math.PI / 180);
@@ -265,7 +263,18 @@ fetch('../data.json')
       console.warn('Modal not available during initialization');
     }
 
-    createLossOfAgencyLayout(flowers);
+    // Ensure layout runs after page is fully rendered and settled
+    const initializeLayout = () => {
+      // Clear any cached layouts when navigating to page to prevent stale positioning
+      originalLayout = null;
+      originalViewport = null;
+      createLossOfAgencyLayout(flowers);
+    };
+
+    // Use requestAnimationFrame to ensure DOM is fully rendered, then add a small delay
+    requestAnimationFrame(() => {
+      setTimeout(initializeLayout, 100);
+    });
 
     // Smooth scaling on resize with fallback to recalculation for major changes
     let resizeTimeout;

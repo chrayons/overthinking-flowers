@@ -113,6 +113,65 @@ html, body {
   pointer-events: none; /* Allow flower interactions to pass through */
 }
 
+/* Category title container */
+.category-title-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  pointer-events: auto; /* Allow button clicks on both mobile and desktop */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Desktop category title container - larger fixed size */
+@media (min-width: 1161px) {
+  .category-title-container {
+    width: 672px;
+    height: 464px;
+    flex-direction: column;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .category-title {
+    position: static; /* Remove absolute positioning for proper flex centering */
+    transform: none; /* Remove transform since container handles centering */
+  }
+}
+
+/* Mobile category adjustments - use same structure as home page */
+@media (max-width: 1160px) {
+  /* Hide desktop category title container on mobile */
+  .category-title-container {
+    display: none;
+  }
+
+  /* Show mobile themes section on category pages */
+  body.category-page #themes-mobile {
+    display: block !important;
+  }
+
+  /* Category pages get mobile padding to match home page layout */
+  body.category-page {
+    padding-top: 240px;
+  }
+
+  /* Return to Home button uses white styling instead of blue */
+  .btn-return-home-white {
+    background: var(--bg-primary) !important;
+    color: #005BA6 !important;
+    border: 1px solid #005BA6 !important;
+  }
+
+  .btn-return-home-white:hover {
+    background: #005BA6 !important;
+    color: var(--bg-primary) !important;
+  }
+}
+
 /* Left header button - fixed positioning */
 .header-link {
   position: fixed;
@@ -733,6 +792,44 @@ html, body {
 }
 
 .btn-back:active {
+  transform: translateY(1px);
+}
+
+/* Return to Home Button Template */
+.btn-return-home {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 155px;
+  height: 38px;
+  background: var(--bg-primary);
+  border: 1px solid #005BA6;
+  border-radius: 5px;
+  font-family: "Satoshi Variable", system-ui;
+  font-size: 14px;
+  font-weight: 400;
+  color: #005BA6;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+  z-index: 9999; /* Top-most layer */
+  pointer-events: auto; /* Explicitly enable pointer events */
+
+  /* Desktop positioning - fixed at bottom center */
+  position: fixed;
+  bottom: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+
+.btn-return-home:hover {
+  background: #005BA6;
+  color: var(--bg-primary);
+}
+
+.btn-return-home:active {
   transform: translateY(1px);
 }
 
