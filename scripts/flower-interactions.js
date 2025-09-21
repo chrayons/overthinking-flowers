@@ -370,24 +370,28 @@ const FlowerInteractions = {
   createTooltip: function(text, mouseEvent) {
     const tooltip = document.createElement('div');
     tooltip.className = 'flower-tooltip';
-    tooltip.textContent = text;
+    tooltip.textContent = `"${text}"`;
 
-    // Style tooltip (similar to existing mg-tooltip)
+    // Style tooltip with fixed 160px width and text wrapping (matching original mg-tooltip)
     tooltip.style.position = 'absolute';
     tooltip.style.zIndex = '9999';
     tooltip.style.pointerEvents = 'none';
-    tooltip.style.background = 'rgba(255, 255, 255, 0.9)';
+    tooltip.style.background = 'rgba(255, 255, 255, 0.5)'; // More transparent like original
     tooltip.style.border = '0.5px solid #F8F8FF';
     tooltip.style.borderRadius = '5px';
     tooltip.style.padding = '8px 16px';
     tooltip.style.fontFamily = '"Satoshi Variable", system-ui';
-    tooltip.style.fontSize = '13px';
-    tooltip.style.fontWeight = '700';
+    tooltip.style.fontSize = '12px';
+    tooltip.style.fontWeight = '400'; // Regular weight
+    tooltip.style.fontStyle = 'italic'; // Italic style
     tooltip.style.color = 'var(--text-primary)';
-    tooltip.style.whiteSpace = 'nowrap';
-    tooltip.style.maxWidth = '300px';
-    tooltip.style.wordWrap = 'break-word';
+    tooltip.style.userSelect = 'none';
+    tooltip.style.width = '160px';
+    tooltip.style.minWidth = '160px';
+    tooltip.style.maxWidth = '160px';
     tooltip.style.whiteSpace = 'normal';
+    tooltip.style.overflowWrap = 'break-word';
+    tooltip.style.lineHeight = '1.3';
 
     // Position tooltip
     this.updateTooltipPosition(tooltip, mouseEvent);
@@ -395,11 +399,42 @@ const FlowerInteractions = {
     return tooltip;
   },
 
-  // Update tooltip position based on mouse
+  // Update tooltip position with smart viewport-aware positioning
   updateTooltipPosition: function(tooltip, mouseEvent) {
     const offset = 10;
-    tooltip.style.left = (mouseEvent.pageX + offset) + 'px';
-    tooltip.style.top = (mouseEvent.pageY + offset) + 'px';
+    const tooltipWidth = 160; // Fixed width
+    const tooltipHeight = tooltip.offsetHeight || 60; // Estimate if not yet rendered
+
+    // Get viewport dimensions
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    // Calculate preferred position (below and to the right of cursor)
+    let left = mouseEvent.pageX + offset;
+    let top = mouseEvent.pageY + offset;
+
+    // Check if tooltip would go off the right edge
+    if (left + tooltipWidth > viewportWidth) {
+      left = mouseEvent.pageX - tooltipWidth - offset; // Position to the left of cursor
+    }
+
+    // Check if tooltip would go off the bottom edge
+    if (top + tooltipHeight > viewportHeight) {
+      top = mouseEvent.pageY - tooltipHeight - offset; // Position above cursor
+    }
+
+    // Ensure tooltip doesn't go off the left edge
+    if (left < 0) {
+      left = offset;
+    }
+
+    // Ensure tooltip doesn't go off the top edge
+    if (top < 0) {
+      top = offset;
+    }
+
+    tooltip.style.left = left + 'px';
+    tooltip.style.top = top + 'px';
   },
 
   // Add white overlay to all flowers except the hovered one

@@ -4,11 +4,12 @@
 console.log("Loss of Agency page loading...");
 
 // --- helpers to persist/restore a layout by viewport “bucket” ---
-const LOA_LAYOUT_VERSION = 'v4'; // bump to invalidate cached positions when you change logic
+const LOA_LAYOUT_VERSION = 'v13'; // bump to invalidate cached positions when you change logic
 
 function layoutKey() {
-  const wBucket = Math.round(window.innerWidth / 100);
-  const hBucket = Math.round(window.innerHeight / 100);
+  // Much larger buckets to prevent frequent recalculation
+  const wBucket = Math.round(window.innerWidth / 300);
+  const hBucket = Math.round(window.innerHeight / 300);
   return `loa-layout-${LOA_LAYOUT_VERSION}-${wBucket}x${hBucket}`;
 }
 
@@ -26,32 +27,122 @@ function restoreLayout() {
   }
 }
 
+// Scale existing layout instead of recalculating positions
+function scaleExistingLayout(categoryFlowers, container, newWidth, newHeight) {
+  if (!originalLayout || !originalViewport) return false;
+
+  const scaleX = newWidth / originalViewport.width;
+  const scaleY = newHeight / originalViewport.height;
+  const avgScale = (scaleX + scaleY) / 2;
+
+  // Only scale if the size change isn't too dramatic
+  if (avgScale < 0.4 || avgScale > 2.5) {
+    originalLayout = null;
+    originalViewport = null;
+    return false;
+  }
+
+  container.innerHTML = '';
+
+  originalLayout.forEach((layoutData, index) => {
+    if (index >= categoryFlowers.length) return;
+
+    const flowerData = categoryFlowers[index];
+
+    // Scale the flower size
+    const newSize = Math.round(layoutData.size * avgScale);
+
+    // Keep positions but allow slight adjustment for aspect ratio changes
+    const xPct = layoutData.xPct;
+    const yPct = layoutData.yPct;
+
+    // Create flower SVG
+    const el = FlowerRenderer.createFlower(flowerData, {
+      width: newSize,
+      height: newSize,
+      maxRadius: newSize * 0.45
+    });
+    el.classList.add('flower');
+
+    // Position with smooth scaling
+    el.style.position = 'absolute';
+    el.style.left = `${xPct}%`;
+    el.style.top = `${yPct}%`;
+    el.style.transform = 'translate(-50%, -50%)';
+    el.style.width = `${newSize}px`;
+    el.style.height = `${newSize}px`;
+    el.style.transition = 'all 0.3s ease'; // Smooth scaling
+
+    // Add interactions
+    if (window.FlowerInteractions) {
+      FlowerInteractions.addBehavior(el, flowerData);
+    }
+
+    container.appendChild(el);
+  });
+
+  return true;
+}
+
+// Store the original layout for scaling
+let originalLayout = null;
+let originalViewport = null;
+
 // Responsive positioning algorithm for Loss of Agency flowers
 function createLossOfAgencyLayout(flowers) {
   const container = document.getElementById('flower-container');
   if (!container) return;
 
   const categoryFlowers = flowers.filter(f => f.category === "Loss of Agency");
+
+  // Current viewport dimensions
+  const viewportWidth  = window.innerWidth;
+  const viewportHeight = window.innerHeight - 32; // minus 32px header
+
+  // If we have an original layout, try to scale it instead of recalculating
+  if (originalLayout && originalViewport) {
+    scaleExistingLayout(categoryFlowers, container, viewportWidth, viewportHeight);
+    return;
+  }
+
+  // First time or major size change - create new layout
   container.innerHTML = '';
 
-  // Dimensions of the fixed “stage” (the container is the reference frame)
-  const viewportWidth  = container.clientWidth  || window.innerWidth;
-  const viewportHeight = container.clientHeight || window.innerHeight;
+  // Conservative ellipse reach - keep flowers well within viewport bounds
+  const aspectRatio = viewportWidth / viewportHeight;
+  let rxPercent, ryPercent;
 
-  // Ellipse reach: controls how “full” the canvas feels
-  const rx = viewportWidth  * 0.46;
-  const ry = viewportHeight * 0.40;
+  if (aspectRatio > 1.8) {
+    // Very wide screens - more conservative
+    rxPercent = 0.72;
+    ryPercent = 0.72;
+  } else if (aspectRatio < 0.6) {
+    // Very tall screens - more conservative
+    rxPercent = 0.56;
+    ryPercent = 0.56;
+  } else {
+    // Normal aspect ratios - keep well contained
+    rxPercent = 0.64;
+    ryPercent = 0.64;
+  }
+
+  const rx = viewportWidth  * rxPercent;
+  const ry = viewportHeight * ryPercent;
 
   // Try to restore an existing layout for this viewport bucket
-  const restored = restoreLayout();
+  // TEMP: Cache disabled for development - always recalculate fresh positions
+  // const restored = restoreLayout();
+  const restored = null;
 
   // Constants
-  const GOLDEN = 137.50776405 * (Math.PI / 180);
+  const GOLDEN = 155.50776405 * (Math.PI / 180);
   const base = Math.min(viewportWidth, viewportHeight);
 
-  // Size range: keep them larger on desktop, but cap on tiny screens
-  const minFlowerSize = Math.max(72, Math.round(base * 0.08));
-  const maxFlowerSize = Math.min(300, Math.round(base * 0.24));
+  // Even larger flower sizes - another 1.5x increase
+  const sizeScale = aspectRatio > 1.5 ? 0.8 : aspectRatio < 0.7 ? 1.2 : 1.0;
+
+  const minFlowerSize = Math.max(180, Math.round(base * 0.30 * sizeScale)); // 1.5x bigger (was 120)
+  const maxFlowerSize = Math.min(600, Math.round(base * 0.70 * sizeScale)); // 1.5x bigger (was 650)
 
   const placedFlowers = [];
   const resultsForPersist = [];
@@ -74,9 +165,9 @@ function createLossOfAgencyLayout(flowers) {
       const N = categoryFlowers.length;
       const theta = index * GOLDEN;
 
-      // r in [0..1]; exponent < 1 spreads outward more (0.65 works nicely)
+      // r in [0..1]; stronger central focus with gradual radiating outward
       const tFill = (index + 1) / (N + 1);
-      const r = Math.pow(Math.sqrt(tFill), 0.65);
+      const r = Math.pow(Math.sqrt(tFill), 0.90); // even less aggressive spread, stronger central clustering
 
       // center
       const cx = viewportWidth / 2;
@@ -90,23 +181,35 @@ function createLossOfAgencyLayout(flowers) {
       xPct = (x / viewportWidth) * 100;
       yPct = (y / viewportHeight) * 100;
 
-      // allow large petals to kiss edges (light overhang)
-      const rVW = (flowerSize / 2 / viewportWidth) * 100;
-      const rVH = (flowerSize / 2 / viewportHeight) * 100;
-      const maxOverflow = Math.max(rVW, rVH) * 0.20;
+      // Strong containment - keep flowers well within viewport with minimal edge touching
+      const flowerRadius = flowerSize / 2;
 
-      xPct = Math.max(0 - maxOverflow, Math.min(100 + maxOverflow, xPct));
-      yPct = Math.max(0 - maxOverflow, Math.min(100 + maxOverflow, yPct));
+      // Calculate safe bounds ensuring flowers stay mostly inside viewport
+      const safeMarginX = (flowerRadius * 0.8 / viewportWidth) * 100; // 80% of radius as margin
+      const safeMarginY = (flowerRadius * 0.8 / viewportHeight) * 100; // 80% of radius as margin
 
-      // quick, gentle spacing check (nudge if too close)
+      // Clamp to safe bounds - only allow 20% of flower radius to potentially touch edges
+      xPct = Math.max(safeMarginX, Math.min(100 - safeMarginX, xPct));
+      yPct = Math.max(safeMarginY, Math.min(100 - safeMarginY, yPct));
+
+      // Improved collision detection with better responsive scaling
+      let nudgeCount = 0;
       for (const p of placedFlowers) {
-        const d = Math.hypot(xPct - p.xPct, yPct - p.yPct);
+        // Calculate distance in actual pixels, not percentages
+        const dx = (xPct - p.xPct) * viewportWidth / 100;
+        const dy = (yPct - p.yPct) * viewportHeight / 100;
+        const d = Math.hypot(dx, dy);
+
         const avgSize = (flowerSize + p.size) / 2;
-        const minDist = (avgSize / Math.min(viewportWidth, viewportHeight)) * 10;
-        if (d < minDist) {
-          const nudge = 0.8;
-          xPct += nudge * Math.sin(theta);
-          yPct -= nudge * Math.cos(theta);
+        const k = 8; // reduced spacing since flowers are much larger now
+        const minDist = avgSize * (k / 100); // simpler distance calculation
+
+        if (d < minDist && nudgeCount < 2) {
+          // Nudge along spiral tangent with adaptive strength
+          const nudgeStrength = Math.min(2.0, 100 / Math.min(viewportWidth, viewportHeight));
+          xPct += nudgeStrength * Math.sin(theta + Math.PI/2);
+          yPct -= nudgeStrength * Math.cos(theta + Math.PI/2);
+          nudgeCount++;
         }
       }
     }
@@ -139,7 +242,11 @@ function createLossOfAgencyLayout(flowers) {
     container.appendChild(el);
   });
 
-  // Persist this viewport’s layout so navigating back won’t reshuffle
+  // Store original layout for smooth scaling
+  originalLayout = resultsForPersist.map(item => ({ ...item }));
+  originalViewport = { width: viewportWidth, height: viewportHeight };
+
+  // Persist this viewport's layout so navigating back won't reshuffle
   if (!restored || restored.length !== categoryFlowers.length) {
     saveLayout(resultsForPersist);
   }
@@ -160,18 +267,13 @@ fetch('../data.json')
 
     createLossOfAgencyLayout(flowers);
 
-    // Recompute only when the viewport “bucket” changes
-    let lastKey = layoutKey();
+    // Smooth scaling on resize with fallback to recalculation for major changes
     let resizeTimeout;
     window.addEventListener('resize', () => {
       clearTimeout(resizeTimeout);
       resizeTimeout = setTimeout(() => {
-        const keyNow = layoutKey();
-        if (keyNow !== lastKey) {
-          lastKey = keyNow;
-          createLossOfAgencyLayout(flowers);
-        }
-      }, 120);
+        createLossOfAgencyLayout(flowers);
+      }, 100); // Faster response for smoother scaling
     });
   })
   .catch(err => console.error("Error loading data for Loss of Agency:", err));
