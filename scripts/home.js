@@ -1,6 +1,49 @@
 // home.js — CSS-only layout version (no gridColumn/gridRow from JS)
 console.log("Home page loading...");
 
+// ---------- Pre-calculated flower positions for consistent layout ----------
+// Generated once to ensure identical positions on every page load
+const FLOWER_POSITIONS = (() => {
+  const positions = [];
+  const maxFlowers = 25;
+  const centerX = 144;  // half of 288
+  const centerY = 99;   // half of 198
+  const aBase = 100;
+  const bBase = 0.6 * aBase;
+  const GOLDEN = 137.50776405 * (Math.PI / 180);
+
+  // Use fixed seed for deterministic "random" values
+  let seed = 12345;
+  const seededRandom = () => {
+    seed = (seed * 9301 + 49297) % 233280;
+    return seed / 233280;
+  };
+
+  for (let i = 0; i < maxFlowers; i++) {
+    let theta = (i * GOLDEN) % (Math.PI * 2);
+    theta += (seededRandom() - 0.5) * (Math.PI / 12); // ±15°
+
+    const aWarp = aBase * (1 + 0.2 * Math.cos(2 * theta));
+    const bWarp = bBase * (1 + 0.5 * Math.sin(4 * theta));
+
+    const x = centerX + aWarp * Math.cos(theta);
+    const y = centerY + bWarp * Math.sin(theta);
+
+    let baseScale = 0.55 + seededRandom() * 0.95;
+    const sideBias = 0.9 + 0.25 * Math.abs(Math.cos(theta));
+    let scale = baseScale * sideBias;
+
+    // occasional superstar (about 1 in 10)
+    if (seededRandom() < 0.10) scale *= 1.25;
+
+    scale = Math.min(1.9, scale);
+
+    positions.push({ x, y, scale, rotation: 0 });
+  }
+
+  return positions;
+})();
+
 // ---------- helpers ----------
 function groupFlowersByCategory(flowers) {
   return flowers.reduce((groups, flower) => {
@@ -30,41 +73,15 @@ function createCategoryCluster(categoryName, flowers, parentGrid) {
   label.style.zIndex = '2';
   cell.appendChild(label);
 
-  // ---- layout config (desktop cell) ----
-const maxFlowers = Math.min(flowers.length, 25);
-const centerX = 144;  // half of 288
-const centerY = 99;   // half of 198
-
-// Ellipse radii (wider than tall)
-const aBase = 100; // bump this to “take more space”
-const bBase = 0.6 * aBase;
-
-const GOLDEN = 137.50776405 * (Math.PI / 180);
+  // ---- Use pre-calculated positions for consistent, fast rendering ----
+  const maxFlowers = Math.min(flowers.length, 25);
+  const centerX = 144;  // half of 288
+  const centerY = 99;   // half of 198
 
 flowers.slice(0, maxFlowers).forEach((flower, i) => {
-  // --- ORGANIC POSITION ---
-  let theta = (i * GOLDEN) % (Math.PI * 2);
-  theta += (Math.random() - 0.5) * (Math.PI / 12); // ±15°
-
-  const aWarp = aBase * (1 + 0.2 * Math.cos(2 * theta));
-  const bWarp = bBase * (1 + 0.5 * Math.sin(4 * theta));
-
-  const x = centerX + aWarp * Math.cos(theta);
-  const y = centerY + bWarp * Math.sin(theta);
-
-  // bigger spread with tiny chance of a “wow” bloom
-  let baseScale = 0.55 + Math.random() * 0.95;      // 0.55–1.50 (wider range than before)
-  const sideBias = 0.9 + 0.25 * Math.abs(Math.cos(theta)); // a touch more horizontal bias
-  let scale = baseScale * sideBias;
-
-  // occasional superstar (about 1 in 10)
-  if (Math.random() < 0.10) scale *= 1.25;          // bump 25%
-
-  // keep things sane
-  scale = Math.min(1.9, scale);
-
-  // no rotation
-  const rot = 0;
+  // Get pre-calculated position data
+  const position = FLOWER_POSITIONS[i] || FLOWER_POSITIONS[0]; // fallback to first position
+  const { x, y, scale, rotation: rot } = position;
 
 
   const el = FlowerRenderer.createFlower(flower, 0, 0);
@@ -81,31 +98,26 @@ flowers.slice(0, maxFlowers).forEach((flower, i) => {
   const endX   = x;
   const endY   = y;
 
-  const animationName = `radiate-${Date.now()}-${i}`;
-  const keyframes = `
-    @keyframes ${animationName} {
-      0%   { left:${startX}px; top:${startY}px; transform:translate(-50%,-50%) scale(0.3); opacity:0; }
-      100% { left:${endX}px;   top:${endY}px;   transform:translate(-50%,-50%) rotate(${rot}deg) scale(${scale}); opacity:1; }
-    }
-  `;
-  const style = document.createElement('style');
-  style.textContent = keyframes;
-  document.head.appendChild(style);
+  // Use CSS custom properties for position-specific values with reusable animation
+  el.style.setProperty('--start-x', `${startX}px`);
+  el.style.setProperty('--start-y', `${startY}px`);
+  el.style.setProperty('--end-x', `${endX}px`);
+  el.style.setProperty('--end-y', `${endY}px`);
+  el.style.setProperty('--end-scale', scale);
+  el.style.setProperty('--end-rotation', `${rot}deg`);
 
   // start at center
   el.style.left = `${startX}px`;
   el.style.top  = `${startY}px`;
   el.style.opacity = '0';
-  el.style.animationName = animationName;
   el.classList.add('animate-entrance');
 
   // lock final state after animation
   setTimeout(() => {
     el.classList.remove('animate-entrance');
-    el.style.animationName = '';
     el.style.left = `${endX}px`;
     el.style.top  = `${endY}px`;
-    el.style.transform = `translate(-50%,-50%) scale(${scale})`;
+    el.style.transform = `translate(-50%,-50%) rotate(${rot}deg) scale(${scale})`;
     el.style.opacity = '1';
   }, 800);
 
