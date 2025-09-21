@@ -106,6 +106,15 @@
         card.className = "card";
         card.dataset.cardIndex = index; // Add index for CSS targeting
 
+        // Make entire card clickable
+        card.style.cursor = "pointer";
+        card.addEventListener("click", (e) => {
+          e.preventDefault();
+          if (window.Modal) {
+            Modal.openById(f.id);
+          }
+        });
+
         // Calculate available width and height: 320px card width, 52px height
         const availableWidth = 296;
         const availableHeight = 52;
@@ -126,12 +135,7 @@
         const link = document.createElement("a");
         link.textContent = "See the Flower";
         link.href = `#flower-${f.id}`;
-        link.addEventListener("click", (e) => {
-            e.preventDefault();
-            if (window.Modal) {
-              Modal.openById(f.id);
-            }
-          });
+        // Note: No click event needed on link since card handles it
 
         text.appendChild(link);
         card.appendChild(text);

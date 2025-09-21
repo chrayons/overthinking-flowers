@@ -510,6 +510,12 @@ h1 {
   line-height: 1.3; /* Explicit line-height for consistent spacing */
 }
 
+/* Style links within shuffle cards */
+#shuffle-cards .card a {
+  color: inherit; /* Keep the black text color */
+  text-decoration: underline; /* Add underline */
+}
+
 /* Responsive card visibility: 3→2→1 cards */
 /* Hide 3rd card when screen is too narrow for 3 cards */
 @media (max-width: 1141px) {
