@@ -64,6 +64,24 @@ html, body {
   justify-content: center;
   min-height: 60vh; /* Use available space below header */
   padding: 0;
+  position: relative; /* Allow absolute positioning of flowers */
+}
+
+/* Flower container for category pages */
+#flower-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none; /* Allow clicks to pass through to underlying elements */
+  z-index: 1; /* Behind the category title */
+}
+
+#flower-container .flower {
+  position: absolute;
+  pointer-events: auto; /* Re-enable interactions for individual flowers */
+  z-index: 1;
 }
 
 /* Category page titles */
