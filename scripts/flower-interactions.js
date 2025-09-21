@@ -132,13 +132,20 @@ const FlowerInteractions = {
         if (!svg) continue;
 
         const rect = svg.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+        // Convert mouse to SVG local coordinates
+        const pt = svg.createSVGPoint();
+        pt.x = e.clientX;
+        pt.y = e.clientY;
+        const local = pt.matrixTransform(svg.getScreenCTM().inverse());
+
+        const x = local.x;
+        const y = local.y;
 
         if (x >= flower.bounds.minX && x <= flower.bounds.maxX &&
             y >= flower.bounds.minY && y <= flower.bounds.maxY) {
           return flower;
         }
+
       }
       return null;
     };
@@ -216,13 +223,16 @@ const FlowerInteractions = {
 
     // Helper function to check if mouse is within bounds
     const isWithinBounds = (e) => {
-      // Get SVG element bounds
       const svg = flowerElement.tagName === 'svg' ? flowerElement : flowerElement.querySelector('svg');
       if (!svg) return false;
 
-      const rect = svg.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
+      const pt = svg.createSVGPoint();
+      pt.x = e.clientX;
+      pt.y = e.clientY;
+      const local = pt.matrixTransform(svg.getScreenCTM().inverse());
+
+      const x = local.x;
+      const y = local.y;
 
       return x >= bounds.minX && x <= bounds.maxX && y >= bounds.minY && y <= bounds.maxY;
     };

@@ -3,119 +3,146 @@
 
 console.log("Loss of Agency page loading...");
 
+// --- helpers to persist/restore a layout by viewport “bucket” ---
+const LOA_LAYOUT_VERSION = 'v4'; // bump to invalidate cached positions when you change logic
+
+function layoutKey() {
+  const wBucket = Math.round(window.innerWidth / 100);
+  const hBucket = Math.round(window.innerHeight / 100);
+  return `loa-layout-${LOA_LAYOUT_VERSION}-${wBucket}x${hBucket}`;
+}
+
+function saveLayout(placed) {
+  try {
+    sessionStorage.setItem(layoutKey(), JSON.stringify(placed));
+  } catch {}
+}
+
+function restoreLayout() {
+  try {
+    return JSON.parse(sessionStorage.getItem(layoutKey()) || 'null');
+  } catch {
+    return null;
+  }
+}
+
 // Responsive positioning algorithm for Loss of Agency flowers
 function createLossOfAgencyLayout(flowers) {
   const container = document.getElementById('flower-container');
   if (!container) return;
 
-  // Filter flowers for this category
-  const categoryFlowers = flowers.filter(flower => flower.category === "Loss of Agency");
-  console.log(`Found ${categoryFlowers.length} flowers for Loss of Agency`);
-
-  // Clear container
+  const categoryFlowers = flowers.filter(f => f.category === "Loss of Agency");
   container.innerHTML = '';
 
-  // Use viewport dimensions for responsive positioning
-  const viewportWidth = window.innerWidth;
-  const viewportHeight = window.innerHeight;
-  const centerX = 50; // Center as percentage
-  const centerY = 50; // Center as percentage
+  // Dimensions of the fixed “stage” (the container is the reference frame)
+  const viewportWidth  = container.clientWidth  || window.innerWidth;
+  const viewportHeight = container.clientHeight || window.innerHeight;
 
-  // Golden spiral positioning with controlled spread
+  // Ellipse reach: controls how “full” the canvas feels
+  const rx = viewportWidth  * 0.46;
+  const ry = viewportHeight * 0.40;
+
+  // Try to restore an existing layout for this viewport bucket
+  const restored = restoreLayout();
+
+  // Constants
   const GOLDEN = 137.50776405 * (Math.PI / 180);
-  // Spiral sized to fill most of viewport while allowing some overflow
-  const spiralBase = Math.min(viewportWidth, viewportHeight) * 0.0005; // Moderate spiral scale
-  const aBase = spiralBase * Math.min(viewportWidth, viewportHeight);
-  const bBase = 0.7 * aBase; // Balanced spread
-  const placedFlowers = []; // Track placed flowers for collision detection
+  const base = Math.min(viewportWidth, viewportHeight);
 
-  // Dynamic flower sizing with wider range (80px-300px)
-  const minFlowerSize = 80;
-  const maxFlowerSize = 300;
-  const baseFlowerSize = Math.max(minFlowerSize, Math.min(maxFlowerSize, viewportWidth * 0.12));
+  // Size range: keep them larger on desktop, but cap on tiny screens
+  const minFlowerSize = Math.max(72, Math.round(base * 0.08));
+  const maxFlowerSize = Math.min(300, Math.round(base * 0.24));
+
+  const placedFlowers = [];
+  const resultsForPersist = [];
 
   categoryFlowers.forEach((flowerData, index) => {
-    // Calculate emotional intensity for dynamic sizing using dominant emotion
-    const dominantIntensity = Math.max(...Object.values(flowerData.emotions));
-    const totalIntensity = Object.values(flowerData.emotions).reduce((sum, val) => sum + val, 0);
+    let xPct, yPct, flowerSize;
 
-    // Use combination of dominant emotion and total intensity for size variation
-    const combinedIntensity = (dominantIntensity * 0.7) + (totalIntensity / Object.keys(flowerData.emotions).length * 0.3);
+    if (restored && restored.length === categoryFlowers.length) {
+      ({ xPct, yPct, size: flowerSize } = restored[index]);
+    } else {
+      // --- size by blend of dominant + average intensity ---
+      const vals = Object.values(flowerData.emotions || {});
+      const dominant = vals.length ? Math.max(...vals) : 0;
+      const avg = vals.length ? vals.reduce((s, v) => s + v, 0) / vals.length : 0;
+      const combined = 0.7 * dominant + 0.3 * avg;
+      const tSize = Math.max(0.35, Math.min(1, combined / 100)); // 35%..100%
+      flowerSize = Math.round(minFlowerSize + (maxFlowerSize - minFlowerSize) * tSize);
 
-    // Map intensity to full size range (80px-300px) with more dramatic variation
-    const intensityFactor = Math.max(0.3, Math.min(1.0, combinedIntensity / 100)); // 30-100% range
-    const flowerSize = minFlowerSize + (maxFlowerSize - minFlowerSize) * intensityFactor;
+      // --- Vogel (golden-angle) spiral that fills the whole ellipse ---
+      const N = categoryFlowers.length;
+      const theta = index * GOLDEN;
 
-    // Create flower element with dynamic sizing
-    const flowerElement = FlowerRenderer.createFlower(flowerData, {
+      // r in [0..1]; exponent < 1 spreads outward more (0.65 works nicely)
+      const tFill = (index + 1) / (N + 1);
+      const r = Math.pow(Math.sqrt(tFill), 0.65);
+
+      // center
+      const cx = viewportWidth / 2;
+      const cy = viewportHeight / 2;
+
+      // ellipse reach
+      const x = cx + rx * r * Math.cos(theta);
+      const y = cy + ry * r * Math.sin(theta);
+
+      // convert to percentages relative to container
+      xPct = (x / viewportWidth) * 100;
+      yPct = (y / viewportHeight) * 100;
+
+      // allow large petals to kiss edges (light overhang)
+      const rVW = (flowerSize / 2 / viewportWidth) * 100;
+      const rVH = (flowerSize / 2 / viewportHeight) * 100;
+      const maxOverflow = Math.max(rVW, rVH) * 0.20;
+
+      xPct = Math.max(0 - maxOverflow, Math.min(100 + maxOverflow, xPct));
+      yPct = Math.max(0 - maxOverflow, Math.min(100 + maxOverflow, yPct));
+
+      // quick, gentle spacing check (nudge if too close)
+      for (const p of placedFlowers) {
+        const d = Math.hypot(xPct - p.xPct, yPct - p.yPct);
+        const avgSize = (flowerSize + p.size) / 2;
+        const minDist = (avgSize / Math.min(viewportWidth, viewportHeight)) * 10;
+        if (d < minDist) {
+          const nudge = 0.8;
+          xPct += nudge * Math.sin(theta);
+          yPct -= nudge * Math.cos(theta);
+        }
+      }
+    }
+
+    // Create flower SVG
+    const el = FlowerRenderer.createFlower(flowerData, {
       width: flowerSize,
       height: flowerSize,
       maxRadius: flowerSize * 0.45
     });
-    flowerElement.classList.add('flower');
+    el.classList.add('flower');
 
-    let attempts = 0;
-    let x, y;
-    let validPosition = false;
+    // Position relative to the container (which we measured)
+    el.style.position = 'absolute';
+    el.style.left = `${xPct}%`;
+    el.style.top  = `${yPct}%`;
+    el.style.transform = 'translate(-50%, -50%)';
+    el.style.width  = `${flowerSize}px`;
+    el.style.height = `${flowerSize}px`;
 
-    // Try to find non-overlapping position with improved spacing
-    while (!validPosition && attempts < 50) {
-      // Golden spiral positioning with responsive scaling
-      let theta = ((index + attempts * 0.1) * GOLDEN) % (Math.PI * 2);
-      const aWarp = aBase * (1 + 0.2 * Math.cos(2 * theta));
-      const bWarp = bBase * (1 + 0.5 * Math.sin(4 * theta));
+    // Track for collision + persistence
+    placedFlowers.push({ xPct, yPct, size: flowerSize });
+    resultsForPersist.push({ xPct, yPct, size: flowerSize });
 
-      // Calculate position as viewport percentages with extended range
-      x = centerX + (aWarp * Math.cos(theta) / viewportWidth) * 100;
-      y = centerY + (bWarp * Math.sin(theta) / viewportHeight) * 100;
-
-      // Keep most flowers in viewport, allow only some to have partial overflow
-      // Calculate flower radius as percentage of viewport for bounds checking
-      const flowerRadiusVW = (flowerSize / 2 / viewportWidth) * 100;
-      const flowerRadiusVH = (flowerSize / 2 / viewportHeight) * 100;
-
-      // Allow 1/3 of flower to be off-screen at most
-      const maxOverflow = Math.max(flowerRadiusVW, flowerRadiusVH) * 0.67; // 2/3 of flower radius
-
-      x = Math.max(0 - maxOverflow, Math.min(100 + maxOverflow, x));
-      y = Math.max(0 - maxOverflow, Math.min(100 + maxOverflow, y));
-
-      // Check for collisions with existing flowers with adaptive spacing
-      validPosition = true;
-      for (const placedFlower of placedFlowers) {
-        const distance = Math.sqrt((x - placedFlower.x) ** 2 + (y - placedFlower.y) ** 2);
-        // Adaptive minimum distance based on flower sizes and viewport
-        const avgSize = (flowerSize + placedFlower.size) / 2;
-        const minDistance = (avgSize / Math.min(viewportWidth, viewportHeight)) * 25; // Better spacing calculation
-        if (distance < minDistance) {
-          validPosition = false;
-          break;
-        }
-      }
-      attempts++;
-    }
-
-    // Store position and size for future collision checks
-    placedFlowers.push({ x, y, size: flowerSize });
-
-    // Position the flower using percentage-based positioning
-    flowerElement.style.position = 'absolute';
-    flowerElement.style.left = x + 'vw';
-    flowerElement.style.top = y + 'vh';
-    flowerElement.style.transform = 'translate(-50%, -50%)';
-
-    // Set responsive size
-    flowerElement.style.width = flowerSize + 'px';
-    flowerElement.style.height = flowerSize + 'px';
-
-    // Add interactive behavior
+    // Interactions (tooltip + modal)
     if (window.FlowerInteractions) {
-      FlowerInteractions.addBehavior(flowerElement, flowerData);
+      FlowerInteractions.addBehavior(el, flowerData);
     }
 
-    // Add to container
-    container.appendChild(flowerElement);
+    container.appendChild(el);
   });
+
+  // Persist this viewport’s layout so navigating back won’t reshuffle
+  if (!restored || restored.length !== categoryFlowers.length) {
+    saveLayout(resultsForPersist);
+  }
 }
 
 // Load data and initialize page
@@ -124,13 +151,8 @@ fetch('../data.json')
   .then(rawData => {
     const flowers = parseFlowerData(rawData);
 
-    // Debug: Check what's available
-    console.log('Available window objects:', Object.keys(window).filter(k => k.includes('Modal') || k.includes('modal')));
-    console.log('window.Modal:', window.Modal);
-
-    // Initialize modal system FIRST
+    // Initialize modal system FIRST (if present)
     if (window.Modal) {
-      console.log('Initializing Modal with', flowers.length, 'flowers');
       Modal.init(flowers);
     } else {
       console.warn('Modal not available during initialization');
@@ -138,15 +160,18 @@ fetch('../data.json')
 
     createLossOfAgencyLayout(flowers);
 
-    // Add resize listener for responsive layout updates
+    // Recompute only when the viewport “bucket” changes
+    let lastKey = layoutKey();
     let resizeTimeout;
     window.addEventListener('resize', () => {
-      // Debounce resize events to avoid excessive recalculations
       clearTimeout(resizeTimeout);
       resizeTimeout = setTimeout(() => {
-        console.log('Viewport resized, recalculating flower positions...');
-        createLossOfAgencyLayout(flowers);
-      }, 250);
+        const keyNow = layoutKey();
+        if (keyNow !== lastKey) {
+          lastKey = keyNow;
+          createLossOfAgencyLayout(flowers);
+        }
+      }, 120);
     });
   })
   .catch(err => console.error("Error loading data for Loss of Agency:", err));
