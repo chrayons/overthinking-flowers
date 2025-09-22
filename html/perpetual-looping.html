@@ -10,14 +10,51 @@
   <script src="../scripts/modal.js"></script>
   <script src="../scripts/flower-interactions.js"></script>
 </head>
-<body>
+<body class="category-page">
   <div class="wrapper">
     <a href="index.html" class="header-link">METAPHOR GARDEN</a>
     <div class="header-label">OVERTHINKING ZINE</div>
     <div class="category-page-content">
       <div id="flower-container"></div>
-      <h2 class="category-title">Perpetual<br>Looping</h2>
+      <div class="category-title-container">
+        <h2 class="category-title">Perpetual<br>Looping</h2>
+      </div>
     </div>
+
+    <!-- Mobile layout matching home page structure EXACTLY -->
+    <section id="themes-mobile" style="display: none; pointer-events: none;">
+      <h2 class="eyebrow" style="opacity: 0; pointer-events: none;">EXPLORE BY THEME</h2>
+      <div class="mobile-carousel">
+        <div class="carousel-container">
+          <div class="carousel-track" id="mobile-category-track">
+            <div class="mobile-category-item active">
+              <div class="category-label">Perpetual<br>Looping</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="carousel-arrows" style="opacity: 0; pointer-events: none;">
+          <button class="carousel-arrow carousel-prev" aria-label="Previous category">
+            <img src="../arrow-left.svg" alt="Previous" width="23" height="23">
+          </button>
+          <div class="carousel-dots" id="carousel-dots">
+            <div class="dot active"></div>
+          </div>
+          <button class="carousel-arrow carousel-next" aria-label="Next category">
+            <img src="../arrow-right.svg" alt="Next" width="23" height="23">
+          </button>
+        </div>
+
+        <a href="index.html" class="btn-mobile-blue btn-return-home-white">Return to Home</a>
+      </div>
+    </section>
+
+    <section id="reflections" style="opacity: 0; pointer-events: none;">
+      <h2>REFLECTIONS</h2>
+      <div id="shuffle-cards"></div>
+      <button id="shuffle-btn" class="btn-primary">Shuffle Thoughts</button>
+    </section>
+
     <script src="../scripts/perpetual-looping.js"></script>
   </div>
 </body>

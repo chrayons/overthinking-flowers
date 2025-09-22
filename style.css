@@ -60,8 +60,8 @@ html, body {
   min-height: 100vh; /* Allow vertical centering while maintaining scroll */
 }
 
-/* Only apply grid centering to home page */
-body:not(.category-page) {
+/* Apply grid centering to all pages */
+body {
   display: grid;
   place-items: center; /* Center content vertically and horizontally when space allows */
   grid-template-rows: 1fr; /* Explicit grid template to prevent layout shifts */
@@ -173,10 +173,7 @@ body:not(.category-page) {
   /* raise flower layer slightly above mobile chrome */
   #flower-container { z-index: 20; }  /* was 3 */
 
-  /* Category pages get mobile padding to match home page layout */
-  body.category-page {
-    padding-top: 240px;
-  }
+  /* Category pages: no additional padding needed - grid centering handles positioning */
 
   /* Return to Home button uses white styling instead of blue */
   .btn-return-home-white {
