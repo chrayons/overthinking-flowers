@@ -86,7 +86,7 @@ html, body {
 #flower-container .flower {
   position: absolute;
   pointer-events: auto; /* Re-enable interactions for individual flowers */
-  z-index: 1;
+  z-index: 3; /* Above category text */
   /* Size is now handled dynamically by JavaScript based on viewport and emotional intensity */
   /* Remove fixed width/height as these are set by the positioning algorithm */
 }
@@ -232,6 +232,7 @@ html, body {
   line-height: normal;
   color: var(--text-primary);
   margin: 8px 0 28px;
+  z-index: 1; /* Below flowers */
 }
 
 /* --------- FLUID STAGGERED GRID (CSS-only placement) --------- */
@@ -564,25 +565,21 @@ html, body {
   display: flex;
   gap: 20px;
   align-items: center;
+  z-index: 1; /* Below flowers */
 }
 
 .carousel-arrow {
   background: none;
-  border: 1px solid #ccc;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
+  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .carousel-arrow:hover:not(:disabled) {
-  background: #f0f0f0;
-  border-color: #999;
+  opacity: 0.7;
 }
 
 .carousel-arrow:disabled {
@@ -595,20 +592,26 @@ html, body {
   display: flex;
   gap: 8px;
   justify-content: center;
+  z-index: 1; /* Below flowers */
 }
 
 .dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--text-secondary);
+  background: var(--bg-secondary);
+  border: none;
+  box-shadow: none;
+  outline: none;
+  padding: 0;
+  margin: 0;
   cursor: pointer;
   transition: all 0.3s ease;
+  position: relative;
 }
 
 .dot.active {
-  background: var(--text-primary);
-  transform: scale(1.2);
+  background: var(--text-secondary);
 }
 
 .dot:hover:not(.active) {

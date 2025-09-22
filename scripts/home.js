@@ -63,6 +63,7 @@ function createCategoryCluster(categoryName, flowers, parentGrid) {
   // Make entire cell clickable - navigate to category page
   cell.style.cursor = 'pointer';
   cell.addEventListener('click', () => {
+    localStorage.setItem('lastVisitedCategory', categoryName);
     const filename = categoryToFilename(categoryName);
     window.location.href = filename;
   });
@@ -207,8 +208,10 @@ function renderMobileThemes(flowers) {
   realItems.forEach(el => track.appendChild(el));
   track.appendChild(cloneFirst);
 
-  // Default to "Emotional Dysregulation" centered
-  const initial = Math.max(0, Math.min(CATEGORY_ORDER.indexOf("Emotional Dysregulation"), _mobileCount - 1));
+  // Check for stored last visited category, otherwise default to "Perpetual Looping"
+  const lastVisited = localStorage.getItem('lastVisitedCategory');
+  const targetCategory = lastVisited && CATEGORY_ORDER.includes(lastVisited) ? lastVisited : "Perpetual Looping";
+  const initial = Math.max(0, Math.min(CATEGORY_ORDER.indexOf(targetCategory), _mobileCount - 1));
   currentMobileIndex = initial;
 
   updateCarousel();
@@ -280,6 +283,7 @@ function initMobileCarousel() {
     seeReflectionsBtn.addEventListener('click', () => {
       const categoryName = seeReflectionsBtn.dataset.category;
       if (categoryName) {
+        localStorage.setItem('lastVisitedCategory', categoryName);
         const filename = categoryToFilename(categoryName);
         window.location.href = filename;
       }
