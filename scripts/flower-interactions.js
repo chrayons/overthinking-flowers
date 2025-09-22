@@ -1,5 +1,5 @@
 // flower-interactions.js
-// Handles hover effects, tooltips, and click behavior for flowers on category pages
+// Optimized flower interaction system - all functionality preserved
 
 const FlowerInteractions = {
   // Store all flower data for global hover detection
@@ -8,9 +8,38 @@ const FlowerInteractions = {
   tooltip: null,
   globalHandlersAdded: false,
 
+  // Constants for optimized interactions
+  EMOTION_ANGLES: {
+    fear: 12, anger: 36, disgust: 60, pessimism: 84, sadness: 108,
+    anticipation: 150, surprise: 210,
+    optimism: 255, joy: 285, love: 315, trust: 345
+  },
+
+  CONFIG: {
+    THROTTLE_DELAY: 16,
+    TOUCH_TIMEOUT: 4000,
+    DOUBLE_TAP_WINDOW: 1000,
+    MOBILE_BREAKPOINT: 1160
+  },
+
+  // Utility functions
+  isMobile: function() {
+    return window.innerWidth <= this.CONFIG.MOBILE_BREAKPOINT;
+  },
+
+  getDeviceConfig: function() {
+    const mobile = this.isMobile();
+    return {
+      isMobile: mobile,
+      minInteractionSize: mobile ? 80 : 60,
+      padding: mobile ? 25 : 15,
+      tooltipOffset: mobile ? 15 : 10,
+      edgeBuffer: mobile ? 20 : 10
+    };
+  },
+
   // Clear all flower data (call this when layout changes)
   clearAll: function() {
-    // Clean up existing state
     this.flowers = [];
     this.currentHoveredFlower = null;
     if (this.tooltip) {
@@ -22,9 +51,6 @@ const FlowerInteractions = {
       this.tooltip = null;
     }
     this.restoreOtherFlowers();
-
-    // Force reset of global handlers by clearing the flag
-    // This ensures fresh mouse tracking for new layout
     this.globalHandlersAdded = false;
   },
 
@@ -32,13 +58,16 @@ const FlowerInteractions = {
   addBehavior: function(flowerElement, flowerData) {
     if (!flowerElement || !flowerData) return;
 
-    // Replace default hover areas with custom ones that match petal shapes
-    const bounds = this.replaceHoverAreas(flowerElement, flowerData);
+    // Calculate bounds and setup hover areas
+    const bounds = this.calculateFlowerBounds(flowerElement, flowerData);
+    if (!bounds) return;
 
-    // Check if this flower already exists and update it instead of adding duplicate
+    // Create hover area
+    this.createHoverArea(flowerElement, bounds);
+
+    // Check if this flower already exists and update it
     const existingIndex = this.flowers.findIndex(f => f.data.id === flowerData.id);
     if (existingIndex >= 0) {
-      // Update existing flower
       console.log(`Updating interaction for flower ${flowerData.id}`);
       this.flowers[existingIndex] = {
         element: flowerElement,
@@ -46,7 +75,6 @@ const FlowerInteractions = {
         bounds: bounds
       };
     } else {
-      // Add new flower
       console.log(`Adding interaction for flower ${flowerData.id}`);
       this.flowers.push({
         element: flowerElement,
@@ -55,9 +83,8 @@ const FlowerInteractions = {
       });
     }
 
-    // Add global mouse handlers once, but delay to ensure all flowers are loaded
+    // Add global mouse handlers once
     if (!this.globalHandlersAdded) {
-      // Use setTimeout to wait until all flowers are processed
       setTimeout(() => {
         if (!this.globalHandlersAdded) {
           this.addGlobalMouseHandlers();
@@ -67,47 +94,25 @@ const FlowerInteractions = {
     }
   },
 
-  // Replace default hover areas with ones that match actual petal shapes
-  replaceHoverAreas: function(flowerElement, flowerData) {
-    // flowerElement might be the SVG itself, or contain an SVG
+  // Calculate flower bounds based on visible petals
+  calculateFlowerBounds: function(flowerElement, flowerData) {
     const svg = flowerElement.tagName === 'svg' ? flowerElement : flowerElement.querySelector('svg');
-    if (!svg) return;
+    if (!svg) return null;
 
-    // Remove existing sectors and disable hover on petals
-    const existingSectors = svg.querySelectorAll('.mg-sector');
-    existingSectors.forEach(sector => sector.remove());
-
-    // Disable pointer events on the entire SVG first
-    svg.style.pointerEvents = 'none';
-
-    // Disable pointer events on all petal elements so only our custom hover area works
-    const petals = svg.querySelectorAll('.mg-petal, path, g');
-    petals.forEach(petal => {
-      petal.style.pointerEvents = 'none';
-    });
-
-    // Calculate the actual bounding box of the visible flower
     const width = parseInt(svg.getAttribute('width')) || 350;
     const height = parseInt(svg.getAttribute('height')) || 350;
     const centerX = width / 2;
     const centerY = height / 2;
     const maxRadius = width / 2.2;
 
-    // Find the actual bounds of visible petals
-    const emotionAngles = {
-      fear: 12, anger: 36, disgust: 60, pessimism: 84, sadness: 108,
-      anticipation: 150, surprise: 210,
-      optimism: 255, joy: 285, love: 315, trust: 345
-    };
-
     let minX = centerX, maxX = centerX, minY = centerY, maxY = centerY;
 
     // Calculate actual bounds based on visible petals
     Object.keys(flowerData.emotions).forEach(emotion => {
       const intensity = flowerData.emotions[emotion] / 100;
-      if (intensity <= 0.01) return; // Skip tiny emotions
+      if (intensity <= 0.01) return;
 
-      const angle = emotionAngles[emotion];
+      const angle = this.EMOTION_ANGLES[emotion];
       const petalLength = intensity * maxRadius;
 
       // Calculate end point of this petal
@@ -121,49 +126,99 @@ const FlowerInteractions = {
       maxY = Math.max(maxY, y);
     });
 
-    // Mobile-aware padding and minimum touch targets
-    const isMobile = window.innerWidth <= 1160;
-    const padding = isMobile ? 25 : 15; // Larger padding on mobile
+    const config = this.getDeviceConfig();
 
-    minX -= padding;
-    maxX += padding;
-    minY -= padding;
-    maxY += padding;
+    // Add padding
+    minX -= config.padding;
+    maxX += config.padding;
+    minY -= config.padding;
+    maxY += config.padding;
 
-    // Ensure minimum interaction area - larger for mobile touch
+    // Ensure minimum interaction area
     const currentWidth = maxX - minX;
     const currentHeight = maxY - minY;
-    const minInteractionSize = isMobile ? 80 : 60; // 80px minimum on mobile, 60px on desktop
 
-    if (currentWidth < minInteractionSize) {
-      const extraWidth = (minInteractionSize - currentWidth) / 2;
+    if (currentWidth < config.minInteractionSize) {
+      const extraWidth = (config.minInteractionSize - currentWidth) / 2;
       minX -= extraWidth;
       maxX += extraWidth;
     }
 
-    if (currentHeight < minInteractionSize) {
-      const extraHeight = (minInteractionSize - currentHeight) / 2;
+    if (currentHeight < config.minInteractionSize) {
+      const extraHeight = (config.minInteractionSize - currentHeight) / 2;
       minY -= extraHeight;
       maxY += extraHeight;
     }
 
+    return { minX, minY, maxX, maxY };
+  },
 
-    // Create invisible hover area (no visual debugging, but still functional)
+  // Create hover area for the flower
+  createHoverArea: function(flowerElement, bounds) {
+    const svg = flowerElement.tagName === 'svg' ? flowerElement : flowerElement.querySelector('svg');
+    if (!svg) return;
+
+    // Remove existing sectors and disable hover on petals
+    const existingSectors = svg.querySelectorAll('.mg-sector');
+    existingSectors.forEach(sector => sector.remove());
+
+    // Disable pointer events on SVG elements
+    svg.style.pointerEvents = 'none';
+    const petals = svg.querySelectorAll('.mg-petal, path, g');
+    petals.forEach(petal => {
+      petal.style.pointerEvents = 'none';
+    });
+
+    // Create invisible hover area
     const hoverRect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-    hoverRect.setAttribute("x", minX);
-    hoverRect.setAttribute("y", minY);
-    hoverRect.setAttribute("width", maxX - minX);
-    hoverRect.setAttribute("height", maxY - minY);
-    hoverRect.setAttribute("fill", "rgba(0,0,0,0)"); // Invisible
+    hoverRect.setAttribute("x", bounds.minX);
+    hoverRect.setAttribute("y", bounds.minY);
+    hoverRect.setAttribute("width", bounds.maxX - bounds.minX);
+    hoverRect.setAttribute("height", bounds.maxY - bounds.minY);
+    hoverRect.setAttribute("fill", "rgba(0,0,0,0)");
     hoverRect.setAttribute("stroke", "none");
-    hoverRect.setAttribute("pointer-events", "none"); // Let global handler manage this
+    hoverRect.setAttribute("pointer-events", "none");
     hoverRect.classList.add("mg-sector");
 
-    // Insert at beginning so it's behind petals
     svg.insertBefore(hoverRect, svg.firstChild);
+  },
 
-    // Return the bounds for use in hover detection
-    return { minX, minY, maxX, maxY };
+  // Check if point is within flower bounds
+  isPointInBounds: function(event, flower) {
+    const svg = flower.element.tagName === 'svg' ? flower.element : flower.element.querySelector('svg');
+    if (!svg) return false;
+
+    try {
+      const rect = svg.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) return false;
+
+      const screenCTM = svg.getScreenCTM();
+      if (!screenCTM) return false;
+
+      const pt = svg.createSVGPoint();
+      pt.x = event.clientX;
+      pt.y = event.clientY;
+      const local = pt.matrixTransform(screenCTM.inverse());
+
+      const x = local.x;
+      const y = local.y;
+      if (isNaN(x) || isNaN(y)) return false;
+
+      return x >= flower.bounds.minX && x <= flower.bounds.maxX &&
+             y >= flower.bounds.minY && y <= flower.bounds.maxY;
+    } catch (error) {
+      return false;
+    }
+  },
+
+  // Find flower at position
+  getFlowerAtPosition: function(e) {
+    for (let flower of this.flowers) {
+      if (this.isPointInBounds(e, flower)) {
+        return flower;
+      }
+    }
+    return null;
   },
 
   // Add global mouse handlers that check all flowers
@@ -174,171 +229,23 @@ const FlowerInteractions = {
       return;
     }
 
-  // Ensure the flower layer can receive events
-  container.style.pointerEvents = 'auto';
+    container.style.pointerEvents = 'auto';
 
-  // Helper: find which flower (if any) is under a given event point
-  const getFlowerAtPosition = (e) => {
-    for (let i = 0; i < this.flowers.length; i++) {
-      const flower = this.flowers[i];
-      const svg = flower.element.tagName === 'svg' ? flower.element : flower.element.querySelector('svg');
-      if (!svg) continue;
+    // Touch state
+    let touchTimeout = null;
+    let lastTouchTime = 0;
+    let lastTouchedFlower = null;
 
-      try {
-        const rect = svg.getBoundingClientRect();
-        if (rect.width === 0 || rect.height === 0) continue;
+    // Throttled mousemove
+    let throttleTimeout = null;
+    const onMouseMove = (e) => {
+      if (throttleTimeout) return;
+      throttleTimeout = setTimeout(() => {
+        throttleTimeout = null;
+        const hoveredFlower = this.getFlowerAtPosition(e);
 
-        const screenCTM = svg.getScreenCTM();
-        if (!screenCTM) continue;
-
-        const pt = svg.createSVGPoint();
-        pt.x = e.clientX;
-        pt.y = e.clientY;
-        const local = pt.matrixTransform(screenCTM.inverse());
-
-        const x = local.x;
-        const y = local.y;
-        if (isNaN(x) || isNaN(y)) continue;
-
-        if (x >= flower.bounds.minX && x <= flower.bounds.maxX &&
-            y >= flower.bounds.minY && y <= flower.bounds.maxY) {
-          return flower;
-        }
-      } catch (error) {
-        continue;
-      }
-    }
-    return null;
-  };
-
-  // Throttled mousemove (document-level so overlays can't block it)
-  let throttleTimeout = null;
-  const onMouseMove = (e) => {
-    if (throttleTimeout) return;
-    throttleTimeout = setTimeout(() => {
-      throttleTimeout = null;
-      const hoveredFlower = getFlowerAtPosition(e);
-
-      if (hoveredFlower !== this.currentHoveredFlower) {
-        // Exit previous
-        if (this.currentHoveredFlower) {
-          this.currentHoveredFlower.element.style.cursor = '';
-          if (this.tooltip) {
-            document.body.removeChild(this.tooltip);
-            this.tooltip = null;
-          }
-          this.restoreOtherFlowers();
-        }
-
-        // Enter new
-        if (hoveredFlower) {
-          hoveredFlower.element.style.cursor = 'pointer';
-          this.tooltip = this.createTooltip(hoveredFlower.data.text, e);
-          document.body.appendChild(this.tooltip);
-          this.fadeOtherFlowers(hoveredFlower.element);
-        }
-
-        this.currentHoveredFlower = hoveredFlower;
-      } else if (hoveredFlower && this.tooltip) {
-        this.updateTooltipPosition(this.tooltip, e);
-      }
-    }, 16);
-  };
-
-  // Click (document-level)
-  const onClick = (e) => {
-    // Let UI controls do their thing
-    if (e.target.matches('a, button, .btn-return-home, .btn-return-home-white')) {
-      return;
-    }
-
-    const clickedFlower = getFlowerAtPosition(e);
-    if (clickedFlower) {
-      e.preventDefault();
-      e.stopPropagation();
-      if (window.Modal && typeof window.Modal.openById === 'function') {
-        window.Modal.openById(clickedFlower.data.id);
-      }
-    }
-  };
-
-  // Touch support (document-level) — two-tap: show tooltip, then open
-  let touchTimeout = null;
-  let lastTouchTime = 0;
-  let lastTouchedFlower = null;
-
-  const onTouchStart = (e) => {
-    // Let UI controls handle their touches
-    if (e.target.matches('a, button, .btn-return-home, .btn-return-home-white')) {
-      return;
-    }
-
-    const touch = e.touches[0];
-    const touchEvent = {
-      clientX: touch.clientX,
-      clientY: touch.clientY,
-      pageX: touch.pageX,
-      pageY: touch.pageY
-    };
-
-    const touchedFlower = getFlowerAtPosition(touchEvent);
-    const now = Date.now();
-
-    if (touchedFlower) {
-      // Second tap within 1s on same flower => open modal
-      if (touchedFlower === lastTouchedFlower &&
-          touchedFlower === this.currentHoveredFlower &&
-          now - lastTouchTime < 1000) {
-
-        e.preventDefault();
-        e.stopPropagation();
-
-        if (touchTimeout) {
-          clearTimeout(touchTimeout);
-          touchTimeout = null;
-        }
-
-        if (window.Modal && typeof window.Modal.openById === 'function') {
-          window.Modal.openById(touchedFlower.data.id);
-        }
-
-        // Clear hover state
-        this.currentHoveredFlower.element.style.cursor = '';
-        if (this.tooltip) {
-          document.body.removeChild(this.tooltip);
-          this.tooltip = null;
-        }
-        this.restoreOtherFlowers();
-        this.currentHoveredFlower = null;
-        lastTouchedFlower = null;
-
-      } else {
-        // First tap — show tooltip & fade others
-        if (touchTimeout) {
-          clearTimeout(touchTimeout);
-          touchTimeout = null;
-        }
-
-        if (this.currentHoveredFlower && this.currentHoveredFlower !== touchedFlower) {
-          this.currentHoveredFlower.element.style.cursor = '';
-          if (this.tooltip) {
-            document.body.removeChild(this.tooltip);
-            this.tooltip = null;
-          }
-          this.restoreOtherFlowers();
-        }
-
-        touchedFlower.element.style.cursor = 'pointer';
-        if (this.tooltip) {
-          document.body.removeChild(this.tooltip);
-        }
-        this.tooltip = this.createTooltip(touchedFlower.data.text, touchEvent);
-        document.body.appendChild(this.tooltip);
-        this.fadeOtherFlowers(touchedFlower.element);
-        this.currentHoveredFlower = touchedFlower;
-
-        // Hide after a bit if no second tap
-        touchTimeout = setTimeout(() => {
+        if (hoveredFlower !== this.currentHoveredFlower) {
+          // Exit previous
           if (this.currentHoveredFlower) {
             this.currentHoveredFlower.element.style.cursor = '';
             if (this.tooltip) {
@@ -346,17 +253,156 @@ const FlowerInteractions = {
               this.tooltip = null;
             }
             this.restoreOtherFlowers();
-            this.currentHoveredFlower = null;
           }
-          lastTouchedFlower = null;
-          touchTimeout = null;
-        }, 4000);
 
-        lastTouchedFlower = touchedFlower;
-        lastTouchTime = now;
+          // Enter new
+          if (hoveredFlower) {
+            hoveredFlower.element.style.cursor = 'pointer';
+            this.tooltip = this.createTooltip(hoveredFlower.data.text, e);
+            document.body.appendChild(this.tooltip);
+            this.fadeOtherFlowers(hoveredFlower.element);
+          }
+
+          this.currentHoveredFlower = hoveredFlower;
+        } else if (hoveredFlower && this.tooltip) {
+          this.updateTooltipPosition(this.tooltip, e);
+        }
+      }, this.CONFIG.THROTTLE_DELAY);
+    };
+
+    // Click handler
+    const onClick = (e) => {
+      if (e.target.matches('a, button, .btn-return-home, .btn-return-home-white')) {
+        return;
       }
-    } else {
-      // Touch outside any flower — just clear state (NO auto-navigation)
+
+      const clickedFlower = this.getFlowerAtPosition(e);
+      if (clickedFlower) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (window.Modal && typeof window.Modal.openById === 'function') {
+          window.Modal.openById(clickedFlower.data.id);
+        }
+      }
+    };
+
+    // Touch handlers
+    const onTouchStart = (e) => {
+      if (e.target.matches('a, button, .btn-return-home, .btn-return-home-white')) {
+        return;
+      }
+
+      const touch = e.touches[0];
+      const touchEvent = {
+        clientX: touch.clientX,
+        clientY: touch.clientY,
+        pageX: touch.pageX,
+        pageY: touch.pageY
+      };
+
+      const touchedFlower = this.getFlowerAtPosition(touchEvent);
+      const now = Date.now();
+
+      if (touchedFlower) {
+        // Second tap within window => open modal
+        if (touchedFlower === lastTouchedFlower &&
+            touchedFlower === this.currentHoveredFlower &&
+            now - lastTouchTime < this.CONFIG.DOUBLE_TAP_WINDOW) {
+
+          e.preventDefault();
+          e.stopPropagation();
+
+          if (touchTimeout) {
+            clearTimeout(touchTimeout);
+            touchTimeout = null;
+          }
+
+          if (window.Modal && typeof window.Modal.openById === 'function') {
+            window.Modal.openById(touchedFlower.data.id);
+          }
+
+          // Clear hover state
+          this.currentHoveredFlower.element.style.cursor = '';
+          if (this.tooltip) {
+            document.body.removeChild(this.tooltip);
+            this.tooltip = null;
+          }
+          this.restoreOtherFlowers();
+          this.currentHoveredFlower = null;
+          lastTouchedFlower = null;
+
+        } else {
+          // First tap — show tooltip & fade others
+          if (touchTimeout) {
+            clearTimeout(touchTimeout);
+            touchTimeout = null;
+          }
+
+          if (this.currentHoveredFlower && this.currentHoveredFlower !== touchedFlower) {
+            this.currentHoveredFlower.element.style.cursor = '';
+            if (this.tooltip) {
+              document.body.removeChild(this.tooltip);
+              this.tooltip = null;
+            }
+            this.restoreOtherFlowers();
+          }
+
+          touchedFlower.element.style.cursor = 'pointer';
+          if (this.tooltip) {
+            document.body.removeChild(this.tooltip);
+          }
+          this.tooltip = this.createTooltip(touchedFlower.data.text, touchEvent);
+          document.body.appendChild(this.tooltip);
+          this.fadeOtherFlowers(touchedFlower.element);
+          this.currentHoveredFlower = touchedFlower;
+
+          // Hide after timeout
+          touchTimeout = setTimeout(() => {
+            if (this.currentHoveredFlower) {
+              this.currentHoveredFlower.element.style.cursor = '';
+              if (this.tooltip) {
+                document.body.removeChild(this.tooltip);
+                this.tooltip = null;
+              }
+              this.restoreOtherFlowers();
+              this.currentHoveredFlower = null;
+            }
+            lastTouchedFlower = null;
+            touchTimeout = null;
+          }, this.CONFIG.TOUCH_TIMEOUT);
+
+          lastTouchedFlower = touchedFlower;
+          lastTouchTime = now;
+        }
+      } else {
+        // Touch outside flower
+        if (touchTimeout) {
+          clearTimeout(touchTimeout);
+          touchTimeout = null;
+        }
+        if (this.currentHoveredFlower) {
+          this.currentHoveredFlower.element.style.cursor = '';
+          if (this.tooltip) {
+            document.body.removeChild(this.tooltip);
+            this.tooltip = null;
+          }
+          this.restoreOtherFlowers();
+          this.currentHoveredFlower = null;
+        }
+        lastTouchedFlower = null;
+      }
+    };
+
+    const onTouchEnd = (e) => {
+      if (e.target.matches('a, button, .btn-return-home, .btn-return-home-white')) {
+        return;
+      }
+      if (this.currentHoveredFlower) {
+        e.preventDefault();
+      }
+    };
+
+    const onTouchCancel = () => {
       if (touchTimeout) {
         clearTimeout(touchTimeout);
         touchTimeout = null;
@@ -370,193 +416,14 @@ const FlowerInteractions = {
         this.restoreOtherFlowers();
         this.currentHoveredFlower = null;
       }
-      lastTouchedFlower = null;
-    }
-  };
-
-  const onTouchEnd = (e) => {
-    if (e.target.matches('a, button, .btn-return-home, .btn-return-home-white')) {
-      return;
-    }
-    // If we showed a tooltip for this interaction, prevent default to avoid ghost clicks
-    if (this.currentHoveredFlower) {
-      e.preventDefault();
-    }
-  };
-
-  const onTouchCancel = () => {
-    if (touchTimeout) {
-      clearTimeout(touchTimeout);
-      touchTimeout = null;
-    }
-    if (this.currentHoveredFlower) {
-      this.currentHoveredFlower.element.style.cursor = '';
-      if (this.tooltip) {
-        document.body.removeChild(this.tooltip);
-        this.tooltip = null;
-      }
-      this.restoreOtherFlowers();
-      this.currentHoveredFlower = null;
-    }
-  };
-
-  // Attach document-level listeners so overlays/spacers can't block interactions
-  document.addEventListener('mousemove', onMouseMove, { passive: true });
-  document.addEventListener('click', onClick, { passive: false });
-  document.addEventListener('touchstart', onTouchStart, { passive: true });
-  document.addEventListener('touchend', onTouchEnd, { passive: false });
-  document.addEventListener('touchcancel', onTouchCancel, { passive: true });
-},
-
-
-  // Add custom hover effects that only trigger within bounds
-  addCustomHoverEffects: function(flowerElement, flowerData, bounds) {
-    let tooltip = null;
-    let isHovering = false;
-
-    // Helper function to check if mouse is within bounds
-    const isWithinBounds = (e) => {
-      const svg = flowerElement.tagName === 'svg' ? flowerElement : flowerElement.querySelector('svg');
-      if (!svg) return false;
-
-      const pt = svg.createSVGPoint();
-      pt.x = e.clientX;
-      pt.y = e.clientY;
-      const local = pt.matrixTransform(svg.getScreenCTM().inverse());
-
-      const x = local.x;
-      const y = local.y;
-
-      return x >= bounds.minX && x <= bounds.maxX && y >= bounds.minY && y <= bounds.maxY;
     };
 
-    // Mouse move: check if we're entering or leaving the bounds
-    flowerElement.addEventListener('mousemove', (e) => {
-      const withinBounds = isWithinBounds(e);
-
-      if (withinBounds && !isHovering) {
-        // Entering bounds - show tooltip and fade other flowers
-        isHovering = true;
-        flowerElement.style.cursor = 'pointer';
-        tooltip = this.createTooltip(flowerData.text, e);
-        document.body.appendChild(tooltip);
-        this.fadeOtherFlowers(flowerElement);
-      } else if (!withinBounds && isHovering) {
-        // Leaving bounds - hide tooltip and restore other flowers
-        isHovering = false;
-        flowerElement.style.cursor = '';
-        if (tooltip) {
-          document.body.removeChild(tooltip);
-          tooltip = null;
-        }
-        this.restoreOtherFlowers();
-      } else if (withinBounds && tooltip) {
-        // Still within bounds - update tooltip position
-        this.updateTooltipPosition(tooltip, e);
-      }
-    });
-
-    // Mouse leave: clean up if we leave the entire element
-    flowerElement.addEventListener('mouseleave', () => {
-      if (isHovering) {
-        isHovering = false;
-        flowerElement.style.cursor = '';
-        if (tooltip) {
-          document.body.removeChild(tooltip);
-          tooltip = null;
-        }
-        this.restoreOtherFlowers();
-      }
-    });
-  },
-
-  // Add custom click handler that only triggers within bounds
-  addCustomClickHandler: function(flowerElement, flowerData, bounds) {
-    // Helper function to check if mouse is within bounds
-    const isWithinBounds = (e) => {
-      // Get SVG element bounds
-      const svg = flowerElement.tagName === 'svg' ? flowerElement : flowerElement.querySelector('svg');
-      if (!svg) return false;
-
-      const rect = svg.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-
-      return x >= bounds.minX && x <= bounds.maxX && y >= bounds.minY && y <= bounds.maxY;
-    };
-
-    flowerElement.addEventListener('click', (e) => {
-      if (!isWithinBounds(e)) return; // Only handle clicks within bounds
-
-      e.preventDefault();
-      e.stopPropagation();
-
-      // Use existing Modal system
-      if (window.Modal && typeof window.Modal.openById === 'function') {
-        console.log('Opening modal for flower ID:', flowerData.id, 'text:', flowerData.text);
-        window.Modal.openById(flowerData.id);
-      } else {
-        console.warn('Modal system not available');
-      }
-    });
-  },
-
-  // Handle hover effects: tooltip + receding background for other flowers
-  addHoverEffects: function(flowerElement, flowerData) {
-    let tooltip = null;
-
-    // Mouse enter: show tooltip and fade other flowers
-    flowerElement.addEventListener('mouseenter', (e) => {
-      // Create and show tooltip
-      tooltip = this.createTooltip(flowerData.text, e);
-      document.body.appendChild(tooltip);
-
-      // Add white overlay to all OTHER flowers (receding effect)
-      this.fadeOtherFlowers(flowerElement);
-    });
-
-    // Mouse move: update tooltip position
-    flowerElement.addEventListener('mousemove', (e) => {
-      if (tooltip) {
-        this.updateTooltipPosition(tooltip, e);
-      }
-    });
-
-    // Mouse leave: hide tooltip and restore other flowers
-    flowerElement.addEventListener('mouseleave', () => {
-      // Remove tooltip
-      if (tooltip) {
-        document.body.removeChild(tooltip);
-        tooltip = null;
-      }
-
-      // Restore other flowers
-      this.restoreOtherFlowers();
-    });
-  },
-
-  // Add click handler to open modal
-  addClickHandler: function(flowerElement, flowerData) {
-    flowerElement.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-
-      // Debug Modal availability
-      console.log('Click detected. Checking Modal system:');
-      console.log('window.Modal exists:', !!window.Modal);
-      console.log('Modal object:', window.Modal);
-      console.log('Modal.open exists:', !!(window.Modal && typeof window.Modal.open === 'function'));
-
-      // Use existing Modal system (same as shuffle.js)
-      if (window.Modal && typeof window.Modal.openById === 'function') {
-        console.log('Opening modal for flower ID:', flowerData.id, 'text:', flowerData.text);
-        window.Modal.openById(flowerData.id);
-      } else {
-        console.warn('Modal system not available or not properly initialized');
-        console.warn('Available window properties:', Object.keys(window).filter(k => k.toLowerCase().includes('modal')));
-        console.warn('window.Modal:', window.Modal);
-      }
-    });
+    // Attach event listeners
+    document.addEventListener('mousemove', onMouseMove, { passive: true });
+    document.addEventListener('click', onClick, { passive: false });
+    document.addEventListener('touchstart', onTouchStart, { passive: true });
+    document.addEventListener('touchend', onTouchEnd, { passive: false });
+    document.addEventListener('touchcancel', onTouchCancel, { passive: true });
   },
 
   // Create tooltip element
@@ -565,18 +432,18 @@ const FlowerInteractions = {
     tooltip.className = 'flower-tooltip';
     tooltip.textContent = `"${text}"`;
 
-    // Style tooltip with fixed 160px width and text wrapping (matching original mg-tooltip)
+    // Style tooltip
     tooltip.style.position = 'absolute';
     tooltip.style.zIndex = '9999';
     tooltip.style.pointerEvents = 'none';
-    tooltip.style.background = 'rgba(255, 255, 255, 0.5)'; // More transparent like original
+    tooltip.style.background = 'rgba(255, 255, 255, 0.5)';
     tooltip.style.border = '0.5px solid #F8F8FF';
     tooltip.style.borderRadius = '5px';
     tooltip.style.padding = '8px 16px';
     tooltip.style.fontFamily = '"Satoshi Variable", system-ui';
     tooltip.style.fontSize = '12px';
-    tooltip.style.fontWeight = '400'; // Regular weight
-    tooltip.style.fontStyle = 'italic'; // Italic style
+    tooltip.style.fontWeight = '400';
+    tooltip.style.fontStyle = 'italic';
     tooltip.style.color = 'var(--text-primary)';
     tooltip.style.userSelect = 'none';
     tooltip.style.width = '160px';
@@ -586,19 +453,15 @@ const FlowerInteractions = {
     tooltip.style.overflowWrap = 'break-word';
     tooltip.style.lineHeight = '1.3';
 
-    // Position tooltip
     this.updateTooltipPosition(tooltip, mouseEvent);
-
     return tooltip;
   },
 
   // Update tooltip position with smart viewport-aware positioning
   updateTooltipPosition: function(tooltip, mouseEvent) {
-    const isMobile = window.innerWidth <= 1160;
-    const offset = isMobile ? 15 : 10; // Larger offset on mobile for touch
-    const tooltipWidth = 160; // Fixed width
-    const tooltipHeight = tooltip.offsetHeight || 60; // Estimate if not yet rendered
-    const edgeBuffer = isMobile ? 20 : 10; // Extra buffer from edges on mobile
+    const config = this.getDeviceConfig();
+    const tooltipWidth = 160;
+    const tooltipHeight = tooltip.offsetHeight || 60;
 
     // Get viewport dimensions and scroll position
     const viewportWidth = window.innerWidth;
@@ -610,48 +473,38 @@ const FlowerInteractions = {
     const clientX = mouseEvent.pageX - scrollX;
     const clientY = mouseEvent.pageY - scrollY;
 
-    // Calculate preferred position (below and to the right of cursor)
-    let left = clientX + offset;
-    let top = clientY + offset;
+    // Calculate preferred position
+    let left = clientX + config.tooltipOffset;
+    let top = clientY + config.tooltipOffset;
 
-    // On mobile, prefer centering above the touch point for better UX
-    if (isMobile) {
-      left = clientX - (tooltipWidth / 2); // Center horizontally on touch point
-      top = clientY - tooltipHeight - offset; // Position above touch point
+    // On mobile, prefer centering above the touch point
+    if (config.isMobile) {
+      left = clientX - (tooltipWidth / 2);
+      top = clientY - tooltipHeight - config.tooltipOffset;
     }
 
     // Check horizontal bounds and adjust
-    if (left + tooltipWidth > viewportWidth - edgeBuffer) {
-      // Would go off right edge - position to the left
-      left = clientX - tooltipWidth - offset;
-
-      // If still off left edge, clamp to edge buffer
-      if (left < edgeBuffer) {
-        left = edgeBuffer;
+    if (left + tooltipWidth > viewportWidth - config.edgeBuffer) {
+      left = clientX - tooltipWidth - config.tooltipOffset;
+      if (left < config.edgeBuffer) {
+        left = config.edgeBuffer;
       }
-    } else if (left < edgeBuffer) {
-      // Would go off left edge - position to the right
-      left = clientX + offset;
-
-      // If still off right edge, clamp to available space
-      if (left + tooltipWidth > viewportWidth - edgeBuffer) {
-        left = viewportWidth - tooltipWidth - edgeBuffer;
+    } else if (left < config.edgeBuffer) {
+      left = clientX + config.tooltipOffset;
+      if (left + tooltipWidth > viewportWidth - config.edgeBuffer) {
+        left = viewportWidth - tooltipWidth - config.edgeBuffer;
       }
     }
 
     // Check vertical bounds and adjust
-    if (top + tooltipHeight > viewportHeight - edgeBuffer) {
-      // Would go off bottom edge - position above cursor
-      top = clientY - tooltipHeight - offset;
+    if (top + tooltipHeight > viewportHeight - config.edgeBuffer) {
+      top = clientY - tooltipHeight - config.tooltipOffset;
     }
 
-    if (top < edgeBuffer) {
-      // Would go off top edge - position below cursor
-      top = clientY + offset;
-
-      // If still off bottom edge, clamp to available space
-      if (top + tooltipHeight > viewportHeight - edgeBuffer) {
-        top = viewportHeight - tooltipHeight - edgeBuffer;
+    if (top < config.edgeBuffer) {
+      top = clientY + config.tooltipOffset;
+      if (top + tooltipHeight > viewportHeight - config.edgeBuffer) {
+        top = viewportHeight - tooltipHeight - config.edgeBuffer;
       }
     }
 
@@ -668,7 +521,6 @@ const FlowerInteractions = {
     const allFlowers = document.querySelectorAll('.flower');
     allFlowers.forEach(flower => {
       if (flower !== hoveredFlower) {
-        // Add white overlay effect
         flower.style.filter = 'brightness(1.5) contrast(0.7)';
         flower.style.opacity = '0.4';
         flower.style.transition = 'all 0.3s ease';
