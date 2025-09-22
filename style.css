@@ -155,6 +155,14 @@ html, body {
     z-index: 10; /* Below flowers (100) */
     position: relative;
   }
+  /* Category pages (mobile): let flowers receive touches */
+  @media (max-width:1160px) {
+    body.category-page #themes-mobile { pointer-events:none; }
+    body.category-page .btn-return-home-white { pointer-events:auto; }
+  }
+
+  /* raise flower layer slightly above mobile chrome */
+  #flower-container { z-index: 20; }  /* was 3 */
 
   /* Category pages get mobile padding to match home page layout */
   body.category-page {

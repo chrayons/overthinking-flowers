@@ -174,231 +174,53 @@ const FlowerInteractions = {
       return;
     }
 
-    // Enable pointer events on container so it can receive mouse events
-    container.style.pointerEvents = 'auto';
+  // Ensure the flower layer can receive events
+  container.style.pointerEvents = 'auto';
 
-    // Helper function to check if mouse is within a flower's bounds
-    const getFlowerAtPosition = (e) => {
-      for (let i = 0; i < this.flowers.length; i++) {
-        const flower = this.flowers[i];
-        const svg = flower.element.tagName === 'svg' ? flower.element : flower.element.querySelector('svg');
-        if (!svg) continue;
+  // Helper: find which flower (if any) is under a given event point
+  const getFlowerAtPosition = (e) => {
+    for (let i = 0; i < this.flowers.length; i++) {
+      const flower = this.flowers[i];
+      const svg = flower.element.tagName === 'svg' ? flower.element : flower.element.querySelector('svg');
+      if (!svg) continue;
 
+      try {
+        const rect = svg.getBoundingClientRect();
+        if (rect.width === 0 || rect.height === 0) continue;
 
-        try {
-          // Check if SVG is still in DOM and visible
-          const rect = svg.getBoundingClientRect();
-          if (rect.width === 0 || rect.height === 0) continue;
+        const screenCTM = svg.getScreenCTM();
+        if (!screenCTM) continue;
 
-          // Convert mouse to SVG local coordinates with error handling
-          const screenCTM = svg.getScreenCTM();
-          if (!screenCTM) continue; // Skip if transformation matrix is invalid
+        const pt = svg.createSVGPoint();
+        pt.x = e.clientX;
+        pt.y = e.clientY;
+        const local = pt.matrixTransform(screenCTM.inverse());
 
-          const pt = svg.createSVGPoint();
-          pt.x = e.clientX;
-          pt.y = e.clientY;
-          const local = pt.matrixTransform(screenCTM.inverse());
+        const x = local.x;
+        const y = local.y;
+        if (isNaN(x) || isNaN(y)) continue;
 
-          const x = local.x;
-          const y = local.y;
-
-          // Additional validation for edge cases
-          if (isNaN(x) || isNaN(y)) continue;
-
-          if (x >= flower.bounds.minX && x <= flower.bounds.maxX &&
-              y >= flower.bounds.minY && y <= flower.bounds.maxY) {
-            return flower;
-          }
-        } catch (error) {
-          // Skip flowers with transformation errors (often happens with edge-positioned elements)
-          continue;
+        if (x >= flower.bounds.minX && x <= flower.bounds.maxX &&
+            y >= flower.bounds.minY && y <= flower.bounds.maxY) {
+          return flower;
         }
+      } catch (error) {
+        continue;
       }
-      return null;
-    };
+    }
+    return null;
+  };
 
-    // Throttled mouse move handler for better performance
-    let throttleTimeout = null;
-    container.addEventListener('mousemove', (e) => {
-      // Throttle to ~30fps max for better performance
-      if (throttleTimeout) return;
+  // Throttled mousemove (document-level so overlays can't block it)
+  let throttleTimeout = null;
+  const onMouseMove = (e) => {
+    if (throttleTimeout) return;
+    throttleTimeout = setTimeout(() => {
+      throttleTimeout = null;
+      const hoveredFlower = getFlowerAtPosition(e);
 
-      throttleTimeout = setTimeout(() => {
-        throttleTimeout = null;
-        const hoveredFlower = getFlowerAtPosition(e);
-
-        if (hoveredFlower !== this.currentHoveredFlower) {
-          // Flower changed - handle exit and enter
-          if (this.currentHoveredFlower) {
-            // Exit previous flower
-            this.currentHoveredFlower.element.style.cursor = '';
-            if (this.tooltip) {
-              document.body.removeChild(this.tooltip);
-              this.tooltip = null;
-            }
-            this.restoreOtherFlowers();
-          }
-
-          if (hoveredFlower) {
-            // Enter new flower
-            hoveredFlower.element.style.cursor = 'pointer';
-            this.tooltip = this.createTooltip(hoveredFlower.data.text, e);
-            document.body.appendChild(this.tooltip);
-            this.fadeOtherFlowers(hoveredFlower.element);
-          }
-
-          this.currentHoveredFlower = hoveredFlower;
-        } else if (hoveredFlower && this.tooltip) {
-          // Still on same flower - update tooltip position
-          this.updateTooltipPosition(this.tooltip, e);
-        }
-      }, 16); // ~60fps max
-    });
-
-    // Global click handler
-    container.addEventListener('click', (e) => {
-      // Don't intercept clicks on buttons or links
-      if (e.target.matches('a, button, .btn-return-home')) {
-        return; // Let the default behavior happen
-      }
-
-      const clickedFlower = getFlowerAtPosition(e);
-      if (clickedFlower) {
-        e.preventDefault();
-        e.stopPropagation();
-
-        if (window.Modal && typeof window.Modal.openById === 'function') {
-          console.log('Opening modal for flower ID:', clickedFlower.data.id);
-          window.Modal.openById(clickedFlower.data.id);
-        }
-      }
-    });
-
-    // Clean up when mouse leaves container
-    container.addEventListener('mouseleave', () => {
-      if (this.currentHoveredFlower) {
-        this.currentHoveredFlower.element.style.cursor = '';
-        if (this.tooltip) {
-          document.body.removeChild(this.tooltip);
-          this.tooltip = null;
-        }
-        this.restoreOtherFlowers();
-        this.currentHoveredFlower = null;
-      }
-    });
-
-    // Touch event handlers for mobile support - two-tap system
-    let touchTimeout = null;
-    let lastTouchTime = 0;
-    let lastTouchedFlower = null;
-
-    // Handle touch start - show tooltip (first tap) or open modal (second tap)
-    container.addEventListener('touchstart', (e) => {
-      // Don't intercept touches on buttons or links
-      if (e.target.matches('a, button, .btn-return-home')) {
-        return;
-      }
-
-      // Use first touch point
-      const touch = e.touches[0];
-      const touchEvent = {
-        clientX: touch.clientX,
-        clientY: touch.clientY,
-        pageX: touch.pageX,
-        pageY: touch.pageY
-      };
-
-      const touchedFlower = getFlowerAtPosition(touchEvent);
-
-      const currentTime = Date.now();
-
-      if (touchedFlower) {
-        // Check if this is a second tap on the same flower within 1 second
-        if (touchedFlower === lastTouchedFlower &&
-            touchedFlower === this.currentHoveredFlower &&
-            currentTime - lastTouchTime < 1000) {
-
-          // Second tap - open modal
-          e.preventDefault();
-          e.stopPropagation();
-
-          if (touchTimeout) {
-            clearTimeout(touchTimeout);
-            touchTimeout = null;
-          }
-
-          if (window.Modal && typeof window.Modal.openById === 'function') {
-            console.log('Opening modal for flower ID (second tap):', touchedFlower.data.id);
-            window.Modal.openById(touchedFlower.data.id);
-          }
-
-          // Clean up hover state
-          this.currentHoveredFlower.element.style.cursor = '';
-          if (this.tooltip) {
-            document.body.removeChild(this.tooltip);
-            this.tooltip = null;
-          }
-          this.restoreOtherFlowers();
-          this.currentHoveredFlower = null;
-          lastTouchedFlower = null;
-
-        } else {
-          // First tap - show tooltip and hover effects
-
-          // Clear any existing timeout
-          if (touchTimeout) {
-            clearTimeout(touchTimeout);
-            touchTimeout = null;
-          }
-
-          // Clean up previous hover state if different flower
-          if (this.currentHoveredFlower && this.currentHoveredFlower !== touchedFlower) {
-            this.currentHoveredFlower.element.style.cursor = '';
-            if (this.tooltip) {
-              document.body.removeChild(this.tooltip);
-              this.tooltip = null;
-            }
-            this.restoreOtherFlowers();
-          }
-
-          // Show new hover state (or refresh current one)
-          touchedFlower.element.style.cursor = 'pointer';
-          if (this.tooltip) {
-            document.body.removeChild(this.tooltip);
-          }
-          this.tooltip = this.createTooltip(touchedFlower.data.text, touchEvent);
-          document.body.appendChild(this.tooltip);
-          this.fadeOtherFlowers(touchedFlower.element);
-          this.currentHoveredFlower = touchedFlower;
-
-          // Set timeout to hide tooltip after 4 seconds (gives time for second tap)
-          touchTimeout = setTimeout(() => {
-            if (this.currentHoveredFlower) {
-              this.currentHoveredFlower.element.style.cursor = '';
-              if (this.tooltip) {
-                document.body.removeChild(this.tooltip);
-                this.tooltip = null;
-              }
-              this.restoreOtherFlowers();
-              this.currentHoveredFlower = null;
-            }
-            lastTouchedFlower = null;
-            touchTimeout = null;
-          }, 4000);
-
-          lastTouchedFlower = touchedFlower;
-          lastTouchTime = currentTime;
-        }
-      } else {
-        // Touched outside any flower - check if should return to category view
-        const isMobile = window.innerWidth <= 1160;
-
-        // Clear everything first
-        if (touchTimeout) {
-          clearTimeout(touchTimeout);
-          touchTimeout = null;
-        }
-
+      if (hoveredFlower !== this.currentHoveredFlower) {
+        // Exit previous
         if (this.currentHoveredFlower) {
           this.currentHoveredFlower.element.style.cursor = '';
           if (this.tooltip) {
@@ -406,42 +228,139 @@ const FlowerInteractions = {
             this.tooltip = null;
           }
           this.restoreOtherFlowers();
-          this.currentHoveredFlower = null;
         }
 
+        // Enter new
+        if (hoveredFlower) {
+          hoveredFlower.element.style.cursor = 'pointer';
+          this.tooltip = this.createTooltip(hoveredFlower.data.text, e);
+          document.body.appendChild(this.tooltip);
+          this.fadeOtherFlowers(hoveredFlower.element);
+        }
+
+        this.currentHoveredFlower = hoveredFlower;
+      } else if (hoveredFlower && this.tooltip) {
+        this.updateTooltipPosition(this.tooltip, e);
+      }
+    }, 16);
+  };
+
+  // Click (document-level)
+  const onClick = (e) => {
+    // Let UI controls do their thing
+    if (e.target.matches('a, button, .btn-return-home, .btn-return-home-white')) {
+      return;
+    }
+
+    const clickedFlower = getFlowerAtPosition(e);
+    if (clickedFlower) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (window.Modal && typeof window.Modal.openById === 'function') {
+        window.Modal.openById(clickedFlower.data.id);
+      }
+    }
+  };
+
+  // Touch support (document-level) — two-tap: show tooltip, then open
+  let touchTimeout = null;
+  let lastTouchTime = 0;
+  let lastTouchedFlower = null;
+
+  const onTouchStart = (e) => {
+    // Let UI controls handle their touches
+    if (e.target.matches('a, button, .btn-return-home, .btn-return-home-white')) {
+      return;
+    }
+
+    const touch = e.touches[0];
+    const touchEvent = {
+      clientX: touch.clientX,
+      clientY: touch.clientY,
+      pageX: touch.pageX,
+      pageY: touch.pageY
+    };
+
+    const touchedFlower = getFlowerAtPosition(touchEvent);
+    const now = Date.now();
+
+    if (touchedFlower) {
+      // Second tap within 1s on same flower => open modal
+      if (touchedFlower === lastTouchedFlower &&
+          touchedFlower === this.currentHoveredFlower &&
+          now - lastTouchTime < 1000) {
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (touchTimeout) {
+          clearTimeout(touchTimeout);
+          touchTimeout = null;
+        }
+
+        if (window.Modal && typeof window.Modal.openById === 'function') {
+          window.Modal.openById(touchedFlower.data.id);
+        }
+
+        // Clear hover state
+        this.currentHoveredFlower.element.style.cursor = '';
+        if (this.tooltip) {
+          document.body.removeChild(this.tooltip);
+          this.tooltip = null;
+        }
+        this.restoreOtherFlowers();
+        this.currentHoveredFlower = null;
         lastTouchedFlower = null;
 
-        // On mobile, tapping outside returns to category view smoothly
-        if (isMobile) {
-          // Add a small delay to ensure the touch was intentional (not accidental scroll)
-          setTimeout(() => {
-            // Navigate back to home with smooth transition
-            window.location.href = 'index.html';
-          }, 100);
+      } else {
+        // First tap — show tooltip & fade others
+        if (touchTimeout) {
+          clearTimeout(touchTimeout);
+          touchTimeout = null;
         }
-      }
-    });
 
-    // Handle touch end - prevent default only if we handled the touch
-    container.addEventListener('touchend', (e) => {
-      // Don't intercept touches on buttons or links
-      if (e.target.matches('a, button, .btn-return-home')) {
-        return;
-      }
+        if (this.currentHoveredFlower && this.currentHoveredFlower !== touchedFlower) {
+          this.currentHoveredFlower.element.style.cursor = '';
+          if (this.tooltip) {
+            document.body.removeChild(this.tooltip);
+            this.tooltip = null;
+          }
+          this.restoreOtherFlowers();
+        }
 
-      // If we have a current hovered flower, prevent default behavior
-      if (this.currentHoveredFlower) {
-        e.preventDefault();
-      }
-    });
+        touchedFlower.element.style.cursor = 'pointer';
+        if (this.tooltip) {
+          document.body.removeChild(this.tooltip);
+        }
+        this.tooltip = this.createTooltip(touchedFlower.data.text, touchEvent);
+        document.body.appendChild(this.tooltip);
+        this.fadeOtherFlowers(touchedFlower.element);
+        this.currentHoveredFlower = touchedFlower;
 
-    // Handle touch cancel - clean up
-    container.addEventListener('touchcancel', () => {
+        // Hide after a bit if no second tap
+        touchTimeout = setTimeout(() => {
+          if (this.currentHoveredFlower) {
+            this.currentHoveredFlower.element.style.cursor = '';
+            if (this.tooltip) {
+              document.body.removeChild(this.tooltip);
+              this.tooltip = null;
+            }
+            this.restoreOtherFlowers();
+            this.currentHoveredFlower = null;
+          }
+          lastTouchedFlower = null;
+          touchTimeout = null;
+        }, 4000);
+
+        lastTouchedFlower = touchedFlower;
+        lastTouchTime = now;
+      }
+    } else {
+      // Touch outside any flower — just clear state (NO auto-navigation)
       if (touchTimeout) {
         clearTimeout(touchTimeout);
         touchTimeout = null;
       }
-
       if (this.currentHoveredFlower) {
         this.currentHoveredFlower.element.style.cursor = '';
         if (this.tooltip) {
@@ -451,8 +370,44 @@ const FlowerInteractions = {
         this.restoreOtherFlowers();
         this.currentHoveredFlower = null;
       }
-    });
-  },
+      lastTouchedFlower = null;
+    }
+  };
+
+  const onTouchEnd = (e) => {
+    if (e.target.matches('a, button, .btn-return-home, .btn-return-home-white')) {
+      return;
+    }
+    // If we showed a tooltip for this interaction, prevent default to avoid ghost clicks
+    if (this.currentHoveredFlower) {
+      e.preventDefault();
+    }
+  };
+
+  const onTouchCancel = () => {
+    if (touchTimeout) {
+      clearTimeout(touchTimeout);
+      touchTimeout = null;
+    }
+    if (this.currentHoveredFlower) {
+      this.currentHoveredFlower.element.style.cursor = '';
+      if (this.tooltip) {
+        document.body.removeChild(this.tooltip);
+        this.tooltip = null;
+      }
+      this.restoreOtherFlowers();
+      this.currentHoveredFlower = null;
+    }
+  };
+
+  // Attach document-level listeners so overlays/spacers can't block interactions
+  document.addEventListener('mousemove', onMouseMove, { passive: true });
+  document.addEventListener('click', onClick, { passive: false });
+  document.addEventListener('touchstart', onTouchStart, { passive: true });
+  document.addEventListener('touchend', onTouchEnd, { passive: false });
+  document.addEventListener('touchcancel', onTouchCancel, { passive: true });
+},
+
 
   // Add custom hover effects that only trigger within bounds
   addCustomHoverEffects: function(flowerElement, flowerData, bounds) {
