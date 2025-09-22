@@ -5,11 +5,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Metaphor Garden</title>
   <link rel="stylesheet" href="../style.css">
+  <script src="../scripts/mobile-header.js"></script>
 </head>
 <body>
   <div class="wrapper">
     <a href="index.html" class="header-link">METAPHOR GARDEN</a>
     <div class="header-label">OVERTHINKING ZINE</div>
+
+    <!-- Mobile Header Dropdown (shows on very small screens) -->
+    <div class="mobile-header-dropdown">
+      <button class="mobile-header-toggle" aria-label="Menu" aria-expanded="false">
+        <div class="menu-icon-inner">
+          <span></span>
+          <span></span>
+        </div>
+      </button>
+      <nav class="mobile-header-menu">
+        <a href="index.html" class="mobile-header-menu-item">METAPHOR GARDEN</a>
+        <span class="mobile-header-menu-item secondary">OVERTHINKING ZINE</span>
+      </nav>
+    </div>
 
     <section id="themes-desktop">
       <h2 class="eyebrow">EXPLORE BY THEME</h2>

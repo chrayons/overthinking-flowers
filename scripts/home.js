@@ -416,11 +416,40 @@ window.addEventListener('resize', () => {
   }, 150);
 });
 
+// Detect if user is returning from a category page
+function disableCarouselTransition() {
+  const track = document.getElementById('mobile-category-track');
+  if (track) {
+    track.style.transition = 'none';
+    // Re-enable transition after positioning is complete
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        track.style.transition = '';
+      });
+    });
+  }
+}
+
+// Check if coming from a category page (referrer contains category name)
+function isReturningFromCategory() {
+  const referrer = document.referrer;
+  const categoryPages = ['loss-of-agency', 'perceptual-barriers', 'thought-entanglement',
+                        'sensory-overwhelm', 'perpetual-looping', 'emotional-dysregulation',
+                        'temporal-disconnection'];
+  return categoryPages.some(category => referrer.includes(category));
+}
+
 // Load + init
 fetch('../data.json')
   .then(r => r.json())
   .then(rawData => {
     const flowers = parseFlowerData(rawData);
+
+    // Disable transition if returning from category page
+    if (isReturningFromCategory()) {
+      disableCarouselTransition();
+    }
+
     createHomePage(flowers);
     if (window.Shuffle) Shuffle.init(flowers);
     if (window.Modal)   Modal.init(flowers);

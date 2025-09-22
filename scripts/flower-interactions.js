@@ -549,7 +549,7 @@ const FlowerInteractions = {
     });
 
     // Also fade labels and buttons to background (opacity only, no filter effects)
-    const labelsAndButtons = document.querySelectorAll('.category-title, .header-link, .header-label, .btn-return-home, .btn-return-home-white, #shuffle-btn, .carousel-arrow, .mobile-category-item, .category-label');
+    const labelsAndButtons = document.querySelectorAll('.category-title, .header-link, .header-label, .btn-return-home, .btn-return-home-white, #shuffle-btn, .carousel-arrow, .mobile-category-item, .category-label, .mobile-header-toggle, .mobile-header-menu');
     labelsAndButtons.forEach(element => {
       element.style.opacity = '0.3';
       element.style.transition = 'all 0.3s ease';
@@ -566,7 +566,7 @@ const FlowerInteractions = {
     });
 
     // Also restore labels and buttons to normal state
-    const labelsAndButtons = document.querySelectorAll('.category-title, .header-link, .header-label, .btn-return-home, .btn-return-home-white, #shuffle-btn, .carousel-arrow, .mobile-category-item, .category-label');
+    const labelsAndButtons = document.querySelectorAll('.category-title, .header-link, .header-label, .btn-return-home, .btn-return-home-white, #shuffle-btn, .carousel-arrow, .mobile-category-item, .category-label, .mobile-header-toggle, .mobile-header-menu');
     labelsAndButtons.forEach(element => {
       element.style.opacity = '';
       element.style.transition = 'all 0.3s ease';
