@@ -496,6 +496,15 @@ body {
   #shuffle-btn:active {
     transform: translateY(1px);
   }
+
+  /* Reset focus state on mobile to prevent button staying blue after tap */
+  @media (max-width: 775px) {
+    #shuffle-btn:focus {
+      background: #F8F8FF;
+      color: #005BA6;
+      outline: none;
+    }
+  }
 }
 
 
