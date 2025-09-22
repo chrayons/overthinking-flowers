@@ -57,6 +57,15 @@ html, body {
   background: var(--page-bg);
   margin: 0;
   padding: 0;
+  min-height: 100vh; /* Allow vertical centering while maintaining scroll */
+}
+
+/* Only apply grid centering to home page */
+body:not(.category-page) {
+  display: grid;
+  place-items: center; /* Center content vertically and horizontally when space allows */
+  grid-template-rows: 1fr; /* Explicit grid template to prevent layout shifts */
+  grid-template-columns: 1fr;
 }
 
 /* Full-bleed stage for category pages - allow flowers to extend beyond bounds */
@@ -230,6 +239,8 @@ html, body {
     var(--side-max)
   );
   padding-top: 136px; /* Desktop content starts 136px from top (includes space for fixed header) */
+  width: 100%; /* Ensure wrapper takes full width for proper centering */
+  box-sizing: border-box; /* Include padding in width calculation */
 }
 
 /* eyebrow */
@@ -455,6 +466,11 @@ html, body {
   z-index: 10; /* Below flowers (100) */
   position: relative;
 }
+/* Medium screens need padding for proper scroll behavior */
+@media (max-width: 1160px) and (min-width: 776px) {
+  .wrapper { padding-top: 136px; } /* Maintain padding for scrollable content */
+}
+
 @media (max-width: 775px){
   #themes-desktop{ display:none; }
   #themes-mobile { display:block; padding-bottom: 96px; } /* 96px space after themes section on mobile */
@@ -662,7 +678,12 @@ body.category-page .mobile-category-item {
 /* ================================
    Reflections
    ================================ */
-#reflections { margin: 64px auto 100px; text-align: center; max-width: var(--content-max); }
+#reflections {
+  margin: 64px auto 100px;
+  text-align: center;
+  max-width: var(--content-max);
+  width: 100%; /* Ensure full width for proper card spacing */
+}
 
 #reflections h2 {
   font-family: "Satoshi Variable", system-ui;
@@ -670,7 +691,12 @@ body.category-page .mobile-category-item {
   font-weight: 400;
 }
 #shuffle-cards {
-  display: flex; gap: 20px; justify-content: center; margin: 20px 0;
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin: 20px 0;
+  width: 100%; /* Ensure cards container takes full width */
+  flex-shrink: 0; /* Prevent cards from shrinking */
   /* Always shows 3 cards - CSS media queries handle responsive visibility */
 }
 #shuffle-cards .card {
@@ -679,6 +705,10 @@ body.category-page .mobile-category-item {
   height: 52px; /* Increased from 44px to allow 2 lines of text */
   text-align: left;
   box-sizing: border-box;
+  flex-shrink: 0; /* Prevent cards from shrinking */
+  flex-grow: 0; /* Prevent cards from growing */
+  min-width: 320px; /* Enforce minimum width */
+  max-width: 320px; /* Enforce maximum width */
   overflow: hidden;
   display: flex;
   align-items: flex-start;
