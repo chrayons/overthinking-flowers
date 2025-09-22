@@ -27,6 +27,11 @@ const FlowerInteractions = {
     return window.innerWidth <= this.CONFIG.MOBILE_BREAKPOINT;
   },
 
+  isModalOpen: function() {
+    const modalOverlay = document.getElementById('mg-modal-overlay');
+    return modalOverlay && modalOverlay.classList.contains('open');
+  },
+
   getDeviceConfig: function() {
     const mobile = this.isMobile();
     return {
@@ -242,6 +247,12 @@ const FlowerInteractions = {
       if (throttleTimeout) return;
       throttleTimeout = setTimeout(() => {
         throttleTimeout = null;
+
+        // Don't interact with flowers when modal is open
+        if (this.isModalOpen()) {
+          return;
+        }
+
         const hoveredFlower = this.getFlowerAtPosition(e);
 
         if (hoveredFlower !== this.currentHoveredFlower) {
@@ -276,6 +287,11 @@ const FlowerInteractions = {
         return;
       }
 
+      // Don't interact with flowers when modal is open
+      if (this.isModalOpen()) {
+        return;
+      }
+
       const clickedFlower = this.getFlowerAtPosition(e);
       if (clickedFlower) {
         e.preventDefault();
@@ -289,6 +305,11 @@ const FlowerInteractions = {
     // Touch handlers
     const onTouchStart = (e) => {
       if (e.target.matches('a, button, .btn-return-home, .btn-return-home-white')) {
+        return;
+      }
+
+      // Don't interact with flowers when modal is open
+      if (this.isModalOpen()) {
         return;
       }
 

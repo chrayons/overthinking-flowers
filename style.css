@@ -880,8 +880,9 @@ body.category-page .mobile-category-item {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
   display: none;
-  background: rgba(248, 248, 255, 0.9); /* 90% white overlay - more opaque */
-  z-index: 9999;
+  background: rgba(248, 248, 255, 0.95); /* 95% white overlay - stronger visual barrier */
+  z-index: 10000; /* Higher than tooltips (9999) to block all background interactions */
+  pointer-events: auto; /* Ensure overlay captures all pointer events */
 }
 
 #mg-modal-overlay.open{ display: block; }
@@ -897,7 +898,7 @@ body.category-page .mobile-category-item {
   background: transparent;
   overflow: visible;
   /* Fine-tune centering - desktop only */
-  margin-top: -50px; /* Move desktop modal up more */
+  margin-top: 0; /* Properly centered */
 }
 
 /* Desktop modal background */
