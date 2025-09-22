@@ -309,6 +309,7 @@ const FlowerInteractions = {
       };
 
       const touchedFlower = getFlowerAtPosition(touchEvent);
+
       const currentTime = Date.now();
 
       if (touchedFlower) {

@@ -86,7 +86,7 @@ html, body {
 #flower-container .flower {
   position: absolute;
   pointer-events: auto; /* Re-enable interactions for individual flowers */
-  z-index: 3; /* Above category text */
+  z-index: 5; /* Below category elements but above background */
   /* Size is now handled dynamically by JavaScript based on viewport and emotional intensity */
   /* Remove fixed width/height as these are set by the positioning algorithm */
 }
@@ -152,6 +152,8 @@ html, body {
   /* Show mobile themes section on category pages */
   body.category-page #themes-mobile {
     display: block !important;
+    z-index: 10; /* Below flowers (100) */
+    position: relative;
   }
 
   /* Category pages get mobile padding to match home page layout */
@@ -440,7 +442,11 @@ html, body {
 
 /* Mobile: hide grid, show mobile-only UI (carousel) */
 #themes-desktop{ display:block; }
-#themes-mobile { display:none;  }
+#themes-mobile {
+  display: none;
+  z-index: 10; /* Below flowers (100) */
+  position: relative;
+}
 @media (max-width: 775px){
   #themes-desktop{ display:none; }
   #themes-mobile { display:block; padding-bottom: 96px; } /* 96px space after themes section on mobile */
@@ -481,7 +487,21 @@ html, body {
   align-items: center;
   gap: 20px;
   margin: 20px 0;
+  z-index: 10; /* Above flowers */
   position: relative;
+}
+
+/* Only the category label should allow click-through to flowers below */
+body.category-page .category-label {
+  pointer-events: none; /* Allow click-through to flowers below */
+}
+
+/* Ensure mobile carousel containers have proper pointer events */
+body.category-page .mobile-carousel,
+body.category-page .carousel-container,
+body.category-page .carousel-track,
+body.category-page .mobile-category-item {
+  pointer-events: auto; /* Normal pointer events to maintain layout */
 }
 
 .carousel-container {
@@ -490,10 +510,13 @@ html, body {
   position: relative;
   height: 120px;
   display: flex;
+  z-index: 10; /* Above flowers (5) */
   align-items: center;
   justify-content: center;  /* this is OK now; JS accounts for it */
   perspective: 1000px;
 }
+
+/* Remove specific flower overrides - flowers should be below category elements */
 
 .carousel-track {
   display: flex;
@@ -805,6 +828,7 @@ html, body {
   justify-content: center;
   width: 155px;
   height: 38px;
+  pointer-events: auto; /* Override parent pointer-events: none */
   background: var(--bg-primary);
   border: 1px solid #005BA6;
   border-radius: 5px;
