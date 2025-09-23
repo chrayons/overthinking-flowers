@@ -151,17 +151,7 @@ body {
     display: none;
   }
 
-  /* Show mobile themes section on category pages */
-  body.category-page #themes-mobile {
-    display: block !important;
-    z-index: 10; /* Below flowers (100) */
-    position: relative;
-  }
-  /* Category pages (mobile): let flowers receive touches */
-  @media (max-width:1160px) {
-    body.category-page #themes-mobile { pointer-events:none; }
-    body.category-page .btn-return-home-white { pointer-events:auto; }
-  }
+  /* Category pages no longer use #themes-mobile - they use .category-overlay instead */
 
   /* raise flower layer slightly above mobile chrome */
   #flower-container { z-index: 20; }  /* was 3 */
@@ -624,18 +614,71 @@ body {
   position: relative;
 }
 
-/* Only the category label should allow click-through to flowers below */
-body.category-page .category-label {
-  pointer-events: none; /* Allow click-through to flowers below */
+/* Category Page Overlay - Clean centered layout */
+.category-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  z-index: 10; /* Above flowers */
+  pointer-events: none; /* Allow click-through to flowers */
 }
 
-/* Ensure mobile carousel containers have proper pointer events */
-body.category-page .mobile-carousel,
-body.category-page .carousel-container,
-body.category-page .carousel-track,
-body.category-page .mobile-category-item {
-  pointer-events: auto; /* Normal pointer events to maintain layout */
+/* Category name styling */
+.category-overlay .category-name {
+  font-family: "junicoderegularcondensed", "junicoderegular", Georgia, serif;
+  font-size: 48px;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  color: var(--text-primary);
+  text-align: center;
+  margin: 0;
+  pointer-events: none; /* Allow click-through to flowers */
 }
+
+/* Category return button - enable clicking and use white styling */
+.category-overlay .btn-return-home {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 155px;
+  height: 38px;
+  background: var(--bg-primary);
+  color: #005BA6;
+  border: 1px solid #005BA6;
+  border-radius: 5px;
+  font-family: "Satoshi-Light", system-ui;
+  font-size: 14px;
+  font-weight: 400;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+  pointer-events: auto; /* Enable clicking */
+}
+
+.category-overlay .btn-return-home:hover {
+  background: #005BA6;
+  color: var(--bg-primary);
+}
+
+/* Responsive adjustments for category overlay */
+@media (max-width: 775px) {
+  .category-overlay {
+    gap: 32px; /* Tighter spacing on small screens */
+  }
+
+  .category-overlay .category-name {
+    font-size: 42px; /* Slightly smaller on very small screens */
+  }
+}
+
 
 .carousel-container {
   width: 100%;
