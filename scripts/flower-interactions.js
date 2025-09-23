@@ -182,8 +182,14 @@ const FlowerInteractions = {
     hoverRect.setAttribute("height", bounds.maxY - bounds.minY);
     hoverRect.setAttribute("fill", "rgba(0,0,0,0)");
     hoverRect.setAttribute("stroke", "none");
-    hoverRect.setAttribute("pointer-events", "none");
+    hoverRect.setAttribute("pointer-events", "auto");
     hoverRect.classList.add("mg-sector");
+
+    // Add flower ID for efficient event delegation
+    const flowerId = flowerElement.getAttribute("data-id");
+    if (flowerId) {
+      hoverRect.setAttribute("data-flower-id", flowerId);
+    }
 
     svg.insertBefore(hoverRect, svg.firstChild);
   },

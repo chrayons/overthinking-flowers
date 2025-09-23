@@ -152,6 +152,20 @@ function renderThemes(flowers) {
       createCategoryCluster(name, list, grid);
     }
   });
+
+  // Add efficient hover event handling to replace expensive :has() selector
+  grid.addEventListener('mouseover', (e) => {
+    if (e.target.closest('.category-cell')) {
+      grid.classList.add('hovering');
+    }
+  }, { passive: true });
+
+  grid.addEventListener('mouseout', (e) => {
+    // Only remove class if we're leaving the grid entirely
+    if (!grid.contains(e.relatedTarget)) {
+      grid.classList.remove('hovering');
+    }
+  }, { passive: true });
 }
 
 // ---------- mobile carousel (unchanged) ----------

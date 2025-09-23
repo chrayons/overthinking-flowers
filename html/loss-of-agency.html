@@ -5,11 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Loss of Agency - Metaphor Garden</title>
   <link rel="preload" href="../Junicode/Junicode-RegularCondensed.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" as="style" href="../Satoshi/WEB/css/satoshi.css">
+  <link rel="stylesheet" href="../Satoshi/WEB/css/satoshi.css">
   <link rel="stylesheet" href="../style.css">
-  <script src="../scripts/shared.js"></script>
-  <script src="../scripts/flower-renderer.js"></script>
-  <script src="../scripts/modal.js"></script>
-  <script src="../scripts/flower-interactions.js"></script>
 </head>
 <body class="category-page">
   <!-- Fixed header elements -->
@@ -67,15 +65,21 @@
       </div>
     </section>
 
-    <section id="reflections" style="visibility: hidden; pointer-events: none;">
+    <section id="reflections" style="display: none;">
       <h2>REFLECTIONS</h2>
       <div id="shuffle-cards"></div>
       <button id="shuffle-btn" class="btn-primary">Shuffle Thoughts</button>
     </section>
   </div>
 
-  <script src="../scripts/shuffle.js"></script>
-  <script src="../scripts/loss-of-agency.js"></script>
-  <script src="../scripts/mobile-header.js"></script>
+  <!-- Critical scripts (needed for initial render) -->
+  <script defer src="../scripts/shared.js"></script>
+  <script defer src="../scripts/flower-renderer.js"></script>
+  <script defer src="../scripts/modal.js"></script>
+  <script defer src="../scripts/flower-interactions.js"></script>
+  <script defer src="../scripts/loss-of-agency.js"></script>
+
+  <!-- Non-critical scripts (can load after page renders) -->
+  <script async src="../scripts/mobile-header.js"></script>
 </body>
 </html>

@@ -35,7 +35,7 @@ const FLOWER_POSITIONS = {
 const LOA_LAYOUT_KEY = 'loa-simple-layout-v13';
 
 // Set to true to ignore cache and always use fresh positions (for experimentation)
-const IGNORE_CACHE = true;
+const IGNORE_CACHE = false;
 
 function saveLayout(placed) {
   try {
@@ -111,11 +111,13 @@ function createLossOfAgencyLayout(flowers) {
   const placedFlowers = [];
   const resultsForPersist = [];
 
+  // Compute mobile detection once outside the loop
+  const isMobile = window.innerWidth <= 1160;
+  const positions = isMobile ? FLOWER_POSITIONS.mobile : FLOWER_POSITIONS.desktop;
+
   categoryFlowers.forEach((flowerData, index) => {
     // Simple fixed positioning - no complex algorithms
-    const isMobile = window.innerWidth <= 1160;
-    const positions = isMobile ? FLOWER_POSITIONS.mobile : FLOWER_POSITIONS.desktop;
-    const position = positions[flowerData.id];
+    let position = positions[flowerData.id];
 
     // Fallback position if flower ID not found
     if (!position) {

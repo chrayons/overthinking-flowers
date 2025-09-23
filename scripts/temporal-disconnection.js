@@ -23,7 +23,7 @@ const FLOWER_POSITIONS = {
 const TD_LAYOUT_KEY = 'td-simple-layout-v1';
 
 // Set to true to ignore cache and always use fresh positions (for experimentation)
-const IGNORE_CACHE = true;
+const IGNORE_CACHE = false;
 
 function saveLayout(placed) {
   try {
@@ -94,11 +94,13 @@ function createTemporalDisconnectionLayout(flowers) {
   const placedFlowers = [];
   const resultsForPersist = [];
 
+  // Calculate mobile/desktop state and positions once for all flowers
+  const isMobile = window.innerWidth <= 1160;
+  const positions = isMobile ? FLOWER_POSITIONS.mobile : FLOWER_POSITIONS.desktop;
+
   categoryFlowers.forEach((flowerData, index) => {
     // Simple fixed positioning - no complex algorithms
-    const isMobile = window.innerWidth <= 1160;
-    const positions = isMobile ? FLOWER_POSITIONS.mobile : FLOWER_POSITIONS.desktop;
-    const position = positions[flowerData.id];
+    let position = positions[flowerData.id];
 
     // Fallback position if flower ID not found
     if (!position) {

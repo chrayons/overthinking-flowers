@@ -3,8 +3,11 @@
     const recentIds = [];   // simple session buffer to avoid immediate repeats
     let currentPicks = [];  // store current cards to avoid regenerating on resize
 
+    // Cache for text measurements to avoid DOM manipulation on repeated calls
+    const measureCache = new Map();
+
     // getCardCount removed - CSS now handles responsive visibility
-  
+
     function sampleUnique(list, cardCount, bannedIds = new Set()) {
       const pool = list.filter(x => !bannedIds.has(x.id));
       if (pool.length < cardCount) bannedIds = new Set(); // fallback if pool too small
@@ -17,6 +20,12 @@
     }
   
     function clampSnippetToFit(text, maxWidth, maxHeight = 52) {
+      // Check cache first
+      const key = text + '|' + maxWidth + '|' + maxHeight;
+      if (measureCache.has(key)) {
+        return measureCache.get(key);
+      }
+
       // Create a temporary element that exactly matches the card styling
       const measureEl = document.createElement('span');
       measureEl.style.visibility = 'hidden';
@@ -36,7 +45,9 @@
       measureEl.textContent = text + " See the Flower";
       if (measureEl.offsetHeight <= maxHeight) {
         document.body.removeChild(measureEl);
-        return { text: text, needsTruncation: false };
+        const result = { text: text, needsTruncation: false };
+        measureCache.set(key, result);
+        return result;
       }
 
       // If full text doesn't fit, find the maximum that fits with "... See the Flower"
@@ -79,7 +90,9 @@
       }
 
       document.body.removeChild(measureEl);
-      return { text: bestFit.trim(), needsTruncation: true };
+      const result = { text: bestFit.trim(), needsTruncation: true };
+      measureCache.set(key, result);
+      return result;
     }
   
     function generateNewCards(flowers) {
