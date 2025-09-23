@@ -1,31 +1,23 @@
 /* ===== FONT DECLARATIONS ===== */
 @font-face {
-  font-family: "Junicode";
-  src: url("./Junicode/Junicode-Regular.ttf") format("truetype");
+  font-family: "junicoderegular";
+  src: url("./Junicode/junicode-regular-webfont.woff2") format("woff2");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Junicode Regular Condensed";
-  src: url("./Junicode/Junicode-RegularCondensed.ttf") format("truetype");
+  font-family: "junicoderegularcondensed";
+  src: url("./Junicode/junicode-regularcondensed-webfont.woff2") format("woff2");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Junicode";
-  src: url("./Junicode/Junicode-Bold.ttf") format("truetype");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Junicode";
-  src: url("./Junicode/Junicode-Italic.ttf") format("truetype");
+  font-family: "junicodeitalic";
+  src: url("./Junicode/junicode-italic-webfont.woff2") format("woff2");
   font-weight: 400;
   font-style: italic;
   font-display: swap;
@@ -106,7 +98,7 @@ body {
 
 /* Category page titles - absolutely centered, above flowers */
 .category-title {
-  font-family: "Junicode Regular Condensed", serif;
+  font-family: "junicoderegularcondensed", serif;
   font-size: 128px;
   font-style: normal;
   font-weight: 400;
@@ -406,7 +398,7 @@ body {
   font-size: 24px;
   font-weight: 400;
   line-height:1.2;
-  font-family: "Junicode Regular Condensed", "Junicode", Georgia, serif;
+  font-family: "junicoderegularcondensed", "junicoderegular", Georgia, serif;
   letter-spacing: 0.1em;
   z-index: 2;
 }
@@ -685,7 +677,7 @@ body.category-page .mobile-category-item {
 
 /* Default state - side items (20pt, blurred, behind) */
 .mobile-category-item .category-label {
-  font-family: "Junicode Regular Condensed", "Junicode", Georgia, serif;
+  font-family: "junicoderegularcondensed", "junicoderegular", Georgia, serif;
   font-size: 20px;
   font-weight: 400;
   letter-spacing: 0.1em;
@@ -1210,7 +1202,7 @@ body.category-page .mobile-category-item {
   /* Mobile: Category styling */
   .mg-category{
     color: var(--Black, #101720);
-    font-family: "Junicode Regular Condensed", serif;
+    font-family: "junicoderegularcondensed", serif;
     font-size: 12px;
     font-style: normal;
     font-weight: 400;
@@ -1223,7 +1215,7 @@ body.category-page .mobile-category-item {
   /* Mobile: Stats labels styling */
   .mg-stats .label {
     color: var(--Black, #101720);
-    font-family: "Junicode Regular Condensed", serif;
+    font-family: "junicoderegularcondensed", serif;
     font-size: 12px;
     font-style: normal;
     font-weight: 400;
