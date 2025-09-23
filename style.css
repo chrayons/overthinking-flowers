@@ -144,31 +144,29 @@ body {
   }
 }
 
-/* Mobile category adjustments - use same structure as home page */
+/* Category title container - hide since overlay now provides title */
+.category-title-container {
+  display: none;
+}
+
+/* Category pages no longer use #themes-mobile - they use .category-overlay instead */
+
+/* Mobile category adjustments */
 @media (max-width: 1160px) {
-  /* Hide desktop category title container on mobile */
-  .category-title-container {
-    display: none;
-  }
-
-  /* Category pages no longer use #themes-mobile - they use .category-overlay instead */
-
   /* raise flower layer slightly above mobile chrome */
   #flower-container { z-index: 20; }  /* was 3 */
+}
 
-  /* Category pages: no additional padding needed - grid centering handles positioning */
+/* Return to Home button uses white styling instead of blue */
+.btn-return-home-white {
+  background: var(--bg-primary) !important;
+  color: #005BA6 !important;
+  border: 1px solid #005BA6 !important;
+}
 
-  /* Return to Home button uses white styling instead of blue */
-  .btn-return-home-white {
-    background: var(--bg-primary) !important;
-    color: #005BA6 !important;
-    border: 1px solid #005BA6 !important;
-  }
-
-  .btn-return-home-white:hover {
-    background: #005BA6 !important;
-    color: var(--bg-primary) !important;
-  }
+.btn-return-home-white:hover {
+  background: #005BA6 !important;
+  color: var(--bg-primary) !important;
 }
 
 /* Left header button - fixed positioning */
@@ -614,7 +612,7 @@ body {
   position: relative;
 }
 
-/* Category Page Overlay - Clean centered layout */
+/* Category Page Overlay - Desktop and Mobile */
 .category-overlay {
   position: fixed;
   top: 0;
@@ -630,16 +628,95 @@ body {
   pointer-events: none; /* Allow click-through to flowers */
 }
 
-/* Category name styling */
+/* Category title section - just the label */
+.category-title-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none; /* Allow click-through to flowers */
+}
+
+/* Category navigation section - arrows and dots */
+.category-nav-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px; /* Space between arrows and dots */
+  pointer-events: none; /* Allow click-through to flowers */
+}
+
+/* Category navigation arrows */
+.category-nav-arrow {
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  pointer-events: auto; /* Enable arrow clicking */
+  opacity: 0.7;
+}
+
+.category-nav-arrow:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+/* Category name styling with responsive font sizes */
 .category-overlay .category-name {
   font-family: "junicoderegularcondensed", "junicoderegular", Georgia, serif;
-  font-size: 48px;
+  font-size: 48px; /* Mobile size */
   font-weight: 400;
   letter-spacing: 0.1em;
   color: var(--text-primary);
   text-align: center;
   margin: 0;
   pointer-events: none; /* Allow click-through to flowers */
+}
+
+/* Category navigation dots */
+.category-nav-dots {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  pointer-events: none; /* Allow click-through to flowers */
+}
+
+.category-nav-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--bg-secondary); /* Match home page inactive dots */
+  border-radius: 50%;
+  margin: 0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  pointer-events: auto; /* Enable dot clicking */
+}
+
+.category-nav-dot.active {
+  background: var(--text-secondary); /* Match home page active dots */
+}
+
+.category-nav-dot:hover:not(.active) {
+  background: #8B98A5; /* Match home page hover color */
+}
+
+/* Desktop font sizing and spacing */
+@media (min-width: 1161px) {
+  .category-overlay .category-name {
+    font-size: 128px; /* Match desktop category title */
+    line-height: 0.9; /* Reduce gap between lines */
+  }
+
+  .category-nav-section {
+    gap: 40px; /* More space on desktop */
+  }
+
+  .category-nav-dot {
+    width: 10px; /* Slightly larger dots on desktop */
+    height: 10px;
+  }
 }
 
 /* Category return button - enable clicking and use white styling */
@@ -658,17 +735,11 @@ body {
   font-weight: 400;
   text-decoration: none;
   cursor: pointer;
-  transition: all 0.2s ease;
   box-sizing: border-box;
   pointer-events: auto; /* Enable clicking */
 }
 
-.category-overlay .btn-return-home:hover {
-  background: #005BA6;
-  color: var(--bg-primary);
-}
-
-/* Responsive adjustments for category overlay */
+/* Responsive adjustments for very small screens */
 @media (max-width: 775px) {
   .category-overlay {
     gap: 32px; /* Tighter spacing on small screens */
@@ -676,6 +747,10 @@ body {
 
   .category-overlay .category-name {
     font-size: 42px; /* Slightly smaller on very small screens */
+  }
+
+  .category-nav-section {
+    gap: 16px; /* Tighter spacing on very small screens */
   }
 }
 

@@ -35,9 +35,24 @@
       </div>
     </div>
 
-    <!-- Category overlay - centered label and button -->
+    <!-- Category overlay with navigation -->
     <div class="category-overlay">
-      <h2 class="category-name">Emotional<br>Dysregulation</h2>
+      <div class="category-title-section">
+        <h2 class="category-name">Emotional<br>Dysregulation</h2>
+      </div>
+
+      <div class="category-nav-section">
+        <button class="category-nav-arrow category-prev" aria-label="Previous category">
+          <img src="../arrow-left.svg" alt="Previous" width="23" height="23">
+        </button>
+        <div class="category-nav-dots">
+          <!-- Dots populated by JavaScript -->
+        </div>
+        <button class="category-nav-arrow category-next" aria-label="Next category">
+          <img src="../arrow-right.svg" alt="Next" width="23" height="23">
+        </button>
+      </div>
+
       <a href="index.html" class="btn-return-home">Return to Home</a>
     </div>
 
@@ -51,6 +66,7 @@
     <script defer src="../scripts/shared.js"></script>
     <script defer src="../scripts/flower-renderer.js"></script>
     <script defer src="../scripts/flower-interactions.js"></script>
+    <script defer src="../scripts/category-navigation.js"></script>
     <script defer src="../scripts/emotional-dysregulation.js"></script>
 
     <!-- Non-critical scripts (can load after page renders) -->
