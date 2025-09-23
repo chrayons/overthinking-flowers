@@ -4,12 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sensory Overwhelm - Metaphor Garden</title>
+  <link rel="preload" href="../Junicode/Junicode-RegularCondensed.ttf" as="font" type="font/ttf" crossorigin>
   <link rel="stylesheet" href="../style.css">
-  <script src="../scripts/shared.js"></script>
-  <script src="../scripts/flower-renderer.js"></script>
-  <script src="../scripts/modal.js"></script>
-  <script src="../scripts/flower-interactions.js"></script>
-  <script src="../scripts/mobile-header.js"></script>
 </head>
 <body class="category-page">
   <div class="wrapper">
@@ -71,7 +67,15 @@
       <button id="shuffle-btn" class="btn-primary">Shuffle Thoughts</button>
     </section>
 
-    <script src="../scripts/sensory-overwhelm.js"></script>
+    <!-- Critical scripts (needed for initial render) -->
+    <script defer src="../scripts/shared.js"></script>
+    <script defer src="../scripts/flower-renderer.js"></script>
+    <script defer src="../scripts/flower-interactions.js"></script>
+    <script defer src="../scripts/sensory-overwhelm.js"></script>
+
+    <!-- Non-critical scripts (can load after page renders) -->
+    <script async src="../scripts/modal.js"></script>
+    <script async src="../scripts/mobile-header.js"></script>
   </div>
 </body>
 </html>

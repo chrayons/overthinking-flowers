@@ -1,11 +1,13 @@
 // Mobile Header Dropdown Functionality
 const MobileHeader = {
   init: function() {
+    // Only initialize if mobile header elements exist
     this.toggle = document.querySelector('.mobile-header-toggle');
     this.menu = document.querySelector('.mobile-header-menu');
 
     if (!this.toggle || !this.menu) return;
 
+    // Only bind events if we're on a small screen or might be
     this.bindEvents();
   },
 

@@ -132,7 +132,7 @@ try {
         let bestSize = 8; // fallback
 
         for (const size of mobileFontSizes) {
-          quoteElement.style.font = `italic ${size}pt/1.2 'Satoshi Variable', system-ui`;
+          quoteElement.style.font = `italic ${size}pt/1.2 'Satoshi-Italic', system-ui`;
 
           // Force layout recalculation
           quoteElement.offsetHeight;
@@ -145,7 +145,7 @@ try {
         }
 
         // Apply the best fitting size
-        quoteElement.style.font = `italic ${bestSize}pt/1.2 'Satoshi Variable', system-ui`;
+        quoteElement.style.font = `italic ${bestSize}pt/1.2 'Satoshi-Italic', system-ui`;
 
         // Now set height to hug content
         quoteElement.style.height = "auto";
@@ -172,7 +172,7 @@ try {
         let bestSize = 12; // fallback
 
         for (const size of desktopFontSizes) {
-          quoteElement.style.font = `italic ${size}pt/1.2 'Satoshi Variable', system-ui`;
+          quoteElement.style.font = `italic ${size}pt/1.2 'Satoshi-Italic', system-ui`;
 
           // Force layout recalculation
           quoteElement.offsetHeight;
@@ -185,7 +185,7 @@ try {
         }
 
         // Apply the best fitting size
-        quoteElement.style.font = `italic ${bestSize}pt/1.2 'Satoshi Variable', system-ui`;
+        quoteElement.style.font = `italic ${bestSize}pt/1.2 'Satoshi-Italic', system-ui`;
 
         // Now set height to hug content
         quoteElement.style.height = "auto";

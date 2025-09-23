@@ -23,7 +23,7 @@
       measureEl.style.position = 'absolute';
       measureEl.style.top = '-9999px';
       measureEl.style.width = maxWidth + 'px';
-      measureEl.style.fontFamily = '"Satoshi Variable", system-ui';
+      measureEl.style.fontFamily = '"Satoshi-Light", system-ui';
       measureEl.style.fontSize = '16px';
       measureEl.style.fontWeight = '400';
       measureEl.style.lineHeight = '1.3';
