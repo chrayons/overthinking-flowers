@@ -7,6 +7,8 @@ const FlowerInteractions = {
   currentHoveredFlower: null,
   tooltip: null,
   globalHandlersAdded: false,
+  pageLoadTime: Date.now(),
+  modalCloseTime: 0,
 
   // Constants for optimized interactions
   EMOTION_ANGLES: {
@@ -19,7 +21,9 @@ const FlowerInteractions = {
     THROTTLE_DELAY: 16,
     TOUCH_TIMEOUT: 4000,
     DOUBLE_TAP_WINDOW: 1000,
-    MOBILE_BREAKPOINT: 1160
+    MOBILE_BREAKPOINT: 1160,
+    NAVIGATION_COOLDOWN: 300,   // Reduced from 1000ms to 300ms
+    MODAL_CLOSE_COOLDOWN: 200   // Reduced from 500ms to 200ms
   },
 
   // Utility functions
@@ -30,6 +34,18 @@ const FlowerInteractions = {
   isModalOpen: function() {
     const modalOverlay = document.getElementById('mg-modal-overlay');
     return modalOverlay && modalOverlay.classList.contains('open');
+  },
+
+  isNavigationCooldownActive: function() {
+    return (Date.now() - this.pageLoadTime) < this.CONFIG.NAVIGATION_COOLDOWN;
+  },
+
+  isModalCloseCooldownActive: function() {
+    return (Date.now() - this.modalCloseTime) < this.CONFIG.MODAL_CLOSE_COOLDOWN;
+  },
+
+  setModalCloseTime: function() {
+    this.modalCloseTime = Date.now();
   },
 
   getDeviceConfig: function() {
@@ -57,6 +73,8 @@ const FlowerInteractions = {
     }
     this.restoreOtherFlowers();
     this.globalHandlersAdded = false;
+    // Reset page load time to prevent interactions immediately after layout change
+    this.pageLoadTime = Date.now();
   },
 
   // Add interactive behavior to a flower element
@@ -298,6 +316,16 @@ const FlowerInteractions = {
         return;
       }
 
+      // Don't interact with flowers during navigation cooldown
+      if (this.isNavigationCooldownActive()) {
+        return;
+      }
+
+      // Don't interact with flowers right after modal close
+      if (this.isModalCloseCooldownActive()) {
+        return;
+      }
+
       const clickedFlower = this.getFlowerAtPosition(e);
       if (clickedFlower) {
         e.preventDefault();
@@ -319,6 +347,16 @@ const FlowerInteractions = {
         return;
       }
 
+      // Don't interact with flowers during navigation cooldown
+      if (this.isNavigationCooldownActive()) {
+        return;
+      }
+
+      // Don't interact with flowers right after modal close
+      if (this.isModalCloseCooldownActive()) {
+        return;
+      }
+
       const touch = e.touches[0];
       const touchEvent = {
         clientX: touch.clientX,
@@ -329,6 +367,7 @@ const FlowerInteractions = {
 
       const touchedFlower = this.getFlowerAtPosition(touchEvent);
       const now = Date.now();
+
 
       if (touchedFlower) {
         // Second tap within window => open modal
@@ -448,7 +487,7 @@ const FlowerInteractions = {
     // Attach event listeners
     document.addEventListener('mousemove', onMouseMove, { passive: true });
     document.addEventListener('click', onClick, { passive: false });
-    document.addEventListener('touchstart', onTouchStart, { passive: true });
+    document.addEventListener('touchstart', onTouchStart, { passive: false });
     document.addEventListener('touchend', onTouchEnd, { passive: false });
     document.addEventListener('touchcancel', onTouchCancel, { passive: true });
   },

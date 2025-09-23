@@ -94,7 +94,15 @@ try {
       overlay.classList.remove("open");
       overlay.style.display = "none";
       overlay.setAttribute("aria-hidden", "true");
-    
+
+      // Set cooldown to prevent immediate flower interactions after modal close
+      // Delay slightly to avoid blocking the closing tap itself
+      setTimeout(() => {
+        if (window.FlowerInteractions && window.FlowerInteractions.setModalCloseTime) {
+          window.FlowerInteractions.setModalCloseTime();
+        }
+      }, 50); // 50ms delay
+
       // cleanup observers/listeners
       if (_observer) { _observer.disconnect(); _observer = null; }
       if (_removeResizeListener) { _removeResizeListener(); _removeResizeListener = null; }
