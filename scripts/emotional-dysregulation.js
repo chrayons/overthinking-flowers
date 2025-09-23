@@ -6,35 +6,35 @@ console.log("Emotional Dysregulation page loading...");
 // Fixed flower positions - captured from working layout
 const FLOWER_POSITIONS = {
   desktop: {
-    'ID3': { x: 15, y: 30 },   // Like a pot on the stove that's about to explode
-    'ID10': { x: 75, y: 20 },  // I either feel like a lake/very calm or like a sudden summer storm
-    'ID12': { x: 45, y: 40 },  // Like a leaky faucet - water dripping bit by bit until a flood
-    'ID13': { x: 85, y: 50 },  // Shake Shake Shake! a snow globe
-    'ID14': { x: 25, y: 65 },  // Like a volcano about to burst
-    'ID20': { x: 65, y: 15 },  // I have no control over the weather, it's very unpredictable
-    'ID28': { x: 35, y: 80 },  // soda can that has been shaken up, once you open it, it explodes everywhere!
-    'ID30': { x: 80, y: 75 },  // I am the eye of the storm. I am calm but everything around me is chaotic
-    'ID36': { x: 55, y: 60 },  // overflowing bathtub, very stressed and water just flowing everywhere
-    'ID40': { x: 10, y: 85 },  // Ocean: waves are rising and falling intensely but at the end it becomes calm again
-    'ID70': { x: 90, y: 85 }   // I think of explosive volcano lava
+    'ID3': { x: 5, y: 30 },   // Elmo screaming with fire meme
+    'ID10': { x: 52, y: 20 },  // darkness, spring under tension
+    'ID12': { x: 71, y: 40 },  // A beating chest 
+    'ID13': { x: 90, y: 38 },  // being locked in a sound proof box periodically screaming and lashing out only to calm down and pretend everything is normal
+    'ID14': { x: 12, y: 52 },  // head pounding, dizzying, heat flash/fever
+    'ID20': { x: 32, y: 92 },  // U know when squidward left the krusty krab for spongebob to run alone and he couldn’t relax
+    'ID28': { x: 70, y: 87 },  // A hyperventilating stuffed animal (hehehe)
+    'ID30': { x: 80, y: 75 },  // loads of trains going in the same direction at the same time (bound to crash), a lift where people keep getting on even though it’s uncomfortably full and hard to breathe 
+    'ID36': { x: 42, y: 20 },  // the “this is fine” dog meme
+    'ID40': { x: 6, y: 85 },  // Chicken running around with its head cut off
+    'ID70': { x: 90, y: 92 }   // nail biting
   },
   mobile: {
-    'ID3': { x: 20, y: 25 },   // Like a pot on the stove that's about to explode
-    'ID10': { x: 75, y: 15 },  // I either feel like a lake/very calm or like a sudden summer storm
-    'ID12': { x: 50, y: 35 },  // Like a leaky faucet - water dripping bit by bit until a flood
-    'ID13': { x: 80, y: 45 },  // Shake Shake Shake! a snow globe
-    'ID14': { x: 25, y: 60 },  // Like a volcano about to burst
-    'ID20': { x: 65, y: 20 },  // I have no control over the weather, it's very unpredictable
-    'ID28': { x: 35, y: 75 },  // soda can that has been shaken up, once you open it, it explodes everywhere!
-    'ID30': { x: 80, y: 70 },  // I am the eye of the storm. I am calm but everything around me is chaotic
-    'ID36': { x: 55, y: 55 },  // overflowing bathtub, very stressed and water just flowing everywhere
-    'ID40': { x: 15, y: 85 },  // Ocean: waves are rising and falling intensely but at the end it becomes calm again
-    'ID70': { x: 85, y: 80 }   // I think of explosive volcano lava
+    'ID3': { x: 5, y: 30 },   // Elmo screaming with fire meme
+    'ID10': { x: 52, y: 20 },  // darkness, spring under tension
+    'ID12': { x: 71, y: 40 },  // A beating chest 
+    'ID13': { x: 90, y: 38 },  // being locked in a sound proof box periodically screaming and lashing out only to calm down and pretend everything is normal
+    'ID14': { x: 12, y: 52 },  // head pounding, dizzying, heat flash/fever
+    'ID20': { x: 32, y: 92 },  // U know when squidward left the krusty krab for spongebob to run alone and he couldn’t relax
+    'ID28': { x: 70, y: 87 },  // A hyperventilating stuffed animal (hehehe)
+    'ID30': { x: 80, y: 75 },  // loads of trains going in the same direction at the same time (bound to crash), a lift where people keep getting on even though it’s uncomfortably full and hard to breathe 
+    'ID36': { x: 42, y: 20 },  // the “this is fine” dog meme
+    'ID40': { x: 6, y: 85 },  // Chicken running around with its head cut off
+    'ID70': { x: 90, y: 92 }   // nail biting
   }
 };
 
 // Simple layout storage - one layout for all devices
-const ED_LAYOUT_KEY = 'ed-simple-layout-v1';
+const ED_LAYOUT_KEY = 'ed-simple-layout-v2';
 
 // Set to true to ignore cache and always use fresh positions (for experimentation)
 const IGNORE_CACHE = false;

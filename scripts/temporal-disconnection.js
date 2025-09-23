@@ -6,21 +6,21 @@ console.log("Temporal Disconnection page loading...");
 // Fixed flower positions - captured from working layout
 const FLOWER_POSITIONS = {
   desktop: {
-    'ID1': { x: 25, y: 40 },   // World is moving but I'm not moving along with it
-    'ID31': { x: 75, y: 30 },  // Trains, cars, moving objects moving past me in a blur
-    'ID60': { x: 30, y: 75 },  // Wouldn't say I'm much of an overthinker, rather I feel like a rusty tap...
-    'ID73': { x: 80, y: 70 }   // Moments of particular events that happened in the past
+    'ID1': { x: 18, y: 74 },   // World is moving but I'm not moving along with it
+    'ID31': { x: 68, y: 47 },  // Trains, cars, moving objects moving past me in a blur
+    'ID60': { x: 28, y: 21 },  // Wouldn't say I'm much of an overthinker, rather I feel like a rusty tap...
+    'ID73': { x: 78, y: 50 }   // Moments of particular events that happened in the past
   },
   mobile: {
-    'ID1': { x: 25, y: 35 },   // World is moving but I'm not moving along with it
-    'ID31': { x: 75, y: 25 },  // Trains, cars, moving objects moving past me in a blur
-    'ID60': { x: 30, y: 70 },  // Wouldn't say I'm much of an overthinker, rather I feel like a rusty tap...
-    'ID73': { x: 75, y: 75 }   // Moments of particular events that happened in the past
+    'ID1': { x: 18, y: 74 },   // World is moving but I'm not moving along with it
+    'ID31': { x: 68, y: 47 },  // Trains, cars, moving objects moving past me in a blur
+    'ID60': { x: 28, y: 21 },  // Wouldn't say I'm much of an overthinker, rather I feel like a rusty tap...
+    'ID73': { x: 78, y: 50 }   // Moments of particular events that happened in the past
   }
 };
 
 // Simple layout storage - one layout for all devices
-const TD_LAYOUT_KEY = 'td-simple-layout-v1';
+const TD_LAYOUT_KEY = 'td-simple-layout-v2';
 
 // Set to true to ignore cache and always use fresh positions (for experimentation)
 const IGNORE_CACHE = false;

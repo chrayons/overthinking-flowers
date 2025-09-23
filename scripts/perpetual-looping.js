@@ -7,38 +7,38 @@ console.log("Perpetual Looping page loading...");
 const FLOWER_POSITIONS = {
   desktop: {
     'ID2': { x: 15, y: 20 },   // like a computer caught in an infinite loop
-    'ID4': { x: 85, y: 15 },   // like i'm running to a place where there's no end to
-    'ID6': { x: 50, y: 25 },   // kind of like being lost at sea - difficult to navigate through the waves...
-    'ID9': { x: 25, y: 45 },   // A toy train track where the train goes in circles constantly without ever getting anywhere.
+    'ID4': { x: 92, y: 30 },   // like i'm running to a place where there's no end to
+    'ID6': { x: 39, y: 15 },   // kind of like being lost at sea - difficult to navigate through the waves...
+    'ID9': { x: 20, y: 45 },   // A toy train track where the train goes in circles constantly without ever getting anywhere.
     'ID17': { x: 75, y: 40 },  // Like a hamster on a wheel? Or like I'm standing still but everyone around me...
-    'ID26': { x: 10, y: 65 },  // A circular amusement park ride that spins in a circle over and over
-    'ID37': { x: 60, y: 50 },  // Thoughts chasing each other, mouth to body mouth to body...
-    'ID41': { x: 35, y: 70 },  // Chains of predictions of events and possible solutions (flowchart-like)
-    'ID42': { x: 90, y: 60 },  // surges of negative overlooping energy
+    'ID26': { x: 2, y: 58 },  // A circular amusement park ride that spins in a circle over and over
+    'ID37': { x: 60, y: 20 },  // Thoughts chasing each other, mouth to body mouth to body...
+    'ID41': { x: 75, y: 65 },  // Chains of predictions of events and possible solutions (flowchart-like)
+    'ID42': { x: 90, y: 90 },  // surges of negative overlooping energy
     'ID54': { x: 45, y: 80 },  // I tend to replay different scenarios that could have happened...
-    'ID58': { x: 20, y: 85 },  // everytime i pick up something something else drops and i have my arms full of thoughts
+    'ID58': { x: 14, y: 85 },  // everytime i pick up something something else drops and i have my arms full of thoughts
     'ID64': { x: 80, y: 85 },  // Hamster 🐹 Wheel
-    'ID68': { x: 65, y: 75 }   // cycle – never ending, going round and round
+    'ID68': { x: 30, y: 75 }   // cycle – never ending, going round and round
   },
   mobile: {
-    'ID2': { x: 20, y: 15 },   // like a computer caught in an infinite loop
-    'ID4': { x: 80, y: 10 },   // like i'm running to a place where there's no end to
-    'ID6': { x: 50, y: 20 },   // kind of like being lost at sea - difficult to navigate through the waves...
-    'ID9': { x: 25, y: 35 },   // A toy train track where the train goes in circles constantly without ever getting anywhere.
-    'ID17': { x: 75, y: 30 },  // Like a hamster on a wheel? Or like I'm standing still but everyone around me...
-    'ID26': { x: 15, y: 50 },  // A circular amusement park ride that spins in a circle over and over
-    'ID37': { x: 60, y: 45 },  // Thoughts chasing each other, mouth to body mouth to body...
-    'ID41': { x: 35, y: 60 },  // Chains of predictions of events and possible solutions (flowchart-like)
-    'ID42': { x: 85, y: 55 },  // surges of negative overlooping energy
-    'ID54': { x: 45, y: 70 },  // I tend to replay different scenarios that could have happened...
-    'ID58': { x: 25, y: 80 },  // everytime i pick up something something else drops and i have my arms full of thoughts
-    'ID64': { x: 75, y: 85 },  // Hamster 🐹 Wheel
-    'ID68': { x: 60, y: 75 }   // cycle – never ending, going round and round
+    'ID2': { x: 15, y: 20 },   // like a computer caught in an infinite loop
+    'ID4': { x: 92, y: 30 },   // like i'm running to a place where there's no end to
+    'ID6': { x: 39, y: 15 },   // kind of like being lost at sea - difficult to navigate through the waves...
+    'ID9': { x: 20, y: 45 },   // A toy train track where the train goes in circles constantly without ever getting anywhere.
+    'ID17': { x: 75, y: 40 },  // Like a hamster on a wheel? Or like I'm standing still but everyone around me...
+    'ID26': { x: 2, y: 58 },  // A circular amusement park ride that spins in a circle over and over
+    'ID37': { x: 60, y: 20 },  // Thoughts chasing each other, mouth to body mouth to body...
+    'ID41': { x: 75, y: 65 },  // Chains of predictions of events and possible solutions (flowchart-like)
+    'ID42': { x: 90, y: 90 },  // surges of negative overlooping energy
+    'ID54': { x: 45, y: 80 },  // I tend to replay different scenarios that could have happened...
+    'ID58': { x: 14, y: 85 },  // everytime i pick up something something else drops and i have my arms full of thoughts
+    'ID64': { x: 80, y: 85 },  // Hamster 🐹 Wheel
+    'ID68': { x: 30, y: 75 }   // cycle – never ending, going round and round
   }
 };
 
 // Simple layout storage - one layout for all devices
-const PL_LAYOUT_KEY = 'pl-simple-layout-v1';
+const PL_LAYOUT_KEY = 'pl-simple-layout-v2';
 
 // Set to true to ignore cache and always use fresh positions (for experimentation)
 const IGNORE_CACHE = false;

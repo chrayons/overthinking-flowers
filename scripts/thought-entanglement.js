@@ -6,47 +6,47 @@ console.log("Thought Entanglement page loading...");
 // Fixed flower positions - captured from working layout
 const FLOWER_POSITIONS = {
   desktop: {
-    'ID5': { x: 20, y: 15 },   // A ball of yarn with all the strings tangled up
-    'ID8': { x: 65, y: 10 },   // Like twisted earphones (when they're all tangled up)
-    'ID15': { x: 45, y: 25 },  // Knotted string
-    'ID18': { x: 85, y: 20 },  // a drawing that's been scribbled on so you can't make out what was originally drawn
-    'ID22': { x: 25, y: 40 },  // Telephone wires all knotted together
-    'ID23': { x: 75, y: 35 },  // A bunch of snakes all twisted around each other
-    'ID27': { x: 15, y: 65 },  // Like a rubber band ball that's all tangled up
-    'ID29': { x: 55, y: 50 },  // a big bowl of spaghetti all mixed around
-    'ID32': { x: 35, y: 80 },  // very tangled fishing line :(
-    'ID43': { x: 80, y: 60 },  // Loosely tied shoelaces - but they're still messy
-    'ID46': { x: 10, y: 85 },  // Roots are all intertwined, spread out underneath the ground
-    'ID48': { x: 65, y: 75 },  // Web with multiple connections
-    'ID51': { x: 90, y: 80 },  // Plate of spaghetti !!!
-    'ID55': { x: 40, y: 65 },  // Tangled hair
-    'ID56': { x: 70, y: 25 },  // Chain links
-    'ID57': { x: 50, y: 85 },  // Tangled Christmas lights
-    'ID59': { x: 90, y: 45 }   // a messy braided rope
+    'ID5': { x: 20, y: 15 },   // scribbles, messy, black/dark, cloudy
+    'ID8': { x: 54, y: 10 },   // scribbles, clouds, messy, gray
+    'ID15': { x: 45, y: 25 },  // Trying to find the right information in a messy library
+    'ID18': { x: 5, y: 45 },  // ball of yarn/thread except it’s alive
+    'ID22': { x: 25, y: 40 },  // Like messed up bottle of yarn!
+    'ID23': { x: 10, y: 75 },  // Its like those thought bubbles and all thats inside are scribbles
+    'ID27': { x: 15, y: 65 },  // unending scribbles
+    'ID29': { x: 95, y: 35 },  // A scribble , and just things moving around without anything clear just a string curing 
+    'ID32': { x: 85, y: 42 },  // It’s like a matter but it’s always shifting. Any time i think i can grasp it, it changes to something different.
+    'ID43': { x: 71, y: 84 },  // word cloud, labyrinth, drowning, freezing, being stuck
+    'ID46': { x: 21, y: 75 },  // Storm, tangle
+    'ID48': { x: 65, y: 75 },  // a knot, a racecar going around track at extremely high speeds, me running around a room restlessly
+    'ID51': { x: 96, y: 48 },  // sort of like a small central point (the initial thought) and then a larger chaotic spiky/scribbly/zigzag circle around it (the associated thought spiral)
+    'ID55': { x: 13, y: 35 },  // Scribbles / spiraling staircase leading downwards
+    'ID56': { x: 70, y: 25 },  // A ball of yarn. You know the beginning and the end are there somewhere, but getting there is frustrating and takes ages. Also, others just tell you to buy a new one
+    'ID57': { x: 50, y: 75 },  // I see problems as knots. Thinking would be the act of untying them in my head. Overthinking would be complicating the untying process, it may have been a simple fix or there was no solution, either way there is no need to keep trying to untie over and over
+    'ID59': { x: 90, y: 93 }   // a tangled thread
   },
   mobile: {
-    'ID5': { x: 25, y: 10 },   // A ball of yarn with all the strings tangled up
-    'ID8': { x: 70, y: 5 },    // Like twisted earphones (when they're all tangled up)
-    'ID15': { x: 50, y: 20 },  // Knotted string
-    'ID18': { x: 80, y: 15 },  // a drawing that's been scribbled on so you can't make out what was originally drawn
-    'ID22': { x: 25, y: 35 },  // Telephone wires all knotted together
-    'ID23': { x: 75, y: 30 },  // A bunch of snakes all twisted around each other
-    'ID27': { x: 15, y: 60 },  // Like a rubber band ball that's all tangled up
-    'ID29': { x: 55, y: 45 },  // a big bowl of spaghetti all mixed around
-    'ID32': { x: 35, y: 75 },  // very tangled fishing line :(
-    'ID43': { x: 80, y: 55 },  // Loosely tied shoelaces - but they're still messy
-    'ID46': { x: 15, y: 85 },  // Roots are all intertwined, spread out underneath the ground
-    'ID48': { x: 65, y: 70 },  // Web with multiple connections
-    'ID51': { x: 85, y: 80 },  // Plate of spaghetti !!!
-    'ID55': { x: 40, y: 65 },  // Tangled hair
-    'ID56': { x: 70, y: 25 },  // Chain links
-    'ID57': { x: 50, y: 85 },  // Tangled Christmas lights
-    'ID59': { x: 85, y: 40 }   // a messy braided rope
+    'ID5': { x: 20, y: 15 },   // scribbles, messy, black/dark, cloudy
+    'ID8': { x: 54, y: 10 },   // scribbles, clouds, messy, gray
+    'ID15': { x: 45, y: 25 },  // Trying to find the right information in a messy library
+    'ID18': { x: 5, y: 45 },  // ball of yarn/thread except it’s alive
+    'ID22': { x: 25, y: 40 },  // Like messed up bottle of yarn!
+    'ID23': { x: 10, y: 75 },  // Its like those thought bubbles and all thats inside are scribbles
+    'ID27': { x: 15, y: 65 },  // unending scribbles
+    'ID29': { x: 95, y: 35 },  // A scribble , and just things moving around without anything clear just a string curing 
+    'ID32': { x: 85, y: 42 },  // It’s like a matter but it’s always shifting. Any time i think i can grasp it, it changes to something different.
+    'ID43': { x: 71, y: 84 },  // word cloud, labyrinth, drowning, freezing, being stuck
+    'ID46': { x: 21, y: 75 },  // Storm, tangle
+    'ID48': { x: 65, y: 75 },  // a knot, a racecar going around track at extremely high speeds, me running around a room restlessly
+    'ID51': { x: 96, y: 48 },  // sort of like a small central point (the initial thought) and then a larger chaotic spiky/scribbly/zigzag circle around it (the associated thought spiral)
+    'ID55': { x: 13, y: 35 },  // Scribbles / spiraling staircase leading downwards
+    'ID56': { x: 70, y: 25 },  // A ball of yarn. You know the beginning and the end are there somewhere, but getting there is frustrating and takes ages. Also, others just tell you to buy a new one
+    'ID57': { x: 50, y: 75 },  // I see problems as knots. Thinking would be the act of untying them in my head. Overthinking would be complicating the untying process, it may have been a simple fix or there was no solution, either way there is no need to keep trying to untie over and over
+    'ID59': { x: 90, y: 93 }   // a tangled thread
   }
 };
 
 // Simple layout storage - one layout for all devices
-const TE_LAYOUT_KEY = 'te-simple-layout-v1';
+const TE_LAYOUT_KEY = 'te-simple-layout-v2';
 
 // Set to true to ignore cache and always use fresh positions (for experimentation)
 const IGNORE_CACHE = false;

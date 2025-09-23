@@ -6,31 +6,31 @@ console.log("Sensory Overwhelm page loading...");
 // Fixed flower positions - captured from working layout
 const FLOWER_POSITIONS = {
   desktop: {
-    'ID24': { x: 20, y: 25 },  // Maybe it's bc I have ADHD. I think of flashes of images in my head rapidly appearing...
-    'ID47': { x: 75, y: 20 },  // A heavy, buzzing cloud over my head throughout the day.
-    'ID49': { x: 45, y: 40 },  // The movie: anything everywhere all at once
-    'ID50': { x: 15, y: 60 },  // Racing ants
+    'ID24': { x: 54, y: 85 },  // Maybe it's bc I have ADHD. I think of flashes of images in my head rapidly appearing...
+    'ID47': { x: 85, y: 20 },  // A heavy, buzzing cloud over my head throughout the day.
+    'ID49': { x: 5, y: 40 },  // The movie: anything everywhere all at once
+    'ID50': { x: 15, y: 80 },  // Racing ants
     'ID61': { x: 80, y: 50 },  // network/electric movements, overlapping people talking
-    'ID62': { x: 35, y: 75 },  // Dark cloud, lots of tornados in my head
-    'ID63': { x: 90, y: 80 },  // a band with 100 instruments playing
-    'ID65': { x: 60, y: 15 },  // a swarm of bees that won't stop buzzing
-    'ID72': { x: 10, y: 85 }   // Like that scene in Harry Potter when he has to grab the right key...
+    'ID62': { x: 25, y: 67 },  // Dark cloud, lots of tornados in my head
+    'ID63': { x: 41, y: 7 },  // a band with 100 instruments playing
+    'ID65': { x: 60, y: 35 },  // a swarm of bees that won't stop buzzing
+    'ID72': { x: 95, y: 64 }   // Like that scene in Harry Potter when he has to grab the right key...
   },
   mobile: {
-    'ID24': { x: 25, y: 20 },  // Maybe it's bc I have ADHD. I think of flashes of images in my head rapidly appearing...
-    'ID47': { x: 75, y: 15 },  // A heavy, buzzing cloud over my head throughout the day.
-    'ID49': { x: 50, y: 35 },  // The movie: anything everywhere all at once
-    'ID50': { x: 20, y: 55 },  // Racing ants
-    'ID61': { x: 80, y: 45 },  // network/electric movements, overlapping people talking
-    'ID62': { x: 40, y: 70 },  // Dark cloud, lots of tornados in my head
-    'ID63': { x: 85, y: 75 },  // a band with 100 instruments playing
-    'ID65': { x: 65, y: 20 },  // a swarm of bees that won't stop buzzing
-    'ID72': { x: 15, y: 85 }   // Like that scene in Harry Potter when he has to grab the right key...
+    'ID24': { x: 54, y: 85 },  // Maybe it's bc I have ADHD. I think of flashes of images in my head rapidly appearing...
+    'ID47': { x: 85, y: 20 },  // A heavy, buzzing cloud over my head throughout the day.
+    'ID49': { x: 5, y: 40 },  // The movie: anything everywhere all at once
+    'ID50': { x: 15, y: 80 },  // Racing ants
+    'ID61': { x: 80, y: 50 },  // network/electric movements, overlapping people talking
+    'ID62': { x: 25, y: 67 },  // Dark cloud, lots of tornados in my head
+    'ID63': { x: 41, y: 7 },  // a band with 100 instruments playing
+    'ID65': { x: 60, y: 35 },  // a swarm of bees that won't stop buzzing
+    'ID72': { x: 95, y: 64 }   // Like that scene in Harry Potter when he has to grab the right key...
   }
 };
 
 // Simple layout storage - one layout for all devices
-const SO_LAYOUT_KEY = 'so-simple-layout-v1';
+const SO_LAYOUT_KEY = 'so-simple-layout-v2';
 
 // Set to true to ignore cache and always use fresh positions (for experimentation)
 const IGNORE_CACHE = false;
