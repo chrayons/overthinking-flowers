@@ -168,11 +168,11 @@ function renderThemes(flowers) {
   }, { passive: true });
 }
 
-// ---------- mobile carousel (unchanged) ----------
+// ---------- mobile carousel (position-based) ----------
 let _flowers = [];
-let currentMobileIndex = 0;  // REAL index (0..n-1)
-let _mobileCount = 0;        // number of REAL items
-let _pendingSnap = null;     // { to: 'head' | 'tail' } during wrap
+let currentMobileIndex = 0;  // Active index (0..n-1)
+let _mobileCount = 0;        // Number of categories
+let _carouselItems = [];     // Array of DOM elements
 
 function renderMobileThemes(flowers) {
   const categories = groupFlowersByCategory(flowers);
@@ -183,44 +183,33 @@ function renderMobileThemes(flowers) {
   track.innerHTML = '';
   dotsContainer.innerHTML = '';
 
-  // Build REAL items
-  const realItems = [];
-  CATEGORY_ORDER.forEach((name, realIndex) => {
+  // Build items (no clones needed)
+  _carouselItems = [];
+  CATEGORY_ORDER.forEach((name, index) => {
     const list = categories[name];
     if (!list || !list.length) return;
 
     const item = document.createElement('div');
     item.className = 'mobile-category-item';
-    item.dataset.realIndex = String(realIndex);
+    item.dataset.index = String(index);
 
     const label = document.createElement('div');
     label.className = 'category-label';
     label.innerHTML = name.replace(/ (?=[^ ]*$)/, "<br>");
     item.appendChild(label);
 
-    realItems.push(item);
+    _carouselItems.push(item);
+    track.appendChild(item);
 
     const dot = document.createElement('div');
     dot.className = 'dot';
-    dot.dataset.index = realIndex;
-    dot.addEventListener('click', () => goToSlide(realIndex));
+    dot.dataset.index = index;
+    dot.addEventListener('click', () => goToSlide(index));
     dotsContainer.appendChild(dot);
   });
 
-  if (realItems.length === 0) return;
-
-  _mobileCount = realItems.length;
-
-  // Add clones: [cloneLast] + REALS + [cloneFirst]
-  const cloneLast  = realItems[realItems.length - 1].cloneNode(true);
-  cloneLast.classList.add('clone'); cloneLast.dataset.clone = 'true';
-
-  const cloneFirst = realItems[0].cloneNode(true);
-  cloneFirst.classList.add('clone'); cloneFirst.dataset.clone = 'true';
-
-  track.appendChild(cloneLast);
-  realItems.forEach(el => track.appendChild(el));
-  track.appendChild(cloneFirst);
+  if (_carouselItems.length === 0) return;
+  _mobileCount = _carouselItems.length;
 
   // Check for stored last visited category, otherwise default to "Perpetual Looping"
   const lastVisited = localStorage.getItem('lastVisitedCategory');
@@ -237,44 +226,51 @@ function updateCarousel() {
   const prevBtn = document.querySelector('.carousel-prev');
   const nextBtn = document.querySelector('.carousel-next');
   const dots = document.querySelectorAll('.dot');
-  if (!container || !track || !prevBtn || !nextBtn) return;
+  if (!container || !track || !prevBtn || !nextBtn || _mobileCount === 0) return;
 
-  const items = track.children;
-  const totalItems = items.length;
-  if (!totalItems || _mobileCount === 0) return;
+  // Position each item based on its relationship to the active index
+  _carouselItems.forEach((item, index) => {
+    const offset = (index - currentMobileIndex + _mobileCount) % _mobileCount;
 
-  // Active class on REAL item only (ignore clones)
-  Array.from(items).forEach((item) => {
-    const isReal = !item.classList.contains('clone') && item.dataset.realIndex != null;
-    if (!isReal) {
-      item.classList.remove('active');
-      return;
+    // Remove all position classes
+    item.classList.remove('active', 'prev', 'next', 'hidden');
+
+    if (offset === 0) {
+      // Active item - center
+      item.classList.add('active');
+      item.style.transform = 'translateX(0%) translateZ(0px)';
+      item.style.filter = 'blur(0px)';
+      item.style.opacity = '1';
+      item.style.zIndex = '10';
+    } else if (offset === _mobileCount - 1) {
+      // Previous item - left
+      item.classList.add('prev');
+      item.style.transform = 'translateX(-120%) translateZ(-50px)';
+      item.style.filter = 'blur(2px)';
+      item.style.opacity = '0.6';
+      item.style.zIndex = '5';
+    } else if (offset === 1) {
+      // Next item - right
+      item.classList.add('next');
+      item.style.transform = 'translateX(120%) translateZ(-50px)';
+      item.style.filter = 'blur(2px)';
+      item.style.opacity = '0.6';
+      item.style.zIndex = '5';
+    } else {
+      // Hidden items - far offscreen
+      item.classList.add('hidden');
+      const direction = offset < _mobileCount / 2 ? 300 : -300;
+      item.style.transform = `translateX(${direction}%) translateZ(-100px)`;
+      item.style.filter = 'blur(5px)';
+      item.style.opacity = '0';
+      item.style.zIndex = '1';
     }
-    const realIndex = Number(item.dataset.realIndex);
-    item.classList.toggle('active', realIndex === currentMobileIndex);
   });
 
-  // Center the DOM node that corresponds to the real index (accounting for leading clone)
-  const targetDomIndex = currentMobileIndex + 1;
-  const activeEl = items[targetDomIndex];
-
-  const style = getComputedStyle(track);
-  const m = new DOMMatrixReadOnly(style.transform === 'none' ? '' : style.transform);
-  const currentTx = m.m41 || 0;
-
-  const containerRect = container.getBoundingClientRect();
-  const activeRect    = activeEl.getBoundingClientRect();
-  const containerCenter = containerRect.left + containerRect.width / 2;
-  const activeCenter    = activeRect.left    + activeRect.width  / 2;
-
-  const delta = containerCenter - activeCenter;
-  const nextTx = currentTx + delta;
-  track.style.transform = `translateX(${nextTx}px)`;
-
-  // Dots reflect REAL index
+  // Update dots
   dots.forEach((dot, i) => dot.classList.toggle('active', i === currentMobileIndex));
 
-  // Infinite carousel: arrows stay enabled
+  // Arrows always enabled for infinite carousel
   prevBtn.disabled = false;
   nextBtn.disabled = false;
 
@@ -288,8 +284,6 @@ function updateCarousel() {
 function initMobileCarousel() {
   const prevBtn = document.querySelector('.carousel-prev');
   const nextBtn = document.querySelector('.carousel-next');
-  const track = document.getElementById('mobile-category-track');
-  if (!track) return;
 
   // Add click handler for "See Reflections" button
   const seeReflectionsBtn = document.getElementById('mobile-see-reflections-btn');
@@ -304,106 +298,26 @@ function initMobileCarousel() {
     });
   }
 
-  // After animated move to a clone, snap instantly to the real item
-  track.addEventListener('transitionend', () => {
-    if (!_pendingSnap) return;
-
-    const prevTransition = track.style.transition;
-    track.style.transition = 'none'; // disable for instant snap
-
-    if (_pendingSnap.to === 'head') {
-      currentMobileIndex = 0;
-      snapToDomIndex(currentMobileIndex + 1);
-    } else if (_pendingSnap.to === 'tail') {
-      currentMobileIndex = _mobileCount - 1;
-      snapToDomIndex(currentMobileIndex + 1);
-    }
-
-    track.getBoundingClientRect();
-    track.style.transition = prevTransition;
-    _pendingSnap = null;
-  });
-
-  function snapToDomIndex(domIndex) {
-    const container = document.querySelector('.carousel-container');
-    const items = track.children;
-    const target = items[domIndex];
-    if (!container || !target) return;
-
-    const style = getComputedStyle(track);
-    const m = new DOMMatrixReadOnly(style.transform === 'none' ? '' : style.transform);
-    const currentTx = m.m41 || 0;
-
-    const cr = container.getBoundingClientRect();
-    const ar = target.getBoundingClientRect();
-    const cc = cr.left + cr.width / 2;
-    const ac = ar.left + ar.width / 2;
-
-    const delta = cc - ac;
-    const nextTx = currentTx + delta;
-    track.style.transform = `translateX(${nextTx}px)`;
-
-    const dots = document.querySelectorAll('.dot');
-    Array.from(items).forEach((item) => {
-      const isReal = !item.classList.contains('clone') && item.dataset.realIndex != null;
-      if (!isReal) {
-        item.classList.remove('active');
-        return;
-      }
-      const realIndex = Number(item.dataset.realIndex);
-      item.classList.toggle('active', realIndex === currentMobileIndex);
-    });
-    dots.forEach((dot, i) => dot.classList.toggle('active', i === currentMobileIndex));
-  }
-
+  // Simple navigation using modular arithmetic
   if (prevBtn) {
     prevBtn.addEventListener('click', () => {
       if (_mobileCount === 0) return;
-
-      if (currentMobileIndex > 0) {
-        currentMobileIndex -= 1;
-        updateCarousel();
-      } else {
-        _pendingSnap = { to: 'tail' };
-        const items = track.children;
-        const currentItem = items[currentMobileIndex + 1];
-        const itemWidth = currentItem.getBoundingClientRect().width;
-
-        const style = getComputedStyle(track);
-        const m = new DOMMatrixReadOnly(style.transform === 'none' ? '' : style.transform);
-        const currentTx = m.m41 || 0;
-
-        track.style.transform = `translateX(${currentTx + itemWidth}px)`;
-      }
+      currentMobileIndex = (currentMobileIndex - 1 + _mobileCount) % _mobileCount;
+      updateCarousel();
     });
   }
 
   if (nextBtn) {
     nextBtn.addEventListener('click', () => {
       if (_mobileCount === 0) return;
-
-      if (currentMobileIndex < _mobileCount - 1) {
-        currentMobileIndex += 1;
-        updateCarousel();
-      } else {
-        _pendingSnap = { to: 'head' };
-        const items = track.children;
-        const currentItem = items[currentMobileIndex + 1];
-        const itemWidth = currentItem.getBoundingClientRect().width;
-
-        const style = getComputedStyle(track);
-        const m = new DOMMatrixReadOnly(style.transform === 'none' ? '' : style.transform);
-        const currentTx = m.m41 || 0;
-
-        track.style.transform = `translateX(${currentTx - itemWidth}px)`;
-      }
+      currentMobileIndex = (currentMobileIndex + 1) % _mobileCount;
+      updateCarousel();
     });
   }
 }
 
 function goToSlide(index) {
-  const track = document.getElementById('mobile-category-track');
-  if (!track || _mobileCount === 0) return;
+  if (_mobileCount === 0) return;
   currentMobileIndex = ((index % _mobileCount) + _mobileCount) % _mobileCount;
   updateCarousel();
 }
@@ -430,39 +344,11 @@ window.addEventListener('resize', () => {
   }, 150);
 });
 
-// Detect if user is returning from a category page
-function disableCarouselTransition() {
-  const track = document.getElementById('mobile-category-track');
-  if (track) {
-    track.style.transition = 'none';
-    // Re-enable transition after positioning is complete
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        track.style.transition = '';
-      });
-    });
-  }
-}
-
-// Check if coming from a category page (referrer contains category name)
-function isReturningFromCategory() {
-  const referrer = document.referrer;
-  const categoryPages = ['loss-of-agency', 'perceptual-barriers', 'thought-entanglement',
-                        'sensory-overwhelm', 'perpetual-looping', 'emotional-dysregulation',
-                        'temporal-disconnection'];
-  return categoryPages.some(category => referrer.includes(category));
-}
-
 // Load + init
 fetch('../data.json')
   .then(r => r.json())
   .then(rawData => {
     const flowers = parseFlowerData(rawData);
-
-    // Disable transition if returning from category page
-    if (isReturningFromCategory()) {
-      disableCarouselTransition();
-    }
 
     createHomePage(flowers);
     if (window.Shuffle) Shuffle.init(flowers);

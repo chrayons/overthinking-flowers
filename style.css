@@ -658,6 +658,14 @@ body {
   opacity: 0.7;
 }
 
+.category-nav-arrow.prev {
+  view-transition-name: nav-prev; /* Enable cross-page transitions */
+}
+
+.category-nav-arrow.next {
+  view-transition-name: nav-next; /* Enable cross-page transitions */
+}
+
 .category-nav-arrow:hover {
   opacity: 1;
   transform: scale(1.1);
@@ -673,6 +681,7 @@ body {
   text-align: center;
   margin: 0;
   pointer-events: none; /* Allow click-through to flowers */
+  view-transition-name: category-title; /* Enable cross-page transitions */
 }
 
 /* Category navigation dots */
@@ -681,6 +690,7 @@ body {
   gap: 8px;
   justify-content: center;
   pointer-events: none; /* Allow click-through to flowers */
+  view-transition-name: dots-tracker; /* Enable cross-page transitions */
 }
 
 .category-nav-dot {
@@ -726,9 +736,9 @@ body {
   justify-content: center;
   width: 320px;
   height: 38px;
-  background: var(--bg-primary) !important;
-  color: #005BA6 !important;
-  border: 1px solid #005BA6 !important;
+  background: var(--bg-primary);
+  color: #005BA6;
+  border: 1px solid #005BA6;
   border-radius: 5px;
   font-family: "Satoshi-Light", system-ui;
   font-size: 14px;
@@ -737,8 +747,15 @@ body {
   cursor: pointer;
   box-sizing: border-box;
   pointer-events: auto; /* Enable clicking */
-  transition: none !important; /* Override any transitions applied by JavaScript */
-  opacity: 1 !important; /* Always full opacity */
+  transition: all 0.3s ease; /* Allow smooth transitions */
+  view-transition-name: return-btn; /* Enable cross-page transitions */
+}
+
+/* Blue hover state for return button */
+.category-overlay .btn-return-home:hover {
+  background: #005BA6;
+  color: var(--bg-primary);
+  border: 1px solid #005BA6;
 }
 
 
@@ -780,25 +797,24 @@ body {
 .carousel-track {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  width: max-content;
-  transform-origin: left center;
-  will-change: transform;   /* smoother */
-}  
+  justify-content: center;
+  position: relative;
+  width: 100%;
+  height: 120px;
+}
 
 .mobile-category-item {
-  flex-shrink: 0;
-  width: 300px; /* Fixed width for each item */
-  height: 120px; /* Add explicit height to match container */
+  position: absolute;
+  width: 300px;
+  height: 120px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  position: relative;
-  margin: 0 -40px;
+  transition: all 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+  transform-origin: center center;
+  will-change: transform, opacity;
 }
 
 /* Default state - side items (20pt, blurred, behind) */
@@ -1427,7 +1443,7 @@ body {
   position: absolute;
   z-index: 15;
   pointer-events: none;
-  background: rgba(255, 255, 255, 0.5); /* White with 50% opacity */
+  background: rgba(255, 255, 255, 0.85); /* White with 85% opacity - better readability */
   border: 0.5px solid #F8F8FF; /* Border matching SVG */
   border-radius: 5px; /* Rounded corners */
   padding: 8px 16px; /* 8px top/bottom, 16px left/right */
@@ -1435,6 +1451,48 @@ body {
   color: var(--text-primary); /* Black text */
   white-space: nowrap;
   user-select: none;
+}
+
+/* ================================
+   View Transitions API - Cross-Page Navigation
+   ================================ */
+
+/* Smooth cross-page animations for category navigation */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 300ms;
+  animation-timing-function: ease;
+}
+
+/* Specific transitions for category elements */
+::view-transition-old(category-title),
+::view-transition-new(category-title) {
+  animation-duration: 400ms;
+  animation-timing-function: cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+::view-transition-old(dots-tracker),
+::view-transition-new(dots-tracker) {
+  animation-duration: 350ms;
+  animation-timing-function: ease-out;
+}
+
+/* Accessibility support - respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root),
+  ::view-transition-old(category-title),
+  ::view-transition-new(category-title),
+  ::view-transition-old(dots-tracker),
+  ::view-transition-new(dots-tracker),
+  ::view-transition-old(nav-prev),
+  ::view-transition-new(nav-prev),
+  ::view-transition-old(nav-next),
+  ::view-transition-new(nav-next),
+  ::view-transition-old(return-btn),
+  ::view-transition-new(return-btn) {
+    animation: none;
+  }
 }
 
 /* sectors should sit under the petals while still being visible */
