@@ -6,60 +6,62 @@ console.log("Thought Entanglement page loading...");
 // Fixed flower positions - captured from working layout
 const FLOWER_POSITIONS = {
   desktop: {
-    'ID5': { x: 20, y: 15 },   // scribbles, messy, black/dark, cloudy
-    'ID8': { x: 54, y: 10 },   // scribbles, clouds, messy, gray
-    'ID15': { x: 45, y: 25 },  // Trying to find the right information in a messy library
+    'ID5': { x: 12, y: 8 },   // scribbles, messy, black/dark, cloudy
+    'ID8': { x: 52, y: 10 },   // scribbles, clouds, messy, gray
+    'ID15': { x: 45, y: 20 },  // Trying to find the right information in a messy library
     'ID18': { x: 5, y: 45 },  // ball of yarn/thread except it’s alive
-    'ID22': { x: 25, y: 40 },  // Like messed up bottle of yarn!
-    'ID23': { x: 10, y: 75 },  // Its like those thought bubbles and all thats inside are scribbles
+    'ID22': { x: 22, y: 31 },  // Like messed up bottle of yarn!
+    'ID23': { x: 8, y: 67 },  // Its like those thought bubbles and all thats inside are scribbles
     'ID27': { x: 15, y: 65 },  // unending scribbles
-    'ID29': { x: 95, y: 35 },  // A scribble , and just things moving around without anything clear just a string curing 
+    'ID29': { x: 90, y: 35 },  // A scribble , and just things moving around without anything clear just a string curing 
     'ID32': { x: 85, y: 42 },  // It’s like a matter but it’s always shifting. Any time i think i can grasp it, it changes to something different.
-    'ID43': { x: 71, y: 84 },  // word cloud, labyrinth, drowning, freezing, being stuck
-    'ID46': { x: 21, y: 75 },  // Storm, tangle
+    'ID43': { x: 76, y: 95 },  // word cloud, labyrinth, drowning, freezing, being stuck
+    'ID46': { x: 27, y: 75 },  // Storm, tangle
     'ID48': { x: 65, y: 75 },  // a knot, a racecar going around track at extremely high speeds, me running around a room restlessly
-    'ID51': { x: 96, y: 48 },  // sort of like a small central point (the initial thought) and then a larger chaotic spiky/scribbly/zigzag circle around it (the associated thought spiral)
+    'ID51': { x: 98, y: 48 },  // sort of like a small central point (the initial thought) and then a larger chaotic spiky/scribbly/zigzag circle around it (the associated thought spiral)
     'ID55': { x: 13, y: 35 },  // Scribbles / spiraling staircase leading downwards
-    'ID56': { x: 70, y: 25 },  // A ball of yarn. You know the beginning and the end are there somewhere, but getting there is frustrating and takes ages. Also, others just tell you to buy a new one
-    'ID57': { x: 50, y: 75 },  // I see problems as knots. Thinking would be the act of untying them in my head. Overthinking would be complicating the untying process, it may have been a simple fix or there was no solution, either way there is no need to keep trying to untie over and over
-    'ID59': { x: 90, y: 93 }   // a tangled thread
+    'ID56': { x: 70, y: 10 },  // A ball of yarn. You know the beginning and the end are there somewhere, but getting there is frustrating and takes ages. Also, others just tell you to buy a new one
+    'ID57': { x: 20, y: 88 },  // I see problems as knots. Thinking would be the act of untying them in my head. Overthinking would be complicating the untying process, it may have been a simple fix or there was no solution, either way there is no need to keep trying to untie over and over
+    'ID59': { x: 90, y: 73 }   // a tangled thread
   },
   mobile: {
-    'ID5': { x: 20, y: 15 },   // scribbles, messy, black/dark, cloudy
-    'ID8': { x: 54, y: 10 },   // scribbles, clouds, messy, gray
+    'ID5': { x: 15, y: 25 },   // scribbles, messy, black/dark, cloudy
+    'ID8': { x: 44, y: 10 },   // scribbles, clouds, messy, gray
     'ID15': { x: 45, y: 25 },  // Trying to find the right information in a messy library
-    'ID18': { x: 5, y: 45 },  // ball of yarn/thread except it’s alive
-    'ID22': { x: 25, y: 40 },  // Like messed up bottle of yarn!
+    'ID18': { x: 90, y: 30 },  // ball of yarn/thread except it’s alive
+    'ID22': { x: 25, y: 35 },  // Like messed up bottle of yarn!
     'ID23': { x: 10, y: 75 },  // Its like those thought bubbles and all thats inside are scribbles
-    'ID27': { x: 15, y: 65 },  // unending scribbles
-    'ID29': { x: 95, y: 35 },  // A scribble , and just things moving around without anything clear just a string curing 
-    'ID32': { x: 85, y: 42 },  // It’s like a matter but it’s always shifting. Any time i think i can grasp it, it changes to something different.
-    'ID43': { x: 71, y: 84 },  // word cloud, labyrinth, drowning, freezing, being stuck
+    'ID27': { x: 12, y: 65 },  // unending scribbles
+    'ID29': { x: 75, y: 35 },  // A scribble , and just things moving around without anything clear just a string curing 
+    'ID32': { x: 15, y: 42 },  // It’s like a matter but it’s always shifting. Any time i think i can grasp it, it changes to something different.
+    'ID43': { x: 76, y: 70 },  // word cloud, labyrinth, drowning, freezing, being stuck
     'ID46': { x: 21, y: 75 },  // Storm, tangle
-    'ID48': { x: 65, y: 75 },  // a knot, a racecar going around track at extremely high speeds, me running around a room restlessly
-    'ID51': { x: 96, y: 48 },  // sort of like a small central point (the initial thought) and then a larger chaotic spiky/scribbly/zigzag circle around it (the associated thought spiral)
+    'ID48': { x: 56, y: 75 },  // a knot, a racecar going around track at extremely high speeds, me running around a room restlessly
+    'ID51': { x: 85, y: 48 },  // sort of like a small central point (the initial thought) and then a larger chaotic spiky/scribbly/zigzag circle around it (the associated thought spiral)
     'ID55': { x: 13, y: 35 },  // Scribbles / spiraling staircase leading downwards
-    'ID56': { x: 70, y: 25 },  // A ball of yarn. You know the beginning and the end are there somewhere, but getting there is frustrating and takes ages. Also, others just tell you to buy a new one
-    'ID57': { x: 50, y: 75 },  // I see problems as knots. Thinking would be the act of untying them in my head. Overthinking would be complicating the untying process, it may have been a simple fix or there was no solution, either way there is no need to keep trying to untie over and over
-    'ID59': { x: 90, y: 93 }   // a tangled thread
+    'ID56': { x: 65, y: 19 },  // A ball of yarn. You know the beginning and the end are there somewhere, but getting there is frustrating and takes ages. Also, others just tell you to buy a new one
+    'ID57': { x: 50, y: 66 },  // I see problems as knots. Thinking would be the act of untying them in my head. Overthinking would be complicating the untying process, it may have been a simple fix or there was no solution, either way there is no need to keep trying to untie over and over
+    'ID59': { x: 40, y: 80 }   // a tangled thread
   }
 };
 
 // Simple layout storage - one layout for all devices
-const TE_LAYOUT_KEY = 'te-simple-layout-v2';
+const TE_LAYOUT_KEY = 'te-simple-layout-v5';
 
 // Set to true to ignore cache and always use fresh positions (for experimentation)
 const IGNORE_CACHE = false;
 
-function saveLayout(placed) {
+function saveLayout(placed, isMobile) {
   try {
-    sessionStorage.setItem(TE_LAYOUT_KEY, JSON.stringify(placed));
+    const deviceKey = isMobile ? TE_LAYOUT_KEY + '-mobile' : TE_LAYOUT_KEY + '-desktop';
+    sessionStorage.setItem(deviceKey, JSON.stringify(placed));
   } catch {}
 }
 
-function restoreLayout() {
+function restoreLayout(isMobile) {
   try {
-    return JSON.parse(sessionStorage.getItem(TE_LAYOUT_KEY) || 'null');
+    const deviceKey = isMobile ? TE_LAYOUT_KEY + '-mobile' : TE_LAYOUT_KEY + '-desktop';
+    return JSON.parse(sessionStorage.getItem(deviceKey) || 'null');
   } catch {
     return null;
   }
@@ -80,8 +82,11 @@ function createThoughtEntanglementLayout(flowers) {
     window.FlowerInteractions.clearAll();
   }
 
+  // Determine device type FIRST before any cache operations
+  const isMobile = window.innerWidth <= 1160;
+
   // Check for existing layout first (unless experimenting)
-  const restored = IGNORE_CACHE ? null : restoreLayout();
+  const restored = IGNORE_CACHE ? null : restoreLayout(isMobile);
   if (restored && restored.length === categoryFlowers.length) {
     // Use existing layout
     restored.forEach((layoutData, index) => {
@@ -120,8 +125,7 @@ function createThoughtEntanglementLayout(flowers) {
   const placedFlowers = [];
   const resultsForPersist = [];
 
-  // Calculate mobile/desktop state and positions once for all flowers
-  const isMobile = window.innerWidth <= 1160;
+  // Use device state determined earlier and select positions
   const positions = isMobile ? FLOWER_POSITIONS.mobile : FLOWER_POSITIONS.desktop;
 
   categoryFlowers.forEach((flowerData) => {
@@ -134,12 +138,9 @@ function createThoughtEntanglementLayout(flowers) {
       position = { x: 50, y: 50 }; // Center as fallback
     }
 
-    // Calculate size based on emotion intensity (keep this dynamic)
-    const vals = Object.values(flowerData.emotions || {});
-    const dominant = vals.length ? Math.max(...vals) : 0;
-    const avg = vals.length ? vals.reduce((s, v) => s + v, 0) / vals.length : 0;
-    const combined = 0.7 * dominant + 0.3 * avg;
-    const tSize = Math.max(0.35, Math.min(1, combined / 100));
+    // Use pre-calculated emotional intensity from data
+    const intensity = (flowerData.emotionalIntensity || 35) / 100;
+    const tSize = Math.max(0.35, Math.min(1, intensity));
 
     // Size calculation - mobile first approach
     const baseMin = 100;
@@ -185,8 +186,8 @@ function createThoughtEntanglementLayout(flowers) {
     container.appendChild(el);
   });
 
-  // Save layout for future use
-  saveLayout(resultsForPersist);
+  // Save layout for future use with device type
+  saveLayout(resultsForPersist, isMobile);
 }
 
 // Load data and initialize page
@@ -218,8 +219,9 @@ fetch('../data.json')
       clearTimeout(resizeTimeout);
       resizeTimeout = setTimeout(() => {
         console.log('Resize detected, recalculating layout for new screen size:', window.innerWidth);
-        // Clear cached layout to force recalculation with new sizes
-        sessionStorage.removeItem(TE_LAYOUT_KEY);
+        // Clear both device-specific cached layouts to force recalculation
+        sessionStorage.removeItem(TE_LAYOUT_KEY + '-desktop');
+        sessionStorage.removeItem(TE_LAYOUT_KEY + '-mobile');
         createThoughtEntanglementLayout(flowers);
       }, 150);
     });

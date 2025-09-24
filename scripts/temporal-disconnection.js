@@ -12,28 +12,30 @@ const FLOWER_POSITIONS = {
     'ID73': { x: 78, y: 50 }   // Moments of particular events that happened in the past
   },
   mobile: {
-    'ID1': { x: 18, y: 74 },   // World is moving but I'm not moving along with it
-    'ID31': { x: 68, y: 47 },  // Trains, cars, moving objects moving past me in a blur
-    'ID60': { x: 28, y: 21 },  // Wouldn't say I'm much of an overthinker, rather I feel like a rusty tap...
-    'ID73': { x: 78, y: 50 }   // Moments of particular events that happened in the past
+    'ID1': { x: 18, y: 64 },   // World is moving but I'm not moving along with it
+    'ID31': { x: 70, y: 35 },  // Trains, cars, moving objects moving past me in a blur
+    'ID60': { x: 28, y: 26 },  // Wouldn't say I'm much of an overthinker, rather I feel like a rusty tap...
+    'ID73': { x: 78, y: 70 }   // Moments of particular events that happened in the past
   }
 };
 
 // Simple layout storage - one layout for all devices
-const TD_LAYOUT_KEY = 'td-simple-layout-v2';
+const TD_LAYOUT_KEY = 'td-simple-layout-v3';
 
 // Set to true to ignore cache and always use fresh positions (for experimentation)
 const IGNORE_CACHE = false;
 
-function saveLayout(placed) {
+function saveLayout(placed, isMobile) {
   try {
-    sessionStorage.setItem(TD_LAYOUT_KEY, JSON.stringify(placed));
+    const deviceKey = isMobile ? TD_LAYOUT_KEY + '-mobile' : TD_LAYOUT_KEY + '-desktop';
+    sessionStorage.setItem(deviceKey, JSON.stringify(placed));
   } catch {}
 }
 
-function restoreLayout() {
+function restoreLayout(isMobile) {
   try {
-    return JSON.parse(sessionStorage.getItem(TD_LAYOUT_KEY) || 'null');
+    const deviceKey = isMobile ? TD_LAYOUT_KEY + '-mobile' : TD_LAYOUT_KEY + '-desktop';
+    return JSON.parse(sessionStorage.getItem(deviceKey) || 'null');
   } catch {
     return null;
   }
@@ -54,8 +56,11 @@ function createTemporalDisconnectionLayout(flowers) {
     window.FlowerInteractions.clearAll();
   }
 
+  // Determine device type FIRST before any cache operations
+  const isMobile = window.innerWidth <= 1160;
+
   // Check for existing layout first (unless experimenting)
-  const restored = IGNORE_CACHE ? null : restoreLayout();
+  const restored = IGNORE_CACHE ? null : restoreLayout(isMobile);
   if (restored && restored.length === categoryFlowers.length) {
     // Use existing layout
     restored.forEach((layoutData, index) => {
@@ -94,8 +99,7 @@ function createTemporalDisconnectionLayout(flowers) {
   const placedFlowers = [];
   const resultsForPersist = [];
 
-  // Calculate mobile/desktop state and positions once for all flowers
-  const isMobile = window.innerWidth <= 1160;
+  // Use device state determined earlier and select positions
   const positions = isMobile ? FLOWER_POSITIONS.mobile : FLOWER_POSITIONS.desktop;
 
   categoryFlowers.forEach((flowerData, index) => {
@@ -108,12 +112,9 @@ function createTemporalDisconnectionLayout(flowers) {
       position = { x: 50, y: 50 }; // Center as fallback
     }
 
-    // Calculate size based on emotion intensity (keep this dynamic)
-    const vals = Object.values(flowerData.emotions || {});
-    const dominant = vals.length ? Math.max(...vals) : 0;
-    const avg = vals.length ? vals.reduce((s, v) => s + v, 0) / vals.length : 0;
-    const combined = 0.7 * dominant + 0.3 * avg;
-    const tSize = Math.max(0.35, Math.min(1, combined / 100));
+    // Use pre-calculated emotional intensity from data
+    const intensity = (flowerData.emotionalIntensity || 35) / 100;
+    const tSize = Math.max(0.35, Math.min(1, intensity));
 
     // Size calculation - mobile first approach
     const baseMin = 100;
@@ -159,8 +160,8 @@ function createTemporalDisconnectionLayout(flowers) {
     container.appendChild(el);
   });
 
-  // Save layout for future use
-  saveLayout(resultsForPersist);
+  // Save layout for future use with device type
+  saveLayout(resultsForPersist, isMobile);
 }
 
 // Load data and initialize page
@@ -192,8 +193,9 @@ fetch('../data.json')
       clearTimeout(resizeTimeout);
       resizeTimeout = setTimeout(() => {
         console.log('Resize detected, recalculating layout for new screen size:', window.innerWidth);
-        // Clear cached layout to force recalculation with new sizes
-        sessionStorage.removeItem(TD_LAYOUT_KEY);
+        // Clear both device-specific cached layouts to force recalculation
+        sessionStorage.removeItem(TD_LAYOUT_KEY + '-desktop');
+        sessionStorage.removeItem(TD_LAYOUT_KEY + '-mobile');
         createTemporalDisconnectionLayout(flowers);
       }, 150);
     });

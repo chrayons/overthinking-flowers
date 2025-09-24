@@ -6,46 +6,48 @@ console.log("Loss of Agency page loading...");
 // Fixed flower positions - captured from working layout
 const FLOWER_POSITIONS = {
   desktop: {
-    'ID7': { x: 82, y: 56 },  // sunshine and rainbows then sud...
-    'ID16': { x: 30, y: 70 }, // Having a lovely married life w...
+    'ID7': { x: 77, y: 47 },  // sunshine and rainbows then sud...
+    'ID16': { x: 35, y: 70 }, // Having a lovely married life w...
     'ID21': { x: 81, y: 29 }, // I cannaur...
-    'ID25': { x: 64, y: 10 }, // a whirlpool...
+    'ID25': { x: 64, y: 17 }, // a whirlpool...
     'ID33': { x: 33, y: 35 }, // walls closing in...
     'ID35': { x: 76, y: 87 }, // Starts out like a sauna. And t...
-    'ID38': { x: 2, y: 33 }, // Drowning...
-    'ID53': { x: 92, y: 75 }, // That one pic of the cartoon do...
-    'ID67': { x: 2, y: 78 },  // the last bowling pin wobbling ...
-    'ID71': { x: 51, y: 90 }  // Being completely submerged in ...
+    'ID38': { x: 15, y: 37 }, // Drowning...
+    'ID53': { x: 90, y: 75 }, // That one pic of the cartoon do...
+    'ID67': { x: 6, y: 58 },  // the last bowling pin wobbling ...
+    'ID71': { x: 18, y: 10 }  // Being completely submerged in ...
   },
   mobile: {
-    'ID7': { x: 82, y: 56 },  // sunshine and rainbows then sud...
-    'ID16': { x: 30, y: 70 }, // Having a lovely married life w...
-    'ID21': { x: 81, y: 29 }, // I cannaur...
-    'ID25': { x: 64, y: 10 }, // a whirlpool...
+    'ID7': { x: 90, y: 45 },  // sunshine and rainbows then sud...
+    'ID16': { x: 25, y: 68 }, // Having a lovely married life w...
+    'ID21': { x: 70, y: 29 }, // I cannaur...
+    'ID25': { x: 59, y: 35 }, // a whirlpool...
     'ID33': { x: 33, y: 35 }, // walls closing in...
-    'ID35': { x: 76, y: 87 }, // Starts out like a sauna. And t...
-    'ID38': { x: 2, y: 33 }, // Drowning...
-    'ID53': { x: 92, y: 75 }, // That one pic of the cartoon do...
-    'ID67': { x: 2, y: 78 },  // the last bowling pin wobbling ...
-    'ID71': { x: 51, y: 90 }  // Being completely submerged in ...
+    'ID35': { x: 75, y: 68 }, // Starts out like a sauna. And t...
+    'ID38': { x: 10, y: 37 }, // Drowning...
+    'ID53': { x: 55, y: 75 }, // That one pic of the cartoon do...
+    'ID67': { x: 16, y: 50 },  // the last bowling pin wobbling ...
+    'ID71': { x: 48, y: 20 }  // Being completely submerged in ...
   }
 };
 
 // Simple layout storage - one layout for all devices
-const LOA_LAYOUT_KEY = 'loa-simple-layout-v15';
+const LOA_LAYOUT_KEY = 'loa-simple-layout-v17';
 
 // Set to true to ignore cache and always use fresh positions (for experimentation)
 const IGNORE_CACHE = false;
 
-function saveLayout(placed) {
+function saveLayout(placed, isMobile) {
   try {
-    sessionStorage.setItem(LOA_LAYOUT_KEY, JSON.stringify(placed));
+    const deviceKey = isMobile ? LOA_LAYOUT_KEY + '-mobile' : LOA_LAYOUT_KEY + '-desktop';
+    sessionStorage.setItem(deviceKey, JSON.stringify(placed));
   } catch {}
 }
 
-function restoreLayout() {
+function restoreLayout(isMobile) {
   try {
-    return JSON.parse(sessionStorage.getItem(LOA_LAYOUT_KEY) || 'null');
+    const deviceKey = isMobile ? LOA_LAYOUT_KEY + '-mobile' : LOA_LAYOUT_KEY + '-desktop';
+    return JSON.parse(sessionStorage.getItem(deviceKey) || 'null');
   } catch {
     return null;
   }
@@ -70,8 +72,11 @@ function createLossOfAgencyLayout(flowers) {
     window.FlowerInteractions.clearAll();
   }
 
+  // Determine device type FIRST before any cache operations
+  const isMobile = window.innerWidth <= 1160;
+
   // Check for existing layout first (unless experimenting)
-  const restored = IGNORE_CACHE ? null : restoreLayout();
+  const restored = IGNORE_CACHE ? null : restoreLayout(isMobile);
   if (restored && restored.length === categoryFlowers.length) {
     // Use existing layout
     restored.forEach((layoutData, index) => {
@@ -111,8 +116,7 @@ function createLossOfAgencyLayout(flowers) {
   const placedFlowers = [];
   const resultsForPersist = [];
 
-  // Compute mobile detection once outside the loop
-  const isMobile = window.innerWidth <= 1160;
+  // Use device state determined earlier and select positions
   const positions = isMobile ? FLOWER_POSITIONS.mobile : FLOWER_POSITIONS.desktop;
 
   categoryFlowers.forEach((flowerData, index) => {
@@ -125,12 +129,9 @@ function createLossOfAgencyLayout(flowers) {
       position = { x: 50, y: 50 }; // Center as fallback
     }
 
-    // Calculate size based on emotion intensity (keep this dynamic)
-    const vals = Object.values(flowerData.emotions || {});
-    const dominant = vals.length ? Math.max(...vals) : 0;
-    const avg = vals.length ? vals.reduce((s, v) => s + v, 0) / vals.length : 0;
-    const combined = 0.7 * dominant + 0.3 * avg;
-    const tSize = Math.max(0.35, Math.min(1, combined / 100));
+    // Use pre-calculated emotional intensity from data
+    const intensity = (flowerData.emotionalIntensity || 35) / 100;
+    const tSize = Math.max(0.35, Math.min(1, intensity));
 
     // Size calculation - mobile first approach
     const baseMin = 100;
@@ -176,8 +177,8 @@ function createLossOfAgencyLayout(flowers) {
     container.appendChild(el);
   });
 
-  // Save layout for future use
-  saveLayout(resultsForPersist);
+  // Save layout for future use with device type
+  saveLayout(resultsForPersist, isMobile);
 }
 
 // Load data and initialize page
@@ -209,8 +210,9 @@ fetch('../data.json')
       clearTimeout(resizeTimeout);
       resizeTimeout = setTimeout(() => {
         console.log('Resize detected, recalculating layout for new screen size:', window.innerWidth);
-        // Clear cached layout to force recalculation with new sizes
-        sessionStorage.removeItem(LOA_LAYOUT_KEY);
+        // Clear both device-specific cached layouts to force recalculation
+        sessionStorage.removeItem(LOA_LAYOUT_KEY + '-desktop');
+        sessionStorage.removeItem(LOA_LAYOUT_KEY + '-mobile');
         createLossOfAgencyLayout(flowers);
       }, 150);
     });

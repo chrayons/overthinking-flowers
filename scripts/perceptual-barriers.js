@@ -7,7 +7,7 @@ console.log("Perceptual Barriers page loading...");
 const FLOWER_POSITIONS = {
   desktop: {
     'ID11': { x: 10, y: 56 },  // a big grey cloud or fog
-    'ID19': { x: 58, y: 85 },  // Impending doom or like a black cloud
+    'ID19': { x: 68, y: 85 },  // Impending doom or like a black cloud
     'ID34': { x: 25, y: 15 },  // It feels like being in a smoky space, with many voices coming from my heart, but I can’t see my true desires and needs clearly.I will try to sort it all out until my vision becomes clear and I understand my guiding ideology. This is usually very energy consuming.
     'ID39': { x: 87, y: 70 },  // Me surrounded by mist, with trains of thoughts whisking by and turning me around and around.
     'ID44': { x: 80, y: 30 },  // a cloud
@@ -16,32 +16,34 @@ const FLOWER_POSITIONS = {
     'ID66': { x: 24, y: 80 }   // Being lost in a big dark cloud or stuck in a maze that has no clear ending
   },
   mobile: {
-    'ID11': { x: 10, y: 56 },  // a big grey cloud or fog
-    'ID19': { x: 58, y: 85 },  // Impending doom or like a black cloud
-    'ID34': { x: 25, y: 15 },  // It feels like being in a smoky space, with many voices coming from my heart, but I can’t see my true desires and needs clearly.I will try to sort it all out until my vision becomes clear and I understand my guiding ideology. This is usually very energy consuming.
-    'ID39': { x: 87, y: 70 },  // Me surrounded by mist, with trains of thoughts whisking by and turning me around and around.
-    'ID44': { x: 80, y: 30 },  // a cloud
-    'ID45': { x: 95, y: 52 },  // thick fog but still kinda knowing your way?
-    'ID52': { x: 65, y: 62 },  // fog
-    'ID66': { x: 24, y: 80 }   // Being lost in a big dark cloud or stuck in a maze that has no clear ending
+    'ID11': { x: 20, y: 45 },  // a big grey cloud or fog
+    'ID19': { x: 17, y: 66 },  // Impending doom or like a black cloud
+    'ID34': { x: 27, y: 28 },  // It feels like being in a smoky space, with many voices coming from my heart, but I can’t see my true desires and needs clearly.I will try to sort it all out until my vision becomes clear and I understand my guiding ideology. This is usually very energy consuming.
+    'ID39': { x: 79, y: 64 },  // Me surrounded by mist, with trains of thoughts whisking by and turning me around and around.
+    'ID44': { x: 74, y: 30 },  // a cloud
+    'ID45': { x: 80, y: 42 },  // thick fog but still kinda knowing your way?
+    'ID52': { x: 44, y: 24 },  // fog
+    'ID66': { x: 46, y: 76 }   // Being lost in a big dark cloud or stuck in a maze that has no clear ending
   }
 };
 
 // Simple layout storage - one layout for all devices
-const PB_LAYOUT_KEY = 'pb-simple-layout-v2';
+const PB_LAYOUT_KEY = 'pb-simple-layout-v4';
 
 // Set to true to ignore cache and always use fresh positions (for experimentation)
 const IGNORE_CACHE = false;
 
-function saveLayout(placed) {
+function saveLayout(placed, isMobile) {
   try {
-    sessionStorage.setItem(PB_LAYOUT_KEY, JSON.stringify(placed));
+    const deviceKey = isMobile ? PB_LAYOUT_KEY + '-mobile' : PB_LAYOUT_KEY + '-desktop';
+    sessionStorage.setItem(deviceKey, JSON.stringify(placed));
   } catch {}
 }
 
-function restoreLayout() {
+function restoreLayout(isMobile) {
   try {
-    return JSON.parse(sessionStorage.getItem(PB_LAYOUT_KEY) || 'null');
+    const deviceKey = isMobile ? PB_LAYOUT_KEY + '-mobile' : PB_LAYOUT_KEY + '-desktop';
+    return JSON.parse(sessionStorage.getItem(deviceKey) || 'null');
   } catch {
     return null;
   }
@@ -62,8 +64,11 @@ function createPerceptualBarriersLayout(flowers) {
     window.FlowerInteractions.clearAll();
   }
 
+  // Determine device type FIRST before any cache operations
+  const isMobile = window.innerWidth <= 1160;
+
   // Check for existing layout first (unless experimenting)
-  const restored = IGNORE_CACHE ? null : restoreLayout();
+  const restored = IGNORE_CACHE ? null : restoreLayout(isMobile);
   if (restored && restored.length === categoryFlowers.length) {
     // Use existing layout
     restored.forEach((layoutData, index) => {
@@ -102,8 +107,7 @@ function createPerceptualBarriersLayout(flowers) {
   const placedFlowers = [];
   const resultsForPersist = [];
 
-  // Calculate mobile/desktop state and positions once for all flowers
-  const isMobile = window.innerWidth <= 1160;
+  // Use device state determined earlier and select positions
   const positions = isMobile ? FLOWER_POSITIONS.mobile : FLOWER_POSITIONS.desktop;
 
   categoryFlowers.forEach((flowerData) => {
@@ -116,12 +120,9 @@ function createPerceptualBarriersLayout(flowers) {
       position = { x: 50, y: 50 }; // Center as fallback
     }
 
-    // Calculate size based on emotion intensity (keep this dynamic)
-    const vals = Object.values(flowerData.emotions || {});
-    const dominant = vals.length ? Math.max(...vals) : 0;
-    const avg = vals.length ? vals.reduce((s, v) => s + v, 0) / vals.length : 0;
-    const combined = 0.7 * dominant + 0.3 * avg;
-    const tSize = Math.max(0.35, Math.min(1, combined / 100));
+    // Use pre-calculated emotional intensity from data
+    const intensity = (flowerData.emotionalIntensity || 35) / 100;
+    const tSize = Math.max(0.35, Math.min(1, intensity));
 
     // Size calculation - mobile first approach
     const baseMin = 100;
@@ -167,8 +168,8 @@ function createPerceptualBarriersLayout(flowers) {
     container.appendChild(el);
   });
 
-  // Save layout for future use
-  saveLayout(resultsForPersist);
+  // Save layout for future use with device type
+  saveLayout(resultsForPersist, isMobile);
 }
 
 // Load data and initialize page
@@ -200,8 +201,9 @@ fetch('../data.json')
       clearTimeout(resizeTimeout);
       resizeTimeout = setTimeout(() => {
         console.log('Resize detected, recalculating layout for new screen size:', window.innerWidth);
-        // Clear cached layout to force recalculation with new sizes
-        sessionStorage.removeItem(PB_LAYOUT_KEY);
+        // Clear both device-specific cached layouts to force recalculation
+        sessionStorage.removeItem(PB_LAYOUT_KEY + '-desktop');
+        sessionStorage.removeItem(PB_LAYOUT_KEY + '-mobile');
         createPerceptualBarriersLayout(flowers);
       }, 150);
     });

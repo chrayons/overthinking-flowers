@@ -6,44 +6,46 @@ console.log("Sensory Overwhelm page loading...");
 // Fixed flower positions - captured from working layout
 const FLOWER_POSITIONS = {
   desktop: {
-    'ID24': { x: 54, y: 85 },  // Maybe it's bc I have ADHD. I think of flashes of images in my head rapidly appearing...
+    'ID24': { x: 70, y: 85 },  // Maybe it's bc I have ADHD. I think of flashes of images in my head rapidly appearing...
     'ID47': { x: 85, y: 20 },  // A heavy, buzzing cloud over my head throughout the day.
-    'ID49': { x: 5, y: 40 },  // The movie: anything everywhere all at once
+    'ID49': { x: 10, y: 40 },  // The movie: anything everywhere all at once
     'ID50': { x: 15, y: 80 },  // Racing ants
     'ID61': { x: 80, y: 50 },  // network/electric movements, overlapping people talking
-    'ID62': { x: 25, y: 67 },  // Dark cloud, lots of tornados in my head
+    'ID62': { x: 22, y: 69 },  // Dark cloud, lots of tornados in my head
     'ID63': { x: 41, y: 7 },  // a band with 100 instruments playing
-    'ID65': { x: 60, y: 35 },  // a swarm of bees that won't stop buzzing
-    'ID72': { x: 95, y: 64 }   // Like that scene in Harry Potter when he has to grab the right key...
+    'ID65': { x: 60, y: 27 },  // a swarm of bees that won't stop buzzing
+    'ID72': { x: 90, y: 64 }   // Like that scene in Harry Potter when he has to grab the right key...
   },
   mobile: {
-    'ID24': { x: 54, y: 85 },  // Maybe it's bc I have ADHD. I think of flashes of images in my head rapidly appearing...
-    'ID47': { x: 85, y: 20 },  // A heavy, buzzing cloud over my head throughout the day.
-    'ID49': { x: 5, y: 40 },  // The movie: anything everywhere all at once
-    'ID50': { x: 15, y: 80 },  // Racing ants
-    'ID61': { x: 80, y: 50 },  // network/electric movements, overlapping people talking
-    'ID62': { x: 25, y: 67 },  // Dark cloud, lots of tornados in my head
-    'ID63': { x: 41, y: 7 },  // a band with 100 instruments playing
+    'ID24': { x: 47, y: 72 },  // Maybe it's bc I have ADHD. I think of flashes of images in my head rapidly appearing...
+    'ID47': { x: 75, y: 20 },  // A heavy, buzzing cloud over my head throughout the day.
+    'ID49': { x: 15, y: 40 },  // The movie: anything everywhere all at once
+    'ID50': { x: 25, y: 70 },  // Racing ants
+    'ID61': { x: 80, y: 44 },  // network/electric movements, overlapping people talking
+    'ID62': { x: 10, y: 70 },  // Dark cloud, lots of tornados in my head
+    'ID63': { x: 37, y: 27 },  // a band with 100 instruments playing
     'ID65': { x: 60, y: 35 },  // a swarm of bees that won't stop buzzing
-    'ID72': { x: 95, y: 64 }   // Like that scene in Harry Potter when he has to grab the right key...
+    'ID72': { x: 85, y: 68 }   // Like that scene in Harry Potter when he has to grab the right key...
   }
 };
 
 // Simple layout storage - one layout for all devices
-const SO_LAYOUT_KEY = 'so-simple-layout-v2';
+const SO_LAYOUT_KEY = 'so-simple-layout-v4';
 
 // Set to true to ignore cache and always use fresh positions (for experimentation)
 const IGNORE_CACHE = false;
 
-function saveLayout(placed) {
+function saveLayout(placed, isMobile) {
   try {
-    sessionStorage.setItem(SO_LAYOUT_KEY, JSON.stringify(placed));
+    const deviceKey = isMobile ? SO_LAYOUT_KEY + '-mobile' : SO_LAYOUT_KEY + '-desktop';
+    sessionStorage.setItem(deviceKey, JSON.stringify(placed));
   } catch {}
 }
 
-function restoreLayout() {
+function restoreLayout(isMobile) {
   try {
-    return JSON.parse(sessionStorage.getItem(SO_LAYOUT_KEY) || 'null');
+    const deviceKey = isMobile ? SO_LAYOUT_KEY + '-mobile' : SO_LAYOUT_KEY + '-desktop';
+    return JSON.parse(sessionStorage.getItem(deviceKey) || 'null');
   } catch {
     return null;
   }
@@ -64,8 +66,11 @@ function createSensoryOverwhelmLayout(flowers) {
     window.FlowerInteractions.clearAll();
   }
 
+  // Determine device type FIRST before any cache operations
+  const isMobile = window.innerWidth <= 1160;
+
   // Check for existing layout first (unless experimenting)
-  const restored = IGNORE_CACHE ? null : restoreLayout();
+  const restored = IGNORE_CACHE ? null : restoreLayout(isMobile);
   if (restored && restored.length === categoryFlowers.length) {
     // Use existing layout
     restored.forEach((layoutData, index) => {
@@ -104,8 +109,7 @@ function createSensoryOverwhelmLayout(flowers) {
   const placedFlowers = [];
   const resultsForPersist = [];
 
-  // Calculate mobile/desktop state and positions once for all flowers
-  const isMobile = window.innerWidth <= 1160;
+  // Use device state determined earlier and select positions
   const positions = isMobile ? FLOWER_POSITIONS.mobile : FLOWER_POSITIONS.desktop;
 
   categoryFlowers.forEach((flowerData, index) => {
@@ -118,12 +122,9 @@ function createSensoryOverwhelmLayout(flowers) {
       position = { x: 50, y: 50 }; // Center as fallback
     }
 
-    // Calculate size based on emotion intensity (keep this dynamic)
-    const vals = Object.values(flowerData.emotions || {});
-    const dominant = vals.length ? Math.max(...vals) : 0;
-    const avg = vals.length ? vals.reduce((s, v) => s + v, 0) / vals.length : 0;
-    const combined = 0.7 * dominant + 0.3 * avg;
-    const tSize = Math.max(0.35, Math.min(1, combined / 100));
+    // Use pre-calculated emotional intensity from data
+    const intensity = (flowerData.emotionalIntensity || 35) / 100;
+    const tSize = Math.max(0.35, Math.min(1, intensity));
 
     // Size calculation - mobile first approach
     const baseMin = 100;
@@ -169,8 +170,8 @@ function createSensoryOverwhelmLayout(flowers) {
     container.appendChild(el);
   });
 
-  // Save layout for future use
-  saveLayout(resultsForPersist);
+  // Save layout for future use with device type
+  saveLayout(resultsForPersist, isMobile);
 }
 
 // Load data and initialize page
@@ -202,8 +203,9 @@ fetch('../data.json')
       clearTimeout(resizeTimeout);
       resizeTimeout = setTimeout(() => {
         console.log('Resize detected, recalculating layout for new screen size:', window.innerWidth);
-        // Clear cached layout to force recalculation with new sizes
-        sessionStorage.removeItem(SO_LAYOUT_KEY);
+        // Clear both device-specific cached layouts to force recalculation
+        sessionStorage.removeItem(SO_LAYOUT_KEY + '-desktop');
+        sessionStorage.removeItem(SO_LAYOUT_KEY + '-mobile');
         createSensoryOverwhelmLayout(flowers);
       }, 150);
     });
