@@ -85,12 +85,55 @@ body {
   z-index: 15; /* Above category overlay (z-index: 10) */
 }
 
+#flower-container .flower,
+#flower-container .flower * {
+  box-sizing: border-box; /* Consistent measurements across breakpoints */
+}
+
 #flower-container .flower {
   position: absolute;
   pointer-events: auto; /* Re-enable interactions for individual flowers */
   z-index: 50 !important; /* Force above category overlay */
   /* Size is now handled dynamically by JavaScript based on viewport and emotional intensity */
   /* Remove fixed width/height as these are set by the positioning algorithm */
+
+  /* FLIP animation target - no CSS transitions to avoid conflicts */
+  will-change: transform;
+  transform-origin: top left;
+  backface-visibility: hidden;
+  /* Ensure no clipping during size/position changes */
+  overflow: visible !important;
+}
+
+/* Inner keeps centering; FLIP animates the outer */
+#flower-container .flower-inner {
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+}
+
+/* Ensure flower graphics scale with the wrapper size */
+#flower-container .flower-inner > svg,
+#flower-container .flower-inner > canvas {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+}
+
+/* Scoped guard during FLIP - kills all transitions/animations */
+.category-page.is-flipping .flower,
+.category-page.is-flipping .flower * {
+  transition: none !important;
+  animation: none !important;
+}
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  #flower-container .flower {
+    transition: none !important;
+  }
 }
 
 /* Remove fixed scaling - flowers now position responsively using vw/vh units */
@@ -716,7 +759,7 @@ body {
 @media (min-width: 1161px) {
   .category-overlay .category-name {
     font-size: 128px; /* Match desktop category title */
-    line-height: 0.9; /* Reduce gap between lines */
+    line-height: 1; /* Reduce gap between lines */
   }
 
   .category-nav-section {
@@ -767,7 +810,7 @@ body {
 
   .category-overlay .category-name {
     font-size: 42px; /* Slightly smaller on very small screens */
-    line-height: 0.90; /* Reduce gap between lines on mobile too */
+    line-height: 1; /* Reduce gap between lines on mobile too */
   }
 
   .category-nav-section {

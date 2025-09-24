@@ -64,6 +64,11 @@ function createFlower(flowerData, options = {}) {
     
     // Create SVG element
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+
+    // Use viewBox so the SVG can scale responsively with CSS size
+    svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+
+    // Set initial dimensions - CSS can override these for responsive scaling
     svg.setAttribute("width", width);
     svg.setAttribute("height", height);
     

@@ -51,12 +51,142 @@ function restoreLayout(isMobile) {
   }
 }
 
-// Simple, universal layout calculation
-function createSensoryOverwhelmLayout(flowers) {
+// FLIP guard utility to prevent CSS transition conflicts
+async function withFlipGuard(run) {
+  const page = document.querySelector('.category-page');
+  page?.classList.add('is-flipping');
+  try {
+    await run();
+  } finally {
+    page?.classList.remove('is-flipping');
+  }
+}
+
+// Normalize flower graphics to scale with wrapper
+function normalizeFlowerGraphic(el) {
+  const inner = el.querySelector('.flower-inner');
+  if (!inner) return;
+
+  const svg = inner.querySelector('svg');
+  if (!svg) return;
+
+  // If the SVG lacks a viewBox, infer it from existing width/height before removing them
+  if (!svg.hasAttribute('viewBox')) {
+    const w = svg.getAttribute('width');
+    const h = svg.getAttribute('height');
+    const bw = parseFloat(w) || svg.viewBox?.baseVal?.width || svg.getBoundingClientRect().width || 300;
+    const bh = parseFloat(h) || svg.viewBox?.baseVal?.height || svg.getBoundingClientRect().height || 150;
+    svg.setAttribute('viewBox', `0 0 ${bw} ${bh}`);
+  }
+
+  // Remove hardcoded pixel attributes that fight CSS scaling
+  svg.removeAttribute('width');
+  svg.removeAttribute('height');
+
+  // Ensure SVG scales properly within its container
+  if (!svg.getAttribute('preserveAspectRatio')) {
+    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+  }
+}
+
+// Hardened FLIP utilities
+const nextFrame = () => new Promise(r => requestAnimationFrame(() => r()));
+
+async function settleLayout(el) {
+  if (document.fonts?.ready) await document.fonts.ready;
+  const imgs = el?.querySelectorAll?.('img') || [];
+  await Promise.all([...imgs].map(img => (img.decode?.() ?? Promise.resolve()).catch(() => {})));
+  await nextFrame(); await nextFrame();
+}
+
+function measurePureBox(el) {
+  const prevTransition = el.style.transition;
+  const prevTransform = el.style.transform;
+  el.style.transition = 'none';
+  el.style.transform = 'none';
+  const rect = el.getBoundingClientRect();
+  el.style.transform = prevTransform;
+  el.style.transition = prevTransition;
+  return rect;
+}
+
+async function flipWithScale(el, flowerData, { duration = 420, easing = 'cubic-bezier(.22, .61, .36, 1)' } = {}) {
+  if (!el) return;
+  el.getAnimations?.().forEach(a => a.cancel());
+  const first = measurePureBox(el);
+
+  const isMobile = window.innerWidth <= 1160;
+  const positions = isMobile ? FLOWER_POSITIONS.mobile : FLOWER_POSITIONS.desktop;
+  let position = positions[flowerData.id] || { x: 50, y: 50 };
+
+  const intensity = (flowerData.emotionalIntensity || 35) / 100;
+  const tSize = Math.max(0.35, Math.min(1, intensity));
+  let flowerSize = Math.round(100 + (300 - 100) * tSize);
+  if (!isMobile) flowerSize = Math.round(flowerSize * Math.min(2.0, window.innerWidth / 720));
+
+  el.style.transition = 'none';
+  el.style.left = `${position.x}%`;
+  el.style.top = `${position.y}%`;
+  el.style.width = `${flowerSize}px`;
+  el.style.height = `${flowerSize}px`;
+
+  // Normalize inner SVG to scale with wrapper
+  normalizeFlowerGraphic(el);
+
+  await settleLayout(el);
+  const last = measurePureBox(el);
+
+  const dx = first.left - last.left, dy = first.top - last.top;
+  const sx = first.width / (last.width || 1), sy = first.height / (last.height || 1);
+
+  if (Math.abs(dx) > 0.1 || Math.abs(dy) > 0.1 || Math.abs(sx - 1) > 0.01 || Math.abs(sy - 1) > 0.01) {
+    el.style.willChange = 'transform';
+    el.style.transformOrigin = 'top left';
+    el.style.transition = 'none';
+    el.style.transform = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
+    await nextFrame();
+
+    const anim = el.animate([
+      { transform: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`, transformOrigin: 'top left' },
+      { transform: 'translate(0, 0) scale(1, 1)', transformOrigin: 'top left' }
+    ], { duration, easing, fill: 'forwards' });
+
+    anim.addEventListener?.('finish', () => {
+      el.style.transform = ''; el.style.willChange = ''; el.style.transition = '';
+    });
+  }
+}
+
+async function flipFlowers(flowers) {
   const container = document.getElementById('flower-container');
   if (!container) return;
 
   const categoryFlowers = flowers.filter(f => f.category === "Sensory Overwhelm");
+  const byId = new Map(categoryFlowers.map(f => [f.id, f]));
+  const existingFlowers = container.querySelectorAll('.flower');
+
+  const flipPromises = Array.from(existingFlowers).map(async (el) => {
+    const id = el.getAttribute('data-id');
+    const data = byId.get(id);
+    if (!data) return;
+    await flipWithScale(el, data);
+  });
+
+  await Promise.all(flipPromises);
+}
+
+// Simple, universal layout calculation
+async function createSensoryOverwhelmLayout(flowers, isResize = false) {
+  const container = document.getElementById('flower-container');
+  if (!container) return;
+
+  const categoryFlowers = flowers.filter(f => f.category === "Sensory Overwhelm");
+
+  // Skip clearing and recreation if this is a resize operation
+  if (isResize) {
+    await withFlipGuard(() => flipFlowers(flowers));
+    return;
+  }
 
   container.innerHTML = '';
 
@@ -79,21 +209,29 @@ function createSensoryOverwhelmLayout(flowers) {
       const flowerData = categoryFlowers[index];
       const { xPct, yPct, size } = layoutData;
 
-      // Create flower
-      const el = FlowerRenderer.createFlower(flowerData, {
+      // Create flower with wrapper/inner pattern
+      const inner = FlowerRenderer.createFlower(flowerData, {
         width: size,
         height: size,
         maxRadius: size * 0.45
       });
-      el.classList.add('flower');
 
-      // Position using stored percentages
+      // Outer wrapper for FLIP animations (no centering transform)
+      const el = document.createElement('div');
+      el.classList.add('flower');
+      el.setAttribute('data-id', flowerData.id);
       el.style.position = 'absolute';
       el.style.left = `${xPct}%`;
       el.style.top = `${yPct}%`;
-      el.style.transform = 'translate(-50%, -50%)';
       el.style.width = `${size}px`;
       el.style.height = `${size}px`;
+
+      // Inner element with centering transform (CSS handles this)
+      inner.classList.add('flower-inner');
+      inner.style.width = '100%';
+      inner.style.height = '100%';
+
+      el.appendChild(inner);
 
       // Add interactions
       if (window.FlowerInteractions) {
@@ -112,7 +250,7 @@ function createSensoryOverwhelmLayout(flowers) {
   // Use device state determined earlier and select positions
   const positions = isMobile ? FLOWER_POSITIONS.mobile : FLOWER_POSITIONS.desktop;
 
-  categoryFlowers.forEach((flowerData, index) => {
+  categoryFlowers.forEach((flowerData) => {
     // Simple fixed positioning - no complex algorithms
     let position = positions[flowerData.id];
 
@@ -141,22 +279,29 @@ function createSensoryOverwhelmLayout(flowers) {
     const xPct = position.x;
     const yPct = position.y;
 
-    // Create flower
-    const el = FlowerRenderer.createFlower(flowerData, {
+    // Create flower with wrapper/inner pattern
+    const inner = FlowerRenderer.createFlower(flowerData, {
       width: flowerSize,
       height: flowerSize,
       maxRadius: flowerSize * 0.45
     });
-    el.classList.add('flower');
-    el.setAttribute('data-id', flowerData.id); // Add ID for CSS targeting
 
-    // Position using fixed percentages
+    // Outer wrapper for FLIP animations (no centering transform)
+    const el = document.createElement('div');
+    el.classList.add('flower');
+    el.setAttribute('data-id', flowerData.id);
     el.style.position = 'absolute';
     el.style.left = `${xPct}%`;
     el.style.top = `${yPct}%`;
-    el.style.transform = 'translate(-50%, -50%)';
     el.style.width = `${flowerSize}px`;
     el.style.height = `${flowerSize}px`;
+
+    // Inner element with centering transform (CSS handles this)
+    inner.classList.add('flower-inner');
+    inner.style.width = '100%';
+    inner.style.height = '100%';
+
+    el.appendChild(inner);
 
     // Store data for persistence
     placedFlowers.push({ xPct, yPct, size: flowerSize });
@@ -197,16 +342,36 @@ fetch('../data.json')
       setTimeout(initializeLayout, 100);
     });
 
-    // Add resize handler for responsive flower scaling
+    // Use media query for breakpoint changes instead of resize events
+    const mediaQuery = window.matchMedia('(min-width: 1161px)');
+    let lastIsDesktop = mediaQuery.matches;
+
+    const handleBreakpointChange = async () => {
+      const currentIsDesktop = mediaQuery.matches;
+
+      if (currentIsDesktop !== lastIsDesktop) {
+        console.log('Breakpoint crossed, animating flower transitions:', window.innerWidth);
+
+        // Clear cache and trigger hardened FLIP animation
+        sessionStorage.removeItem(SO_LAYOUT_KEY + '-desktop');
+        sessionStorage.removeItem(SO_LAYOUT_KEY + '-mobile');
+        await createSensoryOverwhelmLayout(flowers, true); // isResize = true
+
+        lastIsDesktop = currentIsDesktop;
+      }
+    };
+
+    mediaQuery.addEventListener('change', handleBreakpointChange);
+
+    // Fallback resize handler for edge cases (debounced)
     let resizeTimeout;
     window.addEventListener('resize', () => {
       clearTimeout(resizeTimeout);
-      resizeTimeout = setTimeout(() => {
-        console.log('Resize detected, recalculating layout for new screen size:', window.innerWidth);
-        // Clear both device-specific cached layouts to force recalculation
-        sessionStorage.removeItem(SO_LAYOUT_KEY + '-desktop');
-        sessionStorage.removeItem(SO_LAYOUT_KEY + '-mobile');
-        createSensoryOverwhelmLayout(flowers);
+      resizeTimeout = setTimeout(async () => {
+        const currentIsDesktop = window.innerWidth > 1160;
+        if (currentIsDesktop !== lastIsDesktop) {
+          await handleBreakpointChange();
+        }
       }, 150);
     });
   })

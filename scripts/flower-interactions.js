@@ -122,8 +122,11 @@ const FlowerInteractions = {
     const svg = flowerElement.tagName === 'svg' ? flowerElement : flowerElement.querySelector('svg');
     if (!svg) return null;
 
-    const width = parseInt(svg.getAttribute('width')) || 350;
-    const height = parseInt(svg.getAttribute('height')) || 350;
+    // Use viewBox dimensions first, then getBoundingClientRect, then attributes as fallback
+    const vb = svg.viewBox && svg.viewBox.baseVal;
+    const rect = svg.getBoundingClientRect();
+    const width = (vb && vb.width) || rect.width || parseInt(svg.getAttribute('width')) || 350;
+    const height = (vb && vb.height) || rect.height || parseInt(svg.getAttribute('height')) || 350;
     const centerX = width / 2;
     const centerY = height / 2;
     const maxRadius = width / 2.2;
