@@ -561,6 +561,10 @@ try {
   const rSvg = outerCircle ? parseFloat(outerCircle.getAttribute('r')) : fixedSize / 2;
   const baseOuterRadiusPx = rSvg * scale;
 
+  // Compute separate radius for overlays (hover wedges reach the base circle)
+  const HOVER_PAD = 0;                  // tweak: 0–1 for "touch", >1 for tiny gap
+  const overlayRadius = Math.max(0, baseOuterRadiusPx - HOVER_PAD);
+
   // Make the flower slightly smaller than the outer circle so it never bleeds under the labels
   const flowerRadius = Math.max(
     0,
@@ -648,7 +652,7 @@ try {
         const end = angle + step / 2;
 
         const sector = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        sector.setAttribute("d", describeArc(centerX, centerY, maxRadius, start, end));
+        sector.setAttribute("d", describeArc(centerX, centerY, overlayRadius, start, end));
         sector.setAttribute("fill", "transparent");
         sector.setAttribute("opacity", "0");
         sector.dataset.emotion = emotion;
@@ -702,8 +706,8 @@ try {
       };
 
       // Create fade sectors for each emotion (everything except active one will be white)
-      // Reduce radius to keep outer circle border visible
-      const fadeRadius = Math.max(0, flowerRadius - 2);
+      // Use overlay radius to match hover wedges
+      const fadeRadius = overlayRadius;
 
       const emotionAngles = {
         fear: 12, anger: 36, disgust: 60, pessimism: 84, sadness: 108,
