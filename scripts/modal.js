@@ -250,8 +250,8 @@ try {
       if (!layer) {
         layer = document.createElementNS('http://www.w3.org/2000/svg','g');
         layer.setAttribute('class','valence-labels');
-        // ensure the text layer receives pointer events
-        layer.style.pointerEvents = 'all';
+        // ensure the text layer and its children can receive pointer events
+        layer.style.pointerEvents = 'auto';
         overlay.appendChild(layer);
       }
 
@@ -338,10 +338,15 @@ try {
       const highlightValenceZone = (zone) => {
         const emotions = getEmotionsForZone(zone);
         const stage = host.querySelector('.mg-stage');
-        const overlayWrap = stage?._overlayWrap;
-        const fadeWrap = stage?._fadeWrap;
 
-        if (!overlayWrap || !fadeWrap) return;
+        // Try stage props first, then DOM fallbacks
+        const overlayWrap = stage?._overlayWrap || host.querySelector('.mg-overlay-wrap');
+        const fadeWrap = stage?._fadeWrap || host.querySelector('.mg-fade-wrap');
+
+        if (!overlayWrap || !fadeWrap) {
+          console.warn('highlightValenceZone: missing overlay references', { overlayWrap, fadeWrap, stage });
+          return;
+        }
 
         // Color mapping for zones (same as individual emotion hover)
         const colors = {
@@ -384,10 +389,15 @@ try {
       // Helper function to clear all emotion highlights
       const clearValenceHighlight = () => {
         const stage = host.querySelector('.mg-stage');
-        const overlayWrap = stage?._overlayWrap;
-        const fadeWrap = stage?._fadeWrap;
 
-        if (!overlayWrap || !fadeWrap) return;
+        // Try stage props first, then DOM fallbacks
+        const overlayWrap = stage?._overlayWrap || host.querySelector('.mg-overlay-wrap');
+        const fadeWrap = stage?._fadeWrap || host.querySelector('.mg-fade-wrap');
+
+        if (!overlayWrap || !fadeWrap) {
+          console.warn('clearValenceHighlight: missing overlay references', { overlayWrap, fadeWrap, stage });
+          return;
+        }
 
         // Clear all overlay sectors
         overlayWrap.querySelectorAll(".mg-overlay-sector").forEach(sector => {
@@ -404,11 +414,11 @@ try {
 
       const wire = (node, zone)=>{
         if (!node) return;
-        node.addEventListener('pointerenter', ()=> {
+        node.addEventListener('mouseenter', ()=> {
           show(zone);
           highlightValenceZone(zone);
         });
-        node.addEventListener('pointerleave', ()=> {
+        node.addEventListener('mouseleave', ()=> {
           hide();
           clearValenceHighlight();
         });
@@ -806,7 +816,7 @@ try {
       overlayWrap.style.cssText = `
         position: absolute;
         inset: 0;
-        z-index: 0;
+        z-index: 8;
         pointer-events: none;
         mix-blend-mode: multiply;
         display: grid;
@@ -953,9 +963,16 @@ try {
       const overlayWrap = createOverlayLayer();
       const fadeWrap = createFadeOverlay();
 
-      // Store references on stage element for valence hover access
+      // Store references on both stage and host for valence hover access
       stage._overlayWrap = overlayWrap;
       stage._fadeWrap = fadeWrap;
+
+      // Also store on host element so attachCurvedValenceLabels can access them
+      const host = getModalFlowerHost();
+      if (host) {
+        host._overlayWrap = overlayWrap;
+        host._fadeWrap = fadeWrap;
+      }
 
       let currentHover = null;
 
@@ -1092,7 +1109,10 @@ try {
       // Do ALL positioning and sizing in one frame
       setupFontSizing(); // Font sizing first
       alignFlowerToBase(); // Then flower positioning
-      bindTooltip(); // Then tooltip setup
+      bindTooltip(); // Then tooltip setup (creates overlay layers)
+
+      // Add curved valence labels AFTER tooltip setup so overlay refs exist
+      attachCurvedValenceLabels(flower);
 
       _observer = new MutationObserver(alignFlowerToBase);
       _observer.observe(wrap, { attributes: true, childList: true, subtree: true });
@@ -1104,9 +1124,6 @@ try {
       overlay.style.visibility = "visible"; // Make visible
       overlay.classList.add("open");
       overlay.setAttribute("aria-hidden", "false");
-
-      // Add curved valence labels after flower is fully rendered and positioned
-      attachCurvedValenceLabels(flower);
     });
 
   } else {
@@ -1119,8 +1136,7 @@ try {
       overlay.classList.add("open");
       overlay.setAttribute("aria-hidden", "false");
 
-      // Add curved valence labels even if flower failed to render
-      attachCurvedValenceLabels(flower);
+      // Skip valence labels - no flower sectors to highlight in error case
     });
   }
 } catch (e) {
@@ -1134,8 +1150,7 @@ try {
     overlay.classList.add("open");
     overlay.setAttribute("aria-hidden", "false");
 
-    // Add curved valence labels even in catch block
-    attachCurvedValenceLabels(flower);
+    // Skip valence labels - no flower sectors to highlight in error case
   });
 }
     }
