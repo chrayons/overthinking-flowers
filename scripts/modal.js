@@ -193,9 +193,11 @@ try {
       labels.neg.textContent = 'NEGATIVE';
 
       // Center each word on its slice midpoint
-      labels.pos.setAttribute('startOffset', `${angleToOffsetPct(30)}%`);   // POSITIVE at top-left
-      labels.neu.setAttribute('startOffset', `${angleToOffsetPct(270)}%`);  // NEUTRAL at bottom
-      labels.neg.setAttribute('startOffset', `${angleToOffsetPct(150)}%`);  // NEGATIVE at top-right
+      labels.pos.setAttribute('startOffset', `${offsetPct(45)}%`);
+      labels.neg.setAttribute('startOffset', `${offsetPct(135)}%`);
+
+      // NEUTRAL runs on the reversed path, so use reversed offset
+      labels.neu.setAttribute('startOffset', `${offsetPct(270, true)}%`);
 
       // Hover handling: show center pill with %
       const summary = computeValenceSummaryForFlower(flower);
@@ -252,54 +254,82 @@ try {
 
     function ensureValenceRing(svg, base) {
       let defs = svg.querySelector('defs');
-      if(!defs){
+      if (!defs) {
         defs = document.createElementNS('http://www.w3.org/2000/svg','defs');
         svg.prepend(defs);
       }
+
+      // Normal (clockwise) circle
       let ring = svg.querySelector('#valence-ring');
-      if(!ring){
+      if (!ring) {
         ring = document.createElementNS('http://www.w3.org/2000/svg','path');
         ring.setAttribute('id','valence-ring');
         defs.appendChild(ring);
       }
-      // Replace the R line with a slightly larger, explicit gap
-      const OUTER_GAP_PX = 8;                 // <- tweak this to grow/shrink the gap
+
+      // NEW: Reversed (counter-clockwise) circle
+      let ringRev = svg.querySelector('#valence-ring-rev');
+      if (!ringRev) {
+        ringRev = document.createElementNS('http://www.w3.org/2000/svg','path');
+        ringRev.setAttribute('id','valence-ring-rev');
+        defs.appendChild(ringRev);
+      }
+
+      const OUTER_GAP_PX = 8;
+      const NEUTRAL_EXTRA_GAP_PX = 8;
       const R = base.r + pxToSvg(svg, OUTER_GAP_PX);
-      const {cx,cy} = base;
-      ring.setAttribute('d', `M${cx},${cy} m-${R},0 a${R},${R} 0 1,1 ${2*R},0 a${R},${R} 0 1,1 -${2*R},0`);
+      const R_NEUTRAL = base.r + pxToSvg(svg, OUTER_GAP_PX + NEUTRAL_EXTRA_GAP_PX);
+      const {cx, cy} = base;
+
+      // Clockwise full circle (two arcs, sweep=1)
+      ring.setAttribute(
+        'd',
+        `M${cx},${cy} m-${R},0 a${R},${R} 0 1,1 ${2*R},0 a${R},${R} 0 1,1 -${2*R},0`
+      );
+
+      // Counter-clockwise full circle (sweep=0) with extra gap
+      ringRev.setAttribute(
+        'd',
+        `M${cx},${cy} m-${R_NEUTRAL},0 a${R_NEUTRAL},${R_NEUTRAL} 0 1,0 ${2*R_NEUTRAL},0 a${R_NEUTRAL},${R_NEUTRAL} 0 1,0 -${2*R_NEUTRAL},0`
+      );
 
       let layer = svg.querySelector('g.valence-labels');
-      if(!layer){
+      if (!layer) {
         layer = document.createElementNS('http://www.w3.org/2000/svg','g');
         layer.setAttribute('class','valence-labels');
         svg.appendChild(layer);
       }
 
-      const ensureLabel = (cls) => {
+      // helper now accepts which path to attach to
+      const ensureLabel = (cls, pathId) => {
         let t = layer.querySelector(`text.${cls}`);
-        if(!t){
+        if (!t) {
           t = document.createElementNS('http://www.w3.org/2000/svg','text');
           t.setAttribute('class', cls);
           t.setAttribute('text-anchor','middle');
           const tp = document.createElementNS('http://www.w3.org/2000/svg','textPath');
-          tp.setAttribute('href', '#valence-ring'); // SVG2
-          tp.setAttributeNS('http://www.w3.org/1999/xlink','xlink:href','#valence-ring'); // legacy
           t.appendChild(tp);
           layer.appendChild(t);
         }
-        return t.querySelector('textPath');
+        const tp = t.querySelector('textPath');
+        tp.setAttribute('href', pathId);
+        tp.setAttributeNS('http://www.w3.org/1999/xlink','xlink:href', pathId);
+        return tp;
       };
 
       return {
-        pos: ensureLabel('valence-pos'),
-        neu: ensureLabel('valence-neu'),
-        neg: ensureLabel('valence-neg'),
+        pos: ensureLabel('valence-pos', '#valence-ring'),
+        // Use reversed circle for NEUTRAL
+        neu: ensureLabel('valence-neu', '#valence-ring-rev'),
+        neg: ensureLabel('valence-neg', '#valence-ring')
       };
     }
 
-    function angleToOffsetPct(angle) {
+    // helper: percent along path at a given angle; reversed flips direction
+    function offsetPct(angle, reversed = false) {
       const a = ((angle % 360) + 360) % 360;
-      return (a / 360) * 100;
+      const pct = (a / 360) * 100;
+      return reversed ? (100 - pct) : pct;
     }
 
     function ensureCenterTip(host) {
