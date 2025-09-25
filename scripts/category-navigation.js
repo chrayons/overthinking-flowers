@@ -5,13 +5,13 @@ console.log('Category navigation loading...');
 
 // Category order matching home page
 const CATEGORY_ORDER = [
+  { id: 'perpetual-looping', name: 'Perpetual<br>Looping', file: 'perpetual-looping.html' },
   { id: 'loss-of-agency', name: 'Loss of<br>Agency', file: 'loss-of-agency.html' },
+  { id: 'sensory-overwhelm', name: 'Sensory<br>Overwhelm', file: 'sensory-overwhelm.html' },
+  { id: 'emotional-dysregulation', name: 'Emotional<br>Dysregulation', file: 'emotional-dysregulation.html' },
   { id: 'perceptual-barriers', name: 'Perceptual<br>Barriers', file: 'perceptual-barriers.html' },
   { id: 'thought-entanglement', name: 'Thought<br>Entanglement', file: 'thought-entanglement.html' },
-  { id: 'sensory-overwhelm', name: 'Sensory<br>Overwhelm', file: 'sensory-overwhelm.html' },
-  { id: 'perpetual-looping', name: 'Perpetual<br>Looping', file: 'perpetual-looping.html' },
-  { id: 'temporal-disconnection', name: 'Temporal<br>Disconnection', file: 'temporal-disconnection.html' },
-  { id: 'emotional-dysregulation', name: 'Emotional<br>Dysregulation', file: 'emotional-dysregulation.html' }
+  { id: 'temporal-disconnection', name: 'Temporal<br>Disconnection', file: 'temporal-disconnection.html' }
 ];
 
 const CategoryNavigation = {
