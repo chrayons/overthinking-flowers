@@ -61,10 +61,11 @@ try {
     overlay.setAttribute("aria-hidden", "true");
   
     // Base rings SVG (inline so we can scale & center it) - boundary lines for emotion sections
+    // Expanded viewBox to accommodate larger label radius: base.r (~461.61) + gap (24) + text space (~20) = ~505px from center
     const BASE_SVG = `
     <svg xmlns="http://www.w3.org/2000/svg"
          xmlns:xlink="http://www.w3.org/1999/xlink"
-         viewBox="-80 -80 1085.22 1085.22" aria-hidden="true">
+         viewBox="-110 -110 1145.22 1145.22" aria-hidden="true">
       <g fill="none" stroke="#d1d3d4" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" pointer-events="none">
         <!-- Boundary lines that define emotion section edges -->
         <polyline points="463.19 462.83 463.19 1.22" /> <!-- 0°/360° boundary -->
@@ -111,6 +112,17 @@ try {
       fear:'neg', disgust:'neg', anger:'neg', sadness:'neg', pessimism:'neg',
       anticipation:'neu', surprise:'neu',
       optimism:'pos', joy:'pos', love:'pos', trust:'pos'
+    };
+
+    // Shared spacing constants for valence label positioning (in CSS px)
+    const LABEL_GAP_PX = 16;           // gap between outer circle and curved labels
+    const NEUTRAL_EXTRA_GAP_PX = 8;    // extra push for the NEUTRAL arc
+
+    // Canonical emotion groups - single source of truth for all valence groupings
+    const EMOTION_GROUPS = {
+      positive: ['optimism', 'joy', 'love', 'trust'],
+      negative: ['fear', 'disgust', 'anger', 'sadness', 'pessimism'],
+      neutral: ['anticipation', 'surprise']
     };
 
     // 2) Compute per-flower % totals by valence (integer percent)
@@ -194,7 +206,7 @@ try {
           width: '100%',
           height: '100%',
           zIndex: '20',             // above flower
-          pointerEvents: 'none',    // container doesn't block
+          pointerEvents: 'auto',    // allow events to reach text labels
           display: 'block'
         });
         // stage order is: base (0) → flower (1) → labels (this, 20)
@@ -212,9 +224,12 @@ try {
       // Measure from the base SVG to keep the same geometry
       const base = measureBaseCircle(baseSvg);          // your existing util
       const px = (n)=> pxToSvg(baseSvg, n);             // use base SVG's scale
-      const R = base.r + px(8);
-      const R_NEU = base.r + px(8 + 8);
+      const R = base.r + px(LABEL_GAP_PX);
+      const R_NEU = base.r + px(LABEL_GAP_PX + NEUTRAL_EXTRA_GAP_PX);
       const {cx, cy} = base;
+
+      // Debug log to verify radii
+      console.log('Label radii (attachCurvedValenceLabels):', { R, R_NEU, baseRadius: base.r });
 
       const upsertPath = (id,d)=>{
         let p = defs.querySelector('#'+id);
@@ -235,8 +250,8 @@ try {
       if (!layer) {
         layer = document.createElementNS('http://www.w3.org/2000/svg','g');
         layer.setAttribute('class','valence-labels');
-        // allow the text itself to receive hovers
-        layer.setAttribute('pointer-events','auto');
+        // ensure the text layer receives pointer events
+        layer.style.pointerEvents = 'all';
         overlay.appendChild(layer);
       }
 
@@ -246,6 +261,8 @@ try {
           t = document.createElementNS('http://www.w3.org/2000/svg','text');
           t.setAttribute('class', cls);
           t.setAttribute('text-anchor','middle');
+          // make the text itself hit-testable
+          t.style.pointerEvents = 'all';
           const tp = document.createElementNS('http://www.w3.org/2000/svg','textPath');
           t.appendChild(tp);
           layer.appendChild(t);
@@ -307,15 +324,100 @@ try {
       };
       const hide = ()=> { tip.hidden = true; };
 
-      const wire = (node, zone)=>{
-        if (!node) return;
-        node.addEventListener('pointerenter', ()=> show(zone));
-        node.addEventListener('pointerleave', hide);
+      // Helper function to get emotions for a valence zone
+      const getEmotionsForZone = (zone) => {
+        const zoneMapping = {
+          pos: EMOTION_GROUPS.positive,
+          neu: EMOTION_GROUPS.neutral,
+          neg: EMOTION_GROUPS.negative
+        };
+        return zoneMapping[zone] || [];
       };
 
-      wire(pos, 'pos'); wire(pos.parentNode, 'pos');
-      wire(neu, 'neu'); wire(neu.parentNode, 'neu');
-      wire(neg, 'neg'); wire(neg.parentNode, 'neg');
+      // Helper function to highlight emotions in a valence zone
+      const highlightValenceZone = (zone) => {
+        const emotions = getEmotionsForZone(zone);
+        const stage = host.querySelector('.mg-stage');
+        const overlayWrap = stage?._overlayWrap;
+        const fadeWrap = stage?._fadeWrap;
+
+        if (!overlayWrap || !fadeWrap) return;
+
+        // Color mapping for zones (same as individual emotion hover)
+        const colors = {
+          neg: "#005BA6", // blue
+          pos: "#5EA748", // green
+          neu: "#EEDE73"  // yellow
+        };
+
+        // Clear all previous overlays first
+        overlayWrap.querySelectorAll(".mg-overlay-sector").forEach(sector => {
+          sector.setAttribute("fill", "transparent");
+          sector.setAttribute("opacity", "0");
+        });
+
+        // Show fade overlay to dim non-active emotions
+        fadeWrap.style.opacity = "1";
+
+        // First, restore all fade sectors to visible (dimmed state)
+        fadeWrap.querySelectorAll(".mg-fade-sector").forEach(sector => {
+          sector.style.opacity = "0.75";
+        });
+
+        // Then highlight all emotions in the zone and remove their fade
+        emotions.forEach(emotion => {
+          // Add colored overlay for this emotion
+          const overlaySector = overlayWrap.querySelector(`.mg-overlay-sector[data-emotion="${emotion}"]`);
+          if (overlaySector && colors[zone]) {
+            overlaySector.setAttribute("fill", colors[zone]);
+            overlaySector.setAttribute("opacity", "0.1");
+          }
+
+          // Remove fade for this emotion so it's not dimmed
+          const fadeSector = fadeWrap.querySelector(`.mg-fade-sector[data-emotion="${emotion}"]`);
+          if (fadeSector) {
+            fadeSector.style.opacity = "0";
+          }
+        });
+      };
+
+      // Helper function to clear all emotion highlights
+      const clearValenceHighlight = () => {
+        const stage = host.querySelector('.mg-stage');
+        const overlayWrap = stage?._overlayWrap;
+        const fadeWrap = stage?._fadeWrap;
+
+        if (!overlayWrap || !fadeWrap) return;
+
+        // Clear all overlay sectors
+        overlayWrap.querySelectorAll(".mg-overlay-sector").forEach(sector => {
+          sector.setAttribute("fill", "transparent");
+          sector.setAttribute("opacity", "0");
+        });
+
+        // Hide fade overlay and restore all sectors
+        fadeWrap.style.opacity = "0";
+        fadeWrap.querySelectorAll(".mg-fade-sector").forEach(sector => {
+          sector.style.opacity = "0.75";
+        });
+      };
+
+      const wire = (node, zone)=>{
+        if (!node) return;
+        node.addEventListener('pointerenter', ()=> {
+          show(zone);
+          highlightValenceZone(zone);
+        });
+        node.addEventListener('pointerleave', ()=> {
+          hide();
+          clearValenceHighlight();
+        });
+      };
+
+      // Wire events to the <text> nodes (parents of textPath) for better hit detection
+      wire(pos.parentNode, 'pos');
+      wire(neu.parentNode, 'neu');
+      wire(neg.parentNode, 'neg');
     }
 
     // Unique SVG curve helpers (keep these)
@@ -375,11 +477,12 @@ try {
         defs.appendChild(ringRev);
       }
 
-      const OUTER_GAP_PX = 8;
-      const NEUTRAL_EXTRA_GAP_PX = 8;
-      const R = base.r + pxToSvg(svg, OUTER_GAP_PX);
-      const R_NEUTRAL = base.r + pxToSvg(svg, OUTER_GAP_PX + NEUTRAL_EXTRA_GAP_PX);
+      const R = base.r + pxToSvg(svg, LABEL_GAP_PX);
+      const R_NEUTRAL = base.r + pxToSvg(svg, LABEL_GAP_PX + NEUTRAL_EXTRA_GAP_PX);
       const {cx, cy} = base;
+
+      // Debug log to verify radii
+      console.log('Label radii (ensureValenceRing):', { R, R_NEUTRAL, baseRadius: base.r });
 
       // Clockwise full circle (two arcs, sweep=1)
       ring.setAttribute(
@@ -738,9 +841,9 @@ try {
         optimism: 255, joy: 285, love: 315, trust: 345
       };
 
-      const neutralEmotions = ['anticipation', 'surprise'];
-      const positiveEmotions = ['trust', 'optimism', 'joy', 'love'];
-      const negativeEmotions = ['fear', 'disgust', 'anger', 'sadness', 'pessimism'];
+      const neutralEmotions = EMOTION_GROUPS.neutral;
+      const positiveEmotions = EMOTION_GROUPS.positive;
+      const negativeEmotions = EMOTION_GROUPS.negative;
 
       Object.entries(emotionAngles).forEach(([emotion, angle]) => {
         const step =
@@ -815,9 +918,9 @@ try {
         optimism: 255, joy: 285, love: 315, trust: 345
       };
 
-      const neutralEmotions = ['anticipation', 'surprise'];
-      const positiveEmotions = ['trust', 'optimism', 'joy', 'love'];
-      const negativeEmotions = ['fear', 'disgust', 'anger', 'sadness', 'pessimism'];
+      const neutralEmotions = EMOTION_GROUPS.neutral;
+      const positiveEmotions = EMOTION_GROUPS.positive;
+      const negativeEmotions = EMOTION_GROUPS.negative;
 
       Object.entries(emotionAngles).forEach(([emotion, angle]) => {
         const step =
@@ -849,6 +952,11 @@ try {
 
       const overlayWrap = createOverlayLayer();
       const fadeWrap = createFadeOverlay();
+
+      // Store references on stage element for valence hover access
+      stage._overlayWrap = overlayWrap;
+      stage._fadeWrap = fadeWrap;
+
       let currentHover = null;
 
       svgEl.addEventListener("mouseenter", (e) => {
@@ -877,9 +985,9 @@ try {
 
             // Show colored overlay for this emotion
             const zones = {
-              neg: ["fear", "disgust", "anger", "sadness", "pessimism"],
-              pos: ["optimism", "joy", "love", "trust"],
-              neu: ["anticipation", "surprise"]
+              neg: EMOTION_GROUPS.negative,
+              pos: EMOTION_GROUPS.positive,
+              neu: EMOTION_GROUPS.neutral
             };
 
             const colors = {
