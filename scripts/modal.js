@@ -172,50 +172,150 @@ try {
 
     function attachCurvedValenceLabels(flower) {
       const host = getModalFlowerHost();
-      const svg = findFlowerSVG(host);
-      if (!svg) return;
+      const baseSvg = findFlowerSVG(host);     // your existing finder
+      if (!baseSvg) return;
 
-      const base = measureBaseCircle(svg);
-      const labels = ensureValenceRing(svg, base);
+      // 1) Make an overlay SVG above the flower
+      let overlay = host.querySelector('.valence-overlay');
+      if (!overlay) {
+        overlay = document.createElementNS('http://www.w3.org/2000/svg','svg');
+        overlay.classList.add('valence-overlay');
 
-      // Desired visual size in CSS pixels at the final rendered size:
-      const desiredPx = 14;
-      const svgFontSize = pxToSvg(svg, desiredPx);
+        // Copy the base SVG's viewBox to match coordinate system
+        const vb = baseSvg.getAttribute('viewBox');
+        if (vb) {
+          overlay.setAttribute('viewBox', vb);
+          overlay.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+        }
 
-      // Apply to the <text> parents (not the <textPath>)
-      labels.pos.parentNode.style.fontSize = `${svgFontSize}px`;
-      labels.neu.parentNode.style.fontSize = `${svgFontSize}px`;
-      labels.neg.parentNode.style.fontSize = `${svgFontSize}px`;
+        Object.assign(overlay.style, {
+          position: 'absolute',
+          inset: '0',
+          width: '100%',
+          height: '100%',
+          zIndex: '20',             // above flower
+          pointerEvents: 'none',    // container doesn't block
+          display: 'block'
+        });
+        // stage order is: base (0) → flower (1) → labels (this, 20)
+        const stage = host.querySelector('.mg-stage');
+        stage.appendChild(overlay);
+      }
 
-      // Set label text
-      labels.pos.textContent = 'POSITIVE';
-      labels.neu.textContent = 'NEUTRAL';
-      labels.neg.textContent = 'NEGATIVE';
+      // 2) Build overlay defs + ring paths (copied from your ensureValenceRing logic)
+      let defs = overlay.querySelector('defs');
+      if (!defs) {
+        defs = document.createElementNS('http://www.w3.org/2000/svg','defs');
+        overlay.appendChild(defs);
+      }
 
-      // Center each word on its slice midpoint
-      labels.pos.setAttribute('startOffset', `${offsetPct(45)}%`);
-      labels.neg.setAttribute('startOffset', `${offsetPct(135)}%`);
+      // Measure from the base SVG to keep the same geometry
+      const base = measureBaseCircle(baseSvg);          // your existing util
+      const px = (n)=> pxToSvg(baseSvg, n);             // use base SVG's scale
+      const R = base.r + px(8);
+      const R_NEU = base.r + px(8 + 8);
+      const {cx, cy} = base;
 
-      // NEUTRAL runs on the reversed path, so use reversed offset
-      labels.neu.setAttribute('startOffset', `${offsetPct(270, true)}%`);
+      const upsertPath = (id,d)=>{
+        let p = defs.querySelector('#'+id);
+        if (!p) { p = document.createElementNS('http://www.w3.org/2000/svg','path'); p.id=id; defs.appendChild(p); }
+        p.setAttribute('d', d);
+        return p;
+      };
 
-      // Hover handling: show center pill with %
-      const summary = computeValenceSummaryForFlower(flower);
-      const tip = ensureCenterTip(host);
-      const show = (zone) => {
+      upsertPath('valence-ring',
+        `M${cx},${cy} m-${R},0 a${R},${R} 0 1,1 ${2*R},0 a${R},${R} 0 1,1 -${2*R},0`
+      );
+      upsertPath('valence-ring-rev',
+        `M${cx},${cy} m-${R_NEU},0 a${R_NEU},${R_NEU} 0 1,0 ${2*R_NEU},0 a${R_NEU},${R_NEU} 0 1,0 -${2*R_NEU},0`
+      );
+
+      // 3) Add the text on path (in overlay, above flower)
+      let layer = overlay.querySelector('g.valence-labels');
+      if (!layer) {
+        layer = document.createElementNS('http://www.w3.org/2000/svg','g');
+        layer.setAttribute('class','valence-labels');
+        // allow the text itself to receive hovers
+        layer.setAttribute('pointer-events','auto');
+        overlay.appendChild(layer);
+      }
+
+      const ensureLabel = (cls, href)=>{
+        let t = layer.querySelector(`text.${cls}`);
+        if (!t) {
+          t = document.createElementNS('http://www.w3.org/2000/svg','text');
+          t.setAttribute('class', cls);
+          t.setAttribute('text-anchor','middle');
+          const tp = document.createElementNS('http://www.w3.org/2000/svg','textPath');
+          t.appendChild(tp);
+          layer.appendChild(t);
+        }
+        const tp = t.querySelector('textPath');
+        tp.setAttribute('href', '#'+href);
+        return tp;
+      };
+
+      const pos = ensureLabel('valence-pos', 'valence-ring');
+      const neu = ensureLabel('valence-neu', 'valence-ring-rev');
+      const neg = ensureLabel('valence-neg', 'valence-ring');
+
+      // Measure the overlay (not base) for accurate font sizing
+      const vb = overlay.viewBox?.baseVal || baseSvg.viewBox.baseVal;
+
+      // Use the overlay's actual rendered width (fallbacks included)
+      const renderedW = overlay.getBoundingClientRect().width ||
+                        baseSvg.getBoundingClientRect().width ||
+                        overlay.clientWidth ||
+                        baseSvg.clientWidth ||
+                        vb.width;
+
+      // Convert 14 CSS px to SVG user units for THIS overlay
+      const fontSizeUserUnits = (14 * vb.width) / renderedW;
+
+      pos.textContent = 'POSITIVE';
+      neu.textContent = 'NEUTRAL';
+      neg.textContent = 'NEGATIVE';
+
+      // Apply font-size inline (beats stylesheet rules)
+      // Use requestAnimationFrame to ensure layout is complete
+      requestAnimationFrame(() => {
+        layer.querySelectorAll('text').forEach(t => {
+          t.style.fontSize = `${fontSizeUserUnits}px`;
+        });
+      });
+
+      const offsetPct = (angle, reversed=false)=>{
+        const a = ((angle%360)+360)%360;
+        const pct = (a/360)*100;
+        return reversed ? (100 - pct) : pct;
+      };
+      pos.setAttribute('startOffset', `${offsetPct(45)}%`);
+      neg.setAttribute('startOffset', `${offsetPct(135)}%`);
+      neu.setAttribute('startOffset', `${offsetPct(270, true)}%`);
+
+      // 4) Hook up the existing tooltip behaviour
+      const summary = computeValenceSummaryForFlower(flower); // your util
+      const tip = ensureCenterTip(host);                       // your util
+      const stage = host.querySelector('.mg-stage');
+      if (stage && tip.parentNode !== stage) stage.appendChild(tip);
+
+      const zoneLabel = (z)=> z==='pos'?'Positive':z==='neu'?'Neutral':'Negative';
+      const show = (zone)=>{
         const pct = summary[zone] ?? 0;
         tip.innerHTML = `${zoneLabel(zone)}: ${pct}%<br>of Emotional Intensity`;
         tip.hidden = false;
       };
-      const hide = () => { tip.hidden = true; };
+      const hide = ()=> { tip.hidden = true; };
 
-      // Add listeners
-      labels.pos.parentNode.addEventListener('mouseenter', () => show('pos'));
-      labels.pos.parentNode.addEventListener('mouseleave', hide);
-      labels.neu.parentNode.addEventListener('mouseenter', () => show('neu'));
-      labels.neu.parentNode.addEventListener('mouseleave', hide);
-      labels.neg.parentNode.addEventListener('mouseenter', () => show('neg'));
-      labels.neg.parentNode.addEventListener('mouseleave', hide);
+      const wire = (node, zone)=>{
+        if (!node) return;
+        node.addEventListener('pointerenter', ()=> show(zone));
+        node.addEventListener('pointerleave', hide);
+      };
+
+      wire(pos, 'pos'); wire(pos.parentNode, 'pos');
+      wire(neu, 'neu'); wire(neu.parentNode, 'neu');
+      wire(neg, 'neg'); wire(neg.parentNode, 'neg');
     }
 
     // Unique SVG curve helpers (keep these)

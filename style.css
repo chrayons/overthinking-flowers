@@ -1464,7 +1464,7 @@ body {
 }
 
 .mg-base {
-  pointer-events: none;
+  pointer-events: auto;
   z-index: 0;
 }
 
@@ -1577,7 +1577,7 @@ body {
 /* curved valence text on the ring */
 #mg-flower-host svg .valence-labels text {
   font-weight: 400;
-  font-family: "Satoshi-Regular", system-ui, -apple-system, Segoe UI, Roboto, Inter, sans-serif;
+  font-family: "Satoshi-Light", system-ui, -apple-system, Segoe UI, Roboto, Inter, sans-serif;
   line-height: 1;
   letter-spacing: .08em;
   text-transform: uppercase;
@@ -1592,10 +1592,27 @@ body {
 #mg-flower-host svg .valence-labels .valence-neu { color: #9A8F3B; }
 #mg-flower-host svg .valence-labels .valence-neg { color: #005BA6; }
 
-/* ensure you can hover the label group even though .mg-base is inert */
-.mg-base { pointer-events: none; }
+/* ensure you can hover the label group */
 #mg-flower-host svg .valence-labels,
 #mg-flower-host svg .valence-labels * { pointer-events: auto; }
+#mg-flower-host svg .valence-labels text { cursor: pointer; }
+
+/* Hard override to ensure mg-base allows pointer events */
+#mg-modal .mg-base { pointer-events: auto !important; }
+
+/* The overlay only lets the text itself get events */
+.valence-overlay { pointer-events: none; }
+.valence-overlay .valence-labels,
+.valence-overlay .valence-labels text,
+.valence-overlay .valence-labels textPath {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+/* Ensure overlay labels use correct font */
+.valence-overlay .valence-labels {
+  font-family: "Satoshi-Light", system-ui;
+}
 
 /* Centered tooltip matching existing emotion hover style */
 .valence-center-tip {
@@ -1615,9 +1632,9 @@ body {
   transform: translate(-50%, -50%);
 }
 
-/* Responsive nicety: slightly larger text on desktop */
+/* Responsive nicety: let JS handle font sizing for curved labels */
 @media (min-width: 1160px) {
-  svg .valence-labels text { font-size: 12px; }
+  svg .valence-labels text { font-size: inherit; }
 }
 
 /* Respect reduced motion if you add any animations later */
