@@ -1506,7 +1506,7 @@ body {
   border: 0.5px solid #F8F8FF; /* Border matching SVG */
   border-radius: 5px; /* Rounded corners */
   padding: 8px 16px; /* 8px top/bottom, 16px left/right */
-  font: 700 13px/1 "Satoshi-Bold", system-ui; /* Bold weight */
+  font: 500 13px/1 "Satoshi-Medium", sans-serif; /* Medium weight */
   color: var(--text-primary); /* Black text */
   white-space: nowrap;
   user-select: none;
@@ -1646,9 +1646,10 @@ body {
   border: 0.5px solid #F8F8FF; /* Match mg-tooltip border */
   border-radius: 5px; /* Match mg-tooltip radius */
   padding: 8px 16px; /* Match mg-tooltip padding */
-  font: 700 13px/1.2 "Satoshi-Bold", system-ui; /* Match mg-tooltip font with better line-height */
+  font: 700 13px/1.2 "Satoshi-Medium", sans-serif; /* Updated to use Satoshi-Medium */
   color: var(--text-primary); /* Match mg-tooltip text color */
   text-align: center;
+  width: max-content; /* Hug the text content */
   /* Position relative to the stage center, not the valence container */
   left: 50%;
   top: 50%;

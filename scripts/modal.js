@@ -206,7 +206,7 @@ try {
           width: '100%',
           height: '100%',
           zIndex: '20',             // above flower
-          pointerEvents: 'auto',    // allow events to reach text labels
+          pointerEvents: 'none',    // don't block flower sectors
           display: 'block'
         });
         // stage order is: base (0) → flower (1) → labels (this, 20)
@@ -319,7 +319,7 @@ try {
       const zoneLabel = (z)=> z==='pos'?'Positive':z==='neu'?'Neutral':'Negative';
       const show = (zone)=>{
         const pct = summary[zone] ?? 0;
-        tip.innerHTML = `${zoneLabel(zone)}: ${pct}%<br>of Emotional Intensity`;
+        tip.innerHTML = `${zoneLabel(zone)}: ${pct}% of<br>Emotional Intensity`;
         tip.hidden = false;
       };
       const hide = ()=> { tip.hidden = true; };
