@@ -1549,10 +1549,7 @@ body {
 
 /* Valence chips sit near the flower graphic; layout follows your modal columns naturally */
 .modal-valence {
-  display: grid;
-  gap: 8px;
-  justify-items: center;
-  margin-top: 10px; /* adjust to tuck under/near the flower */
+  display: none; /* Hide the container since we're using curved text */
 }
 
 /* Row of three chips */
@@ -1561,7 +1558,7 @@ body {
   align-items: center; justify-content: center;
 }
 
-/* The chips */
+/* The chips (kept for compatibility but hidden) */
 .valence-chip {
   border: 1px solid #d1d3d4;
   background: #fff;
@@ -1569,12 +1566,36 @@ body {
   padding: 6px 10px;
   font: 600 12px/1 system-ui, sans-serif;
   letter-spacing: .04em;
-  cursor: default; /* pointer if you later make them clickable */
+  cursor: default;
   user-select: none;
+  display: none; /* Hide the chips since we're using curved text */
 }
 .valence-chip[data-zone="pos"] { color: #5EA748; }
 .valence-chip[data-zone="neu"] { color: #9A8F3B; }
 .valence-chip[data-zone="neg"] { color: #005BA6; }
+
+/* curved valence text on the ring */
+#mg-flower-host svg .valence-labels text {
+  font-weight: 400;
+  font-family: "Satoshi-Regular", system-ui, -apple-system, Segoe UI, Roboto, Inter, sans-serif;
+  line-height: 1;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  fill: #afbcc7;
+  opacity: .9;
+  cursor: pointer;
+  /* font-size set dynamically in JS using pxToSvg() */
+}
+
+/* optional tints per zone (only affect CSS 'color', not 'fill') */
+#mg-flower-host svg .valence-labels .valence-pos { color: #5EA748; }
+#mg-flower-host svg .valence-labels .valence-neu { color: #9A8F3B; }
+#mg-flower-host svg .valence-labels .valence-neg { color: #005BA6; }
+
+/* ensure you can hover the label group even though .mg-base is inert */
+.mg-base { pointer-events: none; }
+#mg-flower-host svg .valence-labels,
+#mg-flower-host svg .valence-labels * { pointer-events: auto; }
 
 /* Centered tooltip matching existing emotion hover style */
 .valence-center-tip {
@@ -1594,14 +1615,14 @@ body {
   transform: translate(-50%, -50%);
 }
 
-/* Responsive nicety: slightly larger chips on desktop */
+/* Responsive nicety: slightly larger text on desktop */
 @media (min-width: 1160px) {
-  .valence-chip { font-size: 13px; padding: 7px 12px; }
+  svg .valence-labels text { font-size: 12px; }
 }
 
 /* Respect reduced motion if you add any animations later */
 @media (prefers-reduced-motion: reduce) {
-  .valence-center-tip, .valence-chip { transition: none !important; animation: none !important; }
+  .valence-center-tip { transition: none !important; animation: none !important; }
 }
 
 

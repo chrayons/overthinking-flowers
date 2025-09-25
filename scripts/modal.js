@@ -62,8 +62,10 @@ try {
   
     // Base rings SVG (inline so we can scale & center it) - boundary lines for emotion sections
     const BASE_SVG = `
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 925.22 925.22" aria-hidden="true">
-      <g fill="none" stroke="#d1d3d4" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
+    <svg xmlns="http://www.w3.org/2000/svg"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         viewBox="-80 -80 1085.22 1085.22" aria-hidden="true">
+      <g fill="none" stroke="#d1d3d4" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" pointer-events="none">
         <!-- Boundary lines that define emotion section edges -->
         <polyline points="463.19 462.83 463.19 1.22" /> <!-- 0°/360° boundary -->
         <polyline points="463.19 462.83 650.94 41.13" /> <!-- 24° boundary (fear/anger) -->
@@ -168,20 +170,147 @@ try {
       });
     }
 
-    function attachValenceToFlowerArea(flower) {
+    function attachCurvedValenceLabels(flower) {
       const host = getModalFlowerHost();
-      if (!host) return;
+      const svg = findFlowerSVG(host);
+      if (!svg) return;
 
-      // remove any prior valence block (navigating between flowers)
-      host.querySelectorAll('.modal-valence').forEach(n => n.remove());
+      const base = measureBaseCircle(svg);
+      const labels = ensureValenceRing(svg, base);
 
-      const block = buildValenceDom();
-      host.appendChild(block);
+      // Desired visual size in CSS pixels at the final rendered size:
+      const desiredPx = 14;
+      const svgFontSize = pxToSvg(svg, desiredPx);
 
-      // Find the stage element to position tooltip relative to it
-      const stage = host.querySelector('.mg-stage');
+      // Apply to the <text> parents (not the <textPath>)
+      labels.pos.parentNode.style.fontSize = `${svgFontSize}px`;
+      labels.neu.parentNode.style.fontSize = `${svgFontSize}px`;
+      labels.neg.parentNode.style.fontSize = `${svgFontSize}px`;
+
+      // Set label text
+      labels.pos.textContent = 'POSITIVE';
+      labels.neu.textContent = 'NEUTRAL';
+      labels.neg.textContent = 'NEGATIVE';
+
+      // Center each word on its slice midpoint
+      labels.pos.setAttribute('startOffset', `${angleToOffsetPct(30)}%`);   // POSITIVE at top-left
+      labels.neu.setAttribute('startOffset', `${angleToOffsetPct(270)}%`);  // NEUTRAL at bottom
+      labels.neg.setAttribute('startOffset', `${angleToOffsetPct(150)}%`);  // NEGATIVE at top-right
+
+      // Hover handling: show center pill with %
       const summary = computeValenceSummaryForFlower(flower);
-      wireValenceHandlers(block, summary, stage);
+      const tip = ensureCenterTip(host);
+      const show = (zone) => {
+        const pct = summary[zone] ?? 0;
+        tip.innerHTML = `${zoneLabel(zone)}: ${pct}%<br>of Emotional Intensity`;
+        tip.hidden = false;
+      };
+      const hide = () => { tip.hidden = true; };
+
+      // Add listeners
+      labels.pos.parentNode.addEventListener('mouseenter', () => show('pos'));
+      labels.pos.parentNode.addEventListener('mouseleave', hide);
+      labels.neu.parentNode.addEventListener('mouseenter', () => show('neu'));
+      labels.neu.parentNode.addEventListener('mouseleave', hide);
+      labels.neg.parentNode.addEventListener('mouseenter', () => show('neg'));
+      labels.neg.parentNode.addEventListener('mouseleave', hide);
+    }
+
+    // Unique SVG curve helpers (keep these)
+
+    function findFlowerSVG(host) {
+      return host?.querySelector('.mg-base svg') || host?.querySelector('svg');
+    }
+
+    function measureBaseCircle(svg) {
+      const circles = Array.from(svg.querySelectorAll('circle'));
+      if (circles.length) {
+        const max = circles.reduce((best, c) => {
+          const r = parseFloat(c.getAttribute('r')) || 0;
+          if (!best || r > best.r) {
+            return {
+              r,
+              cx: parseFloat(c.getAttribute('cx')) || 0,
+              cy: parseFloat(c.getAttribute('cy')) || 0
+            };
+          }
+          return best;
+        }, null);
+        return max || { cx: 0, cy: 0, r: 0 };
+      }
+      const vb = svg.viewBox?.baseVal;
+      const w = vb?.width || 100, h = vb?.height || 100;
+      return { cx: (vb?.x||0)+w/2, cy: (vb?.y||0)+h/2, r: Math.min(w,h)*0.45 };
+    }
+
+    function pxToSvg(svg, px) {
+      const vb = svg.viewBox?.baseVal;
+      if (!vb) return px;
+      const renderedW = svg.getBoundingClientRect().width || vb.width;
+      return px * (vb.width / renderedW);
+    }
+
+    function ensureValenceRing(svg, base) {
+      let defs = svg.querySelector('defs');
+      if(!defs){
+        defs = document.createElementNS('http://www.w3.org/2000/svg','defs');
+        svg.prepend(defs);
+      }
+      let ring = svg.querySelector('#valence-ring');
+      if(!ring){
+        ring = document.createElementNS('http://www.w3.org/2000/svg','path');
+        ring.setAttribute('id','valence-ring');
+        defs.appendChild(ring);
+      }
+      // Replace the R line with a slightly larger, explicit gap
+      const OUTER_GAP_PX = 8;                 // <- tweak this to grow/shrink the gap
+      const R = base.r + pxToSvg(svg, OUTER_GAP_PX);
+      const {cx,cy} = base;
+      ring.setAttribute('d', `M${cx},${cy} m-${R},0 a${R},${R} 0 1,1 ${2*R},0 a${R},${R} 0 1,1 -${2*R},0`);
+
+      let layer = svg.querySelector('g.valence-labels');
+      if(!layer){
+        layer = document.createElementNS('http://www.w3.org/2000/svg','g');
+        layer.setAttribute('class','valence-labels');
+        svg.appendChild(layer);
+      }
+
+      const ensureLabel = (cls) => {
+        let t = layer.querySelector(`text.${cls}`);
+        if(!t){
+          t = document.createElementNS('http://www.w3.org/2000/svg','text');
+          t.setAttribute('class', cls);
+          t.setAttribute('text-anchor','middle');
+          const tp = document.createElementNS('http://www.w3.org/2000/svg','textPath');
+          tp.setAttribute('href', '#valence-ring'); // SVG2
+          tp.setAttributeNS('http://www.w3.org/1999/xlink','xlink:href','#valence-ring'); // legacy
+          t.appendChild(tp);
+          layer.appendChild(t);
+        }
+        return t.querySelector('textPath');
+      };
+
+      return {
+        pos: ensureLabel('valence-pos'),
+        neu: ensureLabel('valence-neu'),
+        neg: ensureLabel('valence-neg'),
+      };
+    }
+
+    function angleToOffsetPct(angle) {
+      const a = ((angle % 360) + 360) % 360;
+      return (a / 360) * 100;
+    }
+
+    function ensureCenterTip(host) {
+      let tip = host.querySelector('.valence-center-tip');
+      if(!tip){
+        tip = document.createElement('div');
+        tip.className = 'valence-center-tip';
+        tip.hidden = true;
+        host.appendChild(tip);
+      }
+      return tip;
     }
 
     function teardownValenceInModal() {
@@ -387,8 +516,28 @@ try {
   };
 
   // 3) use fixed size instead of measuring stage
-  const fixedSize = 247;
-  const maxRadius = fixedSize / 2;
+  const fixedSize = 247;                 // keep your stage canvas the same
+  const STROKE_W = 2;                    // base svg stroke-width on the outer circle
+  const LABEL_GAP_PX = 8;                // your current text gap
+  const SAFETY = 2;                      // tiny cushion
+
+  // Measure the base SVG's outer circle in *rendered pixels*
+  const baseSvg = base.querySelector('svg');
+  const vb = baseSvg.viewBox?.baseVal;
+  const renderedW = baseSvg.getBoundingClientRect().width || fixedSize;
+  const scale = vb ? (renderedW / vb.width) : 1;
+
+  const outerCircle = baseSvg.querySelector('circle:last-of-type'); // the big ring
+  const rSvg = outerCircle ? parseFloat(outerCircle.getAttribute('r')) : fixedSize / 2;
+  const baseOuterRadiusPx = rSvg * scale;
+
+  // Make the flower slightly smaller than the outer circle so it never bleeds under the labels
+  const flowerRadius = Math.max(
+    0,
+    baseOuterRadiusPx - (STROKE_W + SAFETY)  // stay inside the ring line
+  );
+
+  const maxRadius = flowerRadius;
 
   // 4) create the flower at fixed size
   if (window.FlowerRenderer && typeof window.FlowerRenderer.createFlower === "function") {
@@ -433,9 +582,9 @@ try {
       overlaySvg.setAttribute("height", 247);
       overlaySvg.style.display = "block";
 
-      const centerX = 247 / 2;
-      const centerY = 247 / 2;
-      const maxRadius = 247 / 2;
+      const centerX = fixedSize / 2;
+      const centerY = fixedSize / 2;
+      const maxRadius = flowerRadius;
 
       // Helper function to create sector path (same as in flower renderer)
       const describeArc = (cx, cy, r, startAngle, endAngle) => {
@@ -507,9 +656,9 @@ try {
       fadeSvg.setAttribute("height", 247);
       fadeSvg.style.display = "block";
 
-      const centerX = 247 / 2;
-      const centerY = 247 / 2;
-      const maxRadius = 247 / 2;
+      const centerX = fixedSize / 2;
+      const centerY = fixedSize / 2;
+      const maxRadius = flowerRadius;
 
       // Helper function to create sector path (same as in flower renderer)
       const describeArc = (cx, cy, r, startAngle, endAngle) => {
@@ -524,7 +673,7 @@ try {
 
       // Create fade sectors for each emotion (everything except active one will be white)
       // Reduce radius to keep outer circle border visible
-      const fadeRadius = maxRadius - 2; // Subtract stroke width (2px)
+      const fadeRadius = Math.max(0, flowerRadius - 2);
 
       const emotionAngles = {
         fear: 12, anger: 36, disgust: 60, pessimism: 84, sadness: 108,
@@ -714,8 +863,8 @@ try {
       overlay.classList.add("open");
       overlay.setAttribute("aria-hidden", "false");
 
-      // Add valence UI after flower is fully rendered and positioned
-      attachValenceToFlowerArea(flower);
+      // Add curved valence labels after flower is fully rendered and positioned
+      attachCurvedValenceLabels(flower);
     });
 
   } else {
@@ -728,8 +877,8 @@ try {
       overlay.classList.add("open");
       overlay.setAttribute("aria-hidden", "false");
 
-      // Add valence UI even if flower failed to render
-      attachValenceToFlowerArea(flower);
+      // Add curved valence labels even if flower failed to render
+      attachCurvedValenceLabels(flower);
     });
   }
 } catch (e) {
@@ -743,8 +892,8 @@ try {
     overlay.classList.add("open");
     overlay.setAttribute("aria-hidden", "false");
 
-    // Add valence UI even in catch block
-    attachValenceToFlowerArea(flower);
+    // Add curved valence labels even in catch block
+    attachCurvedValenceLabels(flower);
   });
 }
     }
