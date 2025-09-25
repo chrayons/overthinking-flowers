@@ -23,6 +23,22 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: "Satoshi-Black";
+  src: url("./Satoshi/WEB/fonts/Satoshi-Black.woff2") format("woff2");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Satoshi-Medium";
+  src: url("./Satoshi/WEB/fonts/Satoshi-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* ===== THEME GRID (centered, fixed-size cells, laptop-first) ===== */
 :root{
   --header-h: 32px;
@@ -218,7 +234,7 @@ body {
   top: 32px;
   left: 32px;
   z-index: 1000;
-  font-family: "Satoshi-Bold", system-ui;
+  font-family: "Satoshi-Medium", sans-serif;
   font-size: 14px;
   font-weight: 700;
   color: #005BA6;
@@ -335,7 +351,7 @@ body {
 }
 
 .mobile-header-menu-item:first-child {
-  font-family: "Satoshi-Bold", system-ui;
+  font-family: "Satoshi-Medium", sans-serif;
   font-weight: 700;
 }
 
@@ -1591,6 +1607,13 @@ body {
 #mg-flower-host svg .valence-labels .valence-pos { color: #5EA748; }
 #mg-flower-host svg .valence-labels .valence-neu { color: #9A8F3B; }
 #mg-flower-host svg .valence-labels .valence-neg { color: #005BA6; }
+
+/* Valence label hover - Satoshi-Medium with universal text color */
+#mg-flower-host svg .valence-labels text:hover {
+  fill: var(--text-primary); /* #101720 - universal black */
+  font-family: "Satoshi-Medium", sans-serif;
+  font-weight: 500;
+}
 
 /* ensure you can hover the label group */
 #mg-flower-host svg .valence-labels,
