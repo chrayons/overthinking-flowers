@@ -90,10 +90,111 @@ try {
     let _removeResizeListener = null;
     let _modalResizeListener = null;
 
+    // Valence UI helpers
+    function getModalFlowerHost() {
+      // Order matters: list your actual element IDs/classes here
+      return (
+        document.querySelector('#mg-flower-host') ||
+        document.querySelector('.modal-flower') ||
+        document.querySelector('.modal-visual') ||
+        document.querySelector('.modal-left .flower-wrap') ||
+        document.querySelector('.modal-left') ||
+        document.querySelector('.modal-top') ||
+        document.querySelector('.modal-body') // last-resort fallback
+      );
+    }
+
+    // 1) Map emotions → valence buckets (adjust keys to match your data)
+    const VALENCE_BUCKET = {
+      fear:'neg', disgust:'neg', anger:'neg', sadness:'neg', pessimism:'neg',
+      anticipation:'neu', surprise:'neu',
+      optimism:'pos', joy:'pos', love:'pos', trust:'pos'
+    };
+
+    // 2) Compute per-flower % totals by valence (integer percent)
+    function computeValenceSummaryForFlower(flower) {
+      const src = flower.emotions || flower.metrics || flower.scores || {};
+      const totals = { pos: 0, neu: 0, neg: 0, sum: 0 };
+      for (const [k, v] of Object.entries(src)) {
+        const val = Number(v) || 0;
+        if (!val) continue;
+        const b = VALENCE_BUCKET[k];
+        if (b) { totals[b] += val; totals.sum += val; }
+      }
+      const pct = z => totals.sum ? Math.round((totals[z] / totals.sum) * 100) : 0;
+      return { pos: pct('pos'), neu: pct('neu'), neg: pct('neg') };
+    }
+
+    // 3) Build the valence UI (chips + centered tooltip)
+    function buildValenceDom() {
+      const wrap = document.createElement('div');
+      wrap.className = 'modal-valence';
+      wrap.innerHTML = `
+        <div class="modal-valence__row" role="group" aria-label="Valence">
+          <button type="button" class="valence-chip" data-zone="pos" aria-label="Positive">Positive</button>
+          <button type="button" class="valence-chip" data-zone="neu" aria-label="Neutral">Neutral</button>
+          <button type="button" class="valence-chip" data-zone="neg" aria-label="Negative">Negative</button>
+        </div>
+        <div class="valence-center-tip" hidden></div>
+      `;
+      return wrap;
+    }
+
+    function zoneLabel(z){ return z==='pos' ? 'Positive' : z==='neu' ? 'Neutral' : 'Negative'; }
+
+    // 4) Wire hover to show "{Zone}: {X}% of Emotional Intensity" in the center
+    function wireValenceHandlers(container, summary, stage) {
+      const tip = container.querySelector('.valence-center-tip');
+      const chips = container.querySelectorAll('.valence-chip');
+
+      // Move tooltip to stage for proper centering over the flower
+      if (stage && tip) {
+        stage.appendChild(tip);
+      }
+
+      chips.forEach(chip => {
+        chip.addEventListener('mouseenter', () => {
+          const z = chip.dataset.zone;            // 'pos' | 'neu' | 'neg'
+          const pct = summary[z] ?? 0;
+          tip.innerHTML = `${zoneLabel(z)}: ${pct}%<br>of Emotional Intensity`;
+          tip.hidden = false;
+        });
+        chip.addEventListener('mouseleave', () => {
+          tip.hidden = true;
+        });
+        // keyboard focus parity
+        chip.addEventListener('focus', () => chip.dispatchEvent(new Event('mouseenter')));
+        chip.addEventListener('blur',  () => chip.dispatchEvent(new Event('mouseleave')));
+      });
+    }
+
+    function attachValenceToFlowerArea(flower) {
+      const host = getModalFlowerHost();
+      if (!host) return;
+
+      // remove any prior valence block (navigating between flowers)
+      host.querySelectorAll('.modal-valence').forEach(n => n.remove());
+
+      const block = buildValenceDom();
+      host.appendChild(block);
+
+      // Find the stage element to position tooltip relative to it
+      const stage = host.querySelector('.mg-stage');
+      const summary = computeValenceSummaryForFlower(flower);
+      wireValenceHandlers(block, summary, stage);
+    }
+
+    function teardownValenceInModal() {
+      document.querySelectorAll('.modal-valence').forEach(n => n.remove());
+    }
+
     function close() {
       overlay.classList.remove("open");
       overlay.style.display = "none";
       overlay.setAttribute("aria-hidden", "true");
+
+      // Clean up valence UI
+      teardownValenceInModal();
 
       // Set cooldown to prevent immediate flower interactions after modal close
       // Delay slightly to avoid blocking the closing tap itself
@@ -612,6 +713,9 @@ try {
       overlay.style.visibility = "visible"; // Make visible
       overlay.classList.add("open");
       overlay.setAttribute("aria-hidden", "false");
+
+      // Add valence UI after flower is fully rendered and positioned
+      attachValenceToFlowerArea(flower);
     });
 
   } else {
@@ -623,6 +727,9 @@ try {
       overlay.style.visibility = "visible";
       overlay.classList.add("open");
       overlay.setAttribute("aria-hidden", "false");
+
+      // Add valence UI even if flower failed to render
+      attachValenceToFlowerArea(flower);
     });
   }
 } catch (e) {
@@ -635,6 +742,9 @@ try {
     overlay.style.visibility = "visible";
     overlay.classList.add("open");
     overlay.setAttribute("aria-hidden", "false");
+
+    // Add valence UI even in catch block
+    attachValenceToFlowerArea(flower);
   });
 }
     }

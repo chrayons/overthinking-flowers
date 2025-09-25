@@ -1544,4 +1544,64 @@ body {
   opacity: 1; /* Placeholder to avoid empty ruleset */
 }
 
+/* Ensure the flower area container participates in layout */
+.modal-visual, .modal-left, .modal-top, #mg-flower-host { position: relative; }
+
+/* Valence chips sit near the flower graphic; layout follows your modal columns naturally */
+.modal-valence {
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  margin-top: 10px; /* adjust to tuck under/near the flower */
+}
+
+/* Row of three chips */
+.modal-valence__row {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  align-items: center; justify-content: center;
+}
+
+/* The chips */
+.valence-chip {
+  border: 1px solid #d1d3d4;
+  background: #fff;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font: 600 12px/1 system-ui, sans-serif;
+  letter-spacing: .04em;
+  cursor: default; /* pointer if you later make them clickable */
+  user-select: none;
+}
+.valence-chip[data-zone="pos"] { color: #5EA748; }
+.valence-chip[data-zone="neu"] { color: #9A8F3B; }
+.valence-chip[data-zone="neg"] { color: #005BA6; }
+
+/* Centered tooltip matching existing emotion hover style */
+.valence-center-tip {
+  position: absolute;
+  z-index: 15;
+  pointer-events: none;
+  background: rgba(255, 255, 255, 0.85); /* Match mg-tooltip transparency */
+  border: 0.5px solid #F8F8FF; /* Match mg-tooltip border */
+  border-radius: 5px; /* Match mg-tooltip radius */
+  padding: 8px 16px; /* Match mg-tooltip padding */
+  font: 700 13px/1.2 "Satoshi-Bold", system-ui; /* Match mg-tooltip font with better line-height */
+  color: var(--text-primary); /* Match mg-tooltip text color */
+  text-align: center;
+  /* Position relative to the stage center, not the valence container */
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Responsive nicety: slightly larger chips on desktop */
+@media (min-width: 1160px) {
+  .valence-chip { font-size: 13px; padding: 7px 12px; }
+}
+
+/* Respect reduced motion if you add any animations later */
+@media (prefers-reduced-motion: reduce) {
+  .valence-center-tip, .valence-chip { transition: none !important; animation: none !important; }
+}
+
 
