@@ -32,17 +32,18 @@
       measureEl.style.position = 'absolute';
       measureEl.style.top = '-9999px';
       measureEl.style.width = maxWidth + 'px';
-      measureEl.style.fontFamily = '"Satoshi-Light", system-ui';
+      measureEl.style.fontFamily = '"Satoshi-Italic", system-ui';
       measureEl.style.fontSize = '16px';
       measureEl.style.fontWeight = '400';
+      measureEl.style.fontStyle = 'italic';
       measureEl.style.lineHeight = '1.3';
       measureEl.style.overflow = 'hidden';
       measureEl.style.wordWrap = 'break-word';
       measureEl.style.boxSizing = 'border-box';
       document.body.appendChild(measureEl);
 
-      // First, check if the complete text + "See the Flower" fits without truncation
-      measureEl.textContent = text + " See the Flower";
+      // First, check if the complete text + quotes + "See the Flower" fits without truncation
+      measureEl.textContent = `"${text}" See the Flower`;
       if (measureEl.offsetHeight <= maxHeight) {
         document.body.removeChild(measureEl);
         const result = { text: text, needsTruncation: false };
@@ -50,8 +51,8 @@
         return result;
       }
 
-      // If full text doesn't fit, find the maximum that fits with "... See the Flower"
-      const suffix = "... See the Flower";
+      // If full text doesn't fit, find the maximum that fits with quotes + "... See the Flower"
+      const suffix = `"... See the Flower`;
 
       // Use a more aggressive approach - test larger chunks
       let bestFit = "";
@@ -60,7 +61,7 @@
       // Start from full text and work backwards in larger steps
       while (testLength > 0) {
         const testText = text.slice(0, testLength);
-        measureEl.textContent = testText + " " + suffix;
+        measureEl.textContent = `"${testText}` + suffix;
 
         if (measureEl.offsetHeight <= maxHeight) {
           bestFit = testText;
@@ -80,7 +81,7 @@
       if (!bestFit) {
         for (let i = text.length; i > 0; i--) {
           const testText = text.slice(0, i);
-          measureEl.textContent = testText + " " + suffix;
+          measureEl.textContent = `"${testText}` + suffix;
 
           if (measureEl.offsetHeight <= maxHeight) {
             bestFit = testText;
@@ -138,11 +139,16 @@
         text.style.overflow = "hidden";
         text.style.lineHeight = "1.3";
 
+        // Create metaphor span with Satoshi italic font and quotes
+        const metaphorSpan = document.createElement("span");
+        metaphorSpan.style.fontFamily = '"Satoshi-Italic", system-ui';
+        metaphorSpan.style.fontStyle = "italic";
+
         // Only add "..." if the text was actually truncated
         if (result.needsTruncation) {
-          text.textContent = result.text + "... ";
+          metaphorSpan.textContent = `"${result.text}..." `;
         } else {
-          text.textContent = result.text + " ";
+          metaphorSpan.textContent = `"${result.text}" `;
         }
 
         const link = document.createElement("a");
@@ -150,6 +156,7 @@
         link.href = `#flower-${f.id}`;
         // Note: No click event needed on link since card handles it
 
+        text.appendChild(metaphorSpan);
         text.appendChild(link);
         card.appendChild(text);
         container.appendChild(card);
