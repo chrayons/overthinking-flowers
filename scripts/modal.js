@@ -456,14 +456,40 @@ try {
 
       const wire = (node, zone)=>{
         if (!node) return;
-        node.addEventListener('mouseenter', ()=> {
+        let valenceMobileTimeout = null;
+
+        const triggerValenceEffect = () => {
           show(zone);
           highlightValenceZone(zone);
-        });
-        node.addEventListener('mouseleave', ()=> {
+        };
+
+        const clearValenceEffect = () => {
           hide();
           clearValenceHighlight();
-        });
+        };
+
+        node.addEventListener('mouseenter', triggerValenceEffect);
+        node.addEventListener('mouseleave', clearValenceEffect);
+
+        // Mobile touch support for valence labels
+        node.addEventListener('touchstart', (e) => {
+          e.preventDefault(); // Prevent mouse events from firing
+
+          // Clear any existing timeout
+          if (valenceMobileTimeout) {
+            clearTimeout(valenceMobileTimeout);
+            valenceMobileTimeout = null;
+          }
+
+          // Trigger the valence effect immediately
+          triggerValenceEffect();
+
+          // Set timeout to clear effect after 1 second
+          valenceMobileTimeout = setTimeout(() => {
+            clearValenceEffect();
+            valenceMobileTimeout = null;
+          }, 1000);
+        }, true);
       };
 
       // Wire events to the <text> nodes (parents of textPath) for better hit detection
@@ -1126,81 +1152,77 @@ try {
       }
 
       let currentHover = null;
+      let mobileTimeout = null;
 
-      svgEl.addEventListener("mouseenter", (e) => {
-        if (e.target.classList.contains("mg-sector") || e.target.classList.contains("mg-petal")) {
-          const emotion = e.target.dataset.emotion;
-          const value = e.target.dataset.value || "0";
+      const triggerHoverEffect = (emotion, value) => {
+        if (emotion !== currentHover) {
+          // Clear all previous overlays first
+          if (overlayWrap) {
+            overlayWrap.querySelectorAll(".mg-overlay-sector").forEach(sector => {
+              sector.setAttribute("fill", "transparent");
+              sector.setAttribute("opacity", "0");
+            });
+          }
 
-          if (emotion && emotion !== currentHover) {
-            // Clear all previous overlays first
-            if (overlayWrap) {
-              overlayWrap.querySelectorAll(".mg-overlay-sector").forEach(sector => {
-                sector.setAttribute("fill", "transparent");
-                sector.setAttribute("opacity", "0");
-              });
+          currentHover = emotion;
+          const label = emotion.charAt(0).toUpperCase() + emotion.slice(1);
+          tip.textContent = `${label}: ${Math.round(parseFloat(value) || 0)}%`;
+          tip.style.display = "block";
+
+          // Center the tooltip
+          tip.style.left = "50%";
+          tip.style.top = "50%";
+          tip.style.transform = "translate(-50%, -50%)";
+
+          // Show colored overlay for this emotion
+          const zones = {
+            neg: EMOTION_GROUPS.negative,
+            pos: EMOTION_GROUPS.positive,
+            neu: EMOTION_GROUPS.neutral
+          };
+
+          const colors = {
+            neg: "#005BA6", // blue
+            pos: "#5EA748", // green
+            neu: "#EEDE73"  // yellow
+          };
+
+          let zone = "other";
+          for (const [zoneName, emotions] of Object.entries(zones)) {
+            if (emotions.includes(emotion)) {
+              zone = zoneName;
+              break;
             }
+          }
 
-            currentHover = emotion;
-            const label = emotion.charAt(0).toUpperCase() + emotion.slice(1);
-            tip.textContent = `${label}: ${Math.round(parseFloat(value) || 0)}%`;
-            tip.style.display = "block";
-
-            // Center the tooltip
-            tip.style.left = "50%";
-            tip.style.top = "50%";
-            tip.style.transform = "translate(-50%, -50%)";
-
-            // Show colored overlay for this emotion
-            const zones = {
-              neg: EMOTION_GROUPS.negative,
-              pos: EMOTION_GROUPS.positive,
-              neu: EMOTION_GROUPS.neutral
-            };
-
-            const colors = {
-              neg: "#005BA6", // blue
-              pos: "#5EA748", // green
-              neu: "#EEDE73"  // yellow
-            };
-
-            let zone = "other";
-            for (const [zoneName, emotions] of Object.entries(zones)) {
-              if (emotions.includes(emotion)) {
-                zone = zoneName;
-                break;
-              }
+          if (colors[zone]) {
+            // Find the matching overlay sector and color it
+            const overlaySector = overlayWrap.querySelector(`.mg-overlay-sector[data-emotion="${emotion}"]`);
+            if (overlaySector) {
+              overlaySector.setAttribute("fill", colors[zone]);
+              overlaySector.setAttribute("opacity", "0.1");
             }
+          }
 
-            if (colors[zone]) {
-              // Find the matching overlay sector and color it
-              const overlaySector = overlayWrap.querySelector(`.mg-overlay-sector[data-emotion="${emotion}"]`);
-              if (overlaySector) {
-                overlaySector.setAttribute("fill", colors[zone]);
-                overlaySector.setAttribute("opacity", "0.1");
-              }
-            }
+          // Show fade overlay and hide the active sector
+          if (fadeWrap) {
+            fadeWrap.style.opacity = "1"; // Show the fade overlay
 
-            // Show fade overlay and hide the active sector
-            if (fadeWrap) {
-              fadeWrap.style.opacity = "1"; // Show the fade overlay
+            // First, restore all fade sectors to visible
+            fadeWrap.querySelectorAll(".mg-fade-sector").forEach(sector => {
+              sector.style.opacity = "0.75";
+            });
 
-              // First, restore all fade sectors to visible
-              fadeWrap.querySelectorAll(".mg-fade-sector").forEach(sector => {
-                sector.style.opacity = "0.75";
-              });
-
-              // Then hide only the active sector so it doesn't get faded
-              const activeFadeSector = fadeWrap.querySelector(`.mg-fade-sector[data-emotion="${emotion}"]`);
-              if (activeFadeSector) {
-                activeFadeSector.style.opacity = "0";
-              }
+            // Then hide only the active sector so it doesn't get faded
+            const activeFadeSector = fadeWrap.querySelector(`.mg-fade-sector[data-emotion="${emotion}"]`);
+            if (activeFadeSector) {
+              activeFadeSector.style.opacity = "0";
             }
           }
         }
-      }, true);
+      };
 
-      svgEl.addEventListener("mouseleave", () => {
+      const clearHoverEffect = () => {
         currentHover = null;
         tip.style.display = "none";
 
@@ -1221,7 +1243,49 @@ try {
             sector.style.opacity = "0.75";
           });
         }
+      };
+
+      svgEl.addEventListener("mouseenter", (e) => {
+        if (e.target.classList.contains("mg-sector") || e.target.classList.contains("mg-petal")) {
+          const emotion = e.target.dataset.emotion;
+          const value = e.target.dataset.value || "0";
+
+          if (emotion) {
+            triggerHoverEffect(emotion, value);
+          }
+        }
+      }, true);
+
+      svgEl.addEventListener("mouseleave", () => {
+        clearHoverEffect();
       });
+
+      // Mobile touch handlers for emotion sectors
+      svgEl.addEventListener("touchstart", (e) => {
+        if (e.target.classList.contains("mg-sector") || e.target.classList.contains("mg-petal")) {
+          const emotion = e.target.dataset.emotion;
+          const value = e.target.dataset.value || "0";
+
+          if (emotion) {
+            e.preventDefault(); // Prevent mouse events from firing
+
+            // Clear any existing timeout
+            if (mobileTimeout) {
+              clearTimeout(mobileTimeout);
+              mobileTimeout = null;
+            }
+
+            // Trigger the hover effect immediately
+            triggerHoverEffect(emotion, value);
+
+            // Set timeout to clear effect after 1 second
+            mobileTimeout = setTimeout(() => {
+              clearHoverEffect();
+              mobileTimeout = null;
+            }, 1000);
+          }
+        }
+      }, true);
     };
     
     
