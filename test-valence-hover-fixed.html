@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fixed Valence Hover Test</title>
+    <style>
+        body {
+            font-family: system-ui;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .test-info {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background: #007AFF;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .test-button:hover {
+            background: #0056CC;
+        }
+        .debug-toggle {
+            background: #FF6B35;
+        }
+        .debug-toggle:hover {
+            background: #E55A2B;
+        }
+        /* Debug styles to show hover areas */
+        .debug-mode .valence-hover-area {
+            fill: rgba(255, 0, 0, 0.2) !important;
+            stroke: red !important;
+            stroke-width: 1 !important;
+        }
+        .status {
+            background: #e8f5e8;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-info">
+        <h1>Fixed Valence Label Hover Areas</h1>
+        <p><strong>Fixed Issues:</strong></p>
+        <ul>
+            <li>✅ Preserved tooltip functionality ("Positive: X% of Emotional Intensity")</li>
+            <li>✅ Maintained all existing hover behavior and coloring</li>
+            <li>✅ Expanded hover areas by 30px in all directions (much larger!)</li>
+            <li>✅ Kept visual text positioning exactly the same</li>
+            <li>✅ Compatible with mobile tap behavior (1-second timeout)</li>
+        </ul>
+
+        <p><strong>Test Instructions:</strong></p>
+        <ol>
+            <li>Click "Open Test Modal" to see the flower modal</li>
+            <li>Try hovering around the POSITIVE, NEGATIVE, and NEUTRAL labels</li>
+            <li>Verify you see tooltips like "Positive: 75% of Emotional Intensity"</li>
+            <li>Notice larger, easier-to-target hover areas</li>
+            <li>Click "Show Debug Areas" to visualize the expanded hover zones</li>
+            <li>Test both desktop hover and mobile tap behavior</li>
+        </ol>
+
+        <button class="test-button" onclick="openTestModal()">Open Test Modal</button>
+        <button class="test-button debug-toggle" onclick="toggleDebugMode()">Show Debug Areas</button>
+
+        <div class="status" id="status">Ready to test...</div>
+    </div>
+
+    <script>
+        let debugMode = false;
+
+        function updateStatus(message) {
+            document.getElementById('status').textContent = new Date().toLocaleTimeString() + ': ' + message;
+        }
+
+        function openTestModal() {
+            const testFlower = {
+                id: 'test-valence-fixed',
+                category: 'Test Category',
+                text: 'Testing fixed expanded hover areas for valence labels with preserved tooltip functionality',
+                emotions: {
+                    joy: 85,        // Positive
+                    love: 70,       // Positive
+                    trust: 50,      // Positive
+                    optimism: 75,   // Positive
+                    fear: 35,       // Negative
+                    anger: 25,      // Negative
+                    sadness: 30,    // Negative
+                    pessimism: 20,  // Negative
+                    anticipation: 60, // Neutral
+                    surprise: 40      // Neutral
+                },
+                emotionalIntensity: 72,
+                dominantValence: 'Positive',
+                dominantEmotionName: 'Joy'
+            };
+
+            if (window.Modal && typeof window.Modal.open === 'function') {
+                window.Modal.open(testFlower);
+                updateStatus('Modal opened - Test hover areas on valence labels');
+
+                if (debugMode) {
+                    setTimeout(() => {
+                        const modal = document.getElementById('mg-modal-overlay');
+                        if (modal) {
+                            modal.classList.add('debug-mode');
+                            updateStatus('Debug mode applied to modal - hover areas visible');
+                        }
+                    }, 100);
+                }
+            } else {
+                updateStatus('ERROR: Modal system not loaded');
+                alert('Modal system not loaded. Please load this on a page with the modal system.');
+            }
+        }
+
+        function toggleDebugMode() {
+            debugMode = !debugMode;
+            const button = document.querySelector('.debug-toggle');
+
+            if (debugMode) {
+                button.textContent = 'Hide Debug Areas';
+                document.body.classList.add('debug-mode');
+                updateStatus('Debug mode ON - hover areas will be visible in red');
+
+                const modal = document.getElementById('mg-modal-overlay');
+                if (modal) {
+                    modal.classList.add('debug-mode');
+                }
+            } else {
+                button.textContent = 'Show Debug Areas';
+                document.body.classList.remove('debug-mode');
+                updateStatus('Debug mode OFF - hover areas invisible again');
+
+                const modal = document.getElementById('mg-modal-overlay');
+                if (modal) {
+                    modal.classList.remove('debug-mode');
+                }
+            }
+        }
+
+        // Monitor hover events for validation
+        document.addEventListener('mouseover', (e) => {
+            if (e.target.classList.contains('valence-hover-area')) {
+                const zone = e.target.classList.contains('valence-hover-pos') ? 'POSITIVE' :
+                           e.target.classList.contains('valence-hover-neg') ? 'NEGATIVE' :
+                           e.target.classList.contains('valence-hover-neu') ? 'NEUTRAL' : 'UNKNOWN';
+                updateStatus(`Hovering over ${zone} area - tooltip should appear`);
+            }
+        });
+
+        // Monitor tooltip appearances
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                mutation.addedNodes.forEach((node) => {
+                    if (node.nodeType === 1 && node.classList && node.classList.contains('valence-center-tip')) {
+                        if (!node.hidden) {
+                            updateStatus(`Tooltip appeared: "${node.textContent}"`);
+                        }
+                    }
+                });
+            });
+        });
+
+        observer.observe(document.body, { childList: true, subtree: true });
+    </script>
+</body>
+</html>

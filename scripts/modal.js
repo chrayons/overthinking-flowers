@@ -457,18 +457,61 @@ try {
         });
       };
 
-      const wire = (node, zone)=>{
+      const wire = (node, zone, textElement = null)=>{
         if (!node) return;
         let valenceMobileTimeout = null;
 
         const triggerValenceEffect = () => {
           show(zone);
           highlightValenceZone(zone);
+
+          // Apply text styling if we have a text element reference
+          if (textElement) {
+            console.log('textElement passed:', textElement, 'tagName:', textElement.tagName);
+
+            // The textElement should be the <text> element that contains the <textPath>
+            const actualTextElement = textElement.tagName === 'text' ? textElement :
+                                    textElement.tagName === 'textPath' ? textElement.parentNode :
+                                    textElement.querySelector('text');
+
+            console.log('actualTextElement found:', actualTextElement, 'tagName:', actualTextElement?.tagName);
+
+            if (actualTextElement && actualTextElement.tagName === 'text') {
+              // Use !important to override any CSS specificity issues
+              actualTextElement.style.setProperty('fill', '#101720', 'important');
+              actualTextElement.style.setProperty('font-family', '"Satoshi-Medium", sans-serif', 'important');
+              actualTextElement.style.setProperty('font-weight', '500', 'important');
+
+              // Debug logging for mobile
+              console.log('Applied text styling to:', zone, 'element:', actualTextElement, 'tagName:', actualTextElement.tagName);
+            } else {
+              console.warn('Could not find valid text element for styling in zone:', zone, 'textElement:', textElement, 'actualTextElement:', actualTextElement);
+            }
+          } else {
+            console.warn('No textElement provided for zone:', zone);
+          }
         };
 
         const clearValenceEffect = () => {
           hide();
           clearValenceHighlight();
+
+          // Clear text styling if we have a text element reference
+          if (textElement) {
+            // The textElement should be the <text> element that contains the <textPath>
+            const actualTextElement = textElement.tagName === 'text' ? textElement :
+                                    textElement.tagName === 'textPath' ? textElement.parentNode :
+                                    textElement.querySelector('text');
+
+            if (actualTextElement && actualTextElement.tagName === 'text') {
+              actualTextElement.style.removeProperty('fill');
+              actualTextElement.style.removeProperty('font-family');
+              actualTextElement.style.removeProperty('font-weight');
+
+              // Debug logging for mobile
+              console.log('Cleared text styling from:', zone, 'element:', actualTextElement);
+            }
+          }
         };
 
         node.addEventListener('mouseenter', triggerValenceEffect);
@@ -476,6 +519,7 @@ try {
 
         // Mobile touch support for valence labels
         node.addEventListener('touchstart', (e) => {
+          console.log('Touch event fired on valence zone:', zone, 'target:', e.target);
           e.preventDefault(); // Prevent mouse events from firing
 
           // Clear any existing timeout
@@ -485,20 +529,70 @@ try {
           }
 
           // Trigger the valence effect immediately
+          console.log('Triggering valence effect for zone:', zone);
           triggerValenceEffect();
 
           // Set timeout to clear effect after 1 second
           valenceMobileTimeout = setTimeout(() => {
+            console.log('Clearing valence effect for zone:', zone);
             clearValenceEffect();
             valenceMobileTimeout = null;
           }, 1000);
         }, true);
+
+        // Also add touchend to ensure we handle the complete touch interaction
+        node.addEventListener('touchend', (e) => {
+          console.log('Touch end on valence zone:', zone);
+          e.preventDefault();
+        }, true);
       };
 
+      // Create larger invisible hover areas for easier targeting
+      const createLargerHoverArea = (textElement, zone) => {
+        // Wait for text to be positioned
+        requestAnimationFrame(() => {
+          const textRect = textElement.getBBox();
+
+          // Create a larger invisible rect positioned over the text area
+          const hoverArea = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+
+          // Make hover area larger but not too large - expand by 5px in all directions
+          const expandSize = 5;
+          hoverArea.setAttribute('x', textRect.x - expandSize);
+          hoverArea.setAttribute('y', textRect.y - expandSize);
+          hoverArea.setAttribute('width', textRect.width + (expandSize * 2));
+          hoverArea.setAttribute('height', textRect.height + (expandSize * 2));
+          hoverArea.setAttribute('fill', 'transparent');
+          hoverArea.setAttribute('stroke', 'none');
+          hoverArea.style.pointerEvents = 'all';
+          hoverArea.style.cursor = 'pointer';
+          hoverArea.classList.add('valence-hover-area', `valence-hover-${zone}`);
+
+          // Debug: Add a test touch listener directly to the hover area
+          hoverArea.addEventListener('touchstart', (e) => {
+            console.log('Direct hover area touch for zone:', zone, 'area:', hoverArea);
+          }, true);
+
+          // Insert before the text so text appears on top
+          layer.insertBefore(hoverArea, textElement);
+
+          // Wire events to this hover area with text styling support
+          // Debug: log what textElement we're passing
+          console.log('Creating hover area for zone:', zone, 'textElement:', textElement);
+          wire(hoverArea, zone, textElement);
+        });
+      };
+
+      // Create larger hover areas for each text element
+      createLargerHoverArea(pos.parentNode, 'pos');
+      createLargerHoverArea(neg.parentNode, 'neg');
+      createLargerHoverArea(neu.parentNode, 'neu');
+
+      // Keep the original text elements interactive as backup
       // Wire events to the <text> nodes (parents of textPath) for better hit detection
-      wire(pos.parentNode, 'pos');
-      wire(neu.parentNode, 'neu');
-      wire(neg.parentNode, 'neg');
+      wire(pos.parentNode, 'pos', pos.parentNode);
+      wire(neu.parentNode, 'neu', neu.parentNode);
+      wire(neg.parentNode, 'neg', neg.parentNode);
     }
 
     // Unique SVG curve helpers (keep these)
