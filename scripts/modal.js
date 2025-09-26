@@ -568,6 +568,41 @@ try {
       // Clean up valence UI
       teardownValenceInModal();
 
+      // Hide existing tooltips immediately + block re-showing briefly
+      const root = document.documentElement;
+      root.classList.add('mg-suppress-tooltips');
+
+      // Remove any rendered tooltip nodes (belt & suspenders)
+      document.querySelectorAll('.mg-tooltip, .flower-tooltip, .tippy-box').forEach(n => {
+        // if the tooltip is inside a wrapper, remove the wrapper; else remove node
+        const wrapper = n.closest('.tippy-root, .tooltip-wrapper');
+        (wrapper || n).remove();
+      });
+
+      // Drop hover/active/focus classes commonly used to keep tooltips alive
+      document.querySelectorAll('.flower.is-hovered, .mg-sector.is-active')
+        .forEach(el => el.classList.remove('is-hovered', 'is-active'));
+
+      // Clear keyboard focus (focus tooltips can also stick)
+      if (document.activeElement && document.activeElement !== document.body) {
+        document.activeElement.blur();
+      }
+
+      // Clear FlowerInteractions state if available
+      if (window.FlowerInteractions) {
+        if (window.FlowerInteractions.restoreOtherFlowers) {
+          window.FlowerInteractions.restoreOtherFlowers();
+        }
+        window.FlowerInteractions.currentHoveredFlower = null;
+      }
+
+      // Nudge hover handlers so libraries that hide-on-mousemove can react
+      requestAnimationFrame(() => {
+        document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: -1, clientY: -1 }));
+        // Give the page ~1 frame to settle, then re-enable tooltips
+        setTimeout(() => root.classList.remove('mg-suppress-tooltips'), 120);
+      });
+
       // Set cooldown to prevent immediate flower interactions after modal close
       // Delay slightly to avoid blocking the closing tap itself
       setTimeout(() => {
@@ -690,6 +725,31 @@ try {
     }
   
     function open(flower) {
+      // Aggressively clear any existing tooltips before opening modal
+      document.querySelectorAll('.mg-tooltip, .flower-tooltip, [data-tooltip], .tippy-box, .tooltip').forEach(n => {
+        // Remove wrapper if it exists
+        const wrapper = n.closest('.tippy-root, .tooltip-wrapper');
+        (wrapper || n).remove();
+      });
+
+      // Clear hover states that might be showing tooltips
+      if (window.FlowerInteractions) {
+        if (window.FlowerInteractions.restoreOtherFlowers) {
+          window.FlowerInteractions.restoreOtherFlowers();
+        }
+        window.FlowerInteractions.currentHoveredFlower = null;
+
+        // Force clear any internal tooltip cache/state
+        if (window.FlowerInteractions.hideAllTooltips) {
+          window.FlowerInteractions.hideAllTooltips();
+        }
+      }
+
+      // Clear any focus that might maintain tooltip
+      if (document.activeElement && document.activeElement !== document.body) {
+        document.activeElement.blur();
+      }
+
       // fill right panel
       overlay.querySelector("#mg-category").textContent = flower.category || "";
 

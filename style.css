@@ -1497,6 +1497,16 @@ body {
   transform: translate(var(--flower-tx), var(--flower-ty));
 }
 
+/* Hide every tooltip while suppression flag is set (modal transitions) */
+.mg-suppress-tooltips .mg-tooltip,
+.mg-suppress-tooltips .flower-tooltip,
+.mg-suppress-tooltips [data-tooltip],
+.mg-suppress-tooltips .tippy-box {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+}
+
 /* Hover tooltip for flower sections */
 .mg-tooltip {
   position: absolute;
