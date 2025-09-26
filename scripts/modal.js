@@ -85,7 +85,6 @@ try {
               </defs>
             </svg>
           `;
-          btn.style.marginLeft = '0.5ch';
 
           labelEl.appendChild(btn);
 

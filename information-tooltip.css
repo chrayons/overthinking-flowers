@@ -141,7 +141,7 @@
 #mg-modal .info-tip-trigger {
   width: 2rem;
   height: 2rem;
-  margin-left: 0ch;
+  margin-left: -1ch;
   vertical-align: -1em;
 }
 
