@@ -185,8 +185,4 @@
     padding: 10px 14px;
     font-size: 13px;
   }
-
-  :root {
-    --info-tip-arrow-size: 6px;
-  }
 }
