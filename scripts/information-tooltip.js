@@ -259,12 +259,12 @@ export class InformationTooltip {
     const tooltip = this.getTooltipForTrigger(trigger);
 
     if (tooltip) {
-      // Small delay to allow mouse to move to tooltip
+      // Reduced delay for more responsive re-hover detection
       setTimeout(() => {
         if (!tooltip.matches(':hover') && !trigger.matches(':hover')) {
           this.hideTooltip();
         }
-      }, 50);
+      }, 20);
     }
   }
 
@@ -287,9 +287,9 @@ export class InformationTooltip {
   }
 
   handleTouchStart(e) {
-    // Set touch interaction flag to prevent mouse events
+    // Set touch interaction flag to prevent mouse events - reduced duration
     this.isTouchInteraction = true;
-    setTimeout(() => { this.isTouchInteraction = false; }, 300);
+    setTimeout(() => { this.isTouchInteraction = false; }, 150);
 
     // Prevent mouse events from also firing
     e.preventDefault();

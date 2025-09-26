@@ -83,7 +83,10 @@ try {
 
           // Use simple API - works anywhere!
           if (window.InformationTooltip?.attach) {
-            window.InformationTooltip.attach(btn, text);
+            // Small delay to ensure DOM is fully ready for event binding
+            setTimeout(() => {
+              window.InformationTooltip.attach(btn, text);
+            }, 0);
           }
         });
       });
