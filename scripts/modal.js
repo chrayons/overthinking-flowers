@@ -560,10 +560,35 @@ try {
       document.querySelectorAll('.modal-valence').forEach(n => n.remove());
     }
 
+    function swallowNextTap(duration = 350) {
+      const shield = document.createElement("div");
+      Object.assign(shield.style, {
+        position: "fixed",
+        inset: "0",
+        zIndex: "2147483647",
+        pointerEvents: "auto",
+        background: "transparent"
+      });
+
+      // Block everything during the cooldown
+      const block = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      };
+      shield.addEventListener("pointerdown", block, true);
+      shield.addEventListener("click", block, true);
+      document.body.appendChild(shield);
+      setTimeout(() => shield.remove(), duration);
+    }
+
     function close() {
+      // Add a 'closing' state so overlay still captures events while fading
       overlay.classList.remove("open");
-      overlay.style.display = "none";
+      overlay.classList.add("closing");
       overlay.setAttribute("aria-hidden", "true");
+
+      // Swallow the next tap/click burst so it can't hit the page
+      swallowNextTap(350);
 
       // Clean up valence UI
       teardownValenceInModal();
@@ -611,21 +636,42 @@ try {
         }
       }, 50); // 50ms delay
 
-      // cleanup observers/listeners
-      if (_observer) { _observer.disconnect(); _observer = null; }
-      if (_removeResizeListener) { _removeResizeListener(); _removeResizeListener = null; }
-      if (_modalResizeListener) {
-        window.removeEventListener("resize", _modalResizeListener);
-        _modalResizeListener = null;
-      }
+      // Defer actually hiding until after the shield window
+      setTimeout(() => {
+        overlay.style.display = "none";
+        overlay.classList.remove("closing");
 
-      const host = overlay.querySelector("#mg-flower-host");
-      if (host) host.innerHTML = "";
+        // cleanup observers/listeners
+        if (_observer) { _observer.disconnect(); _observer = null; }
+        if (_removeResizeListener) { _removeResizeListener(); _removeResizeListener = null; }
+        if (_modalResizeListener) {
+          window.removeEventListener("resize", _modalResizeListener);
+          _modalResizeListener = null;
+        }
+
+        const host = overlay.querySelector("#mg-flower-host");
+        if (host) host.innerHTML = "";
+      }, 350);
     }    
   
+    // Helper to stop events early
+    const stopEarly = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
+
+    // Get button references
+    const backBtn = overlay.querySelector("#mg-back");
+    const closeBtn = overlay.querySelector("#mg-modal-close");
+
+    // Intercept pointerdown events early to prevent ghost clicks
+    backBtn.addEventListener("pointerdown", stopEarly, true);
+    closeBtn.addEventListener("pointerdown", stopEarly, true);
+
+    // Keep click handlers but also stop their propagation
     overlay.addEventListener("click", (e) => { if (e.target === overlay) close(); });
-    overlay.querySelector("#mg-modal-close").addEventListener("click", close);
-    overlay.querySelector("#mg-back").addEventListener("click", close);
+    closeBtn.addEventListener("click", (e) => { stopEarly(e); close(); }, true);
+    backBtn.addEventListener("click", (e) => { stopEarly(e); close(); }, true);
     document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
   
     function adjustMetaphorFontSize(quoteElement) {
