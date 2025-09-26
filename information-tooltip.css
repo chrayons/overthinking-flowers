@@ -119,22 +119,22 @@
 
 /* Trigger button styles */
 .info-tip-trigger {
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  outline: none;
-  position: relative;
+  all: unset;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.5em;
-  height: 2.5em;
-  margin-left: -1ch;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-left: 0.5ch;
   line-height: 1;
-  vertical-align: -0.75em;
-  border-radius: 1px;
-  transition: background-color 120ms ease-out;
+  vertical-align: -0.2em;
+  color: #AFBCC7;
+  cursor: pointer;
+  transition: color 120ms ease-out;
+}
+
+.info-tip-trigger:hover {
+  color: #92A2AE;
 }
 
 /* SVG icon styles */
@@ -143,12 +143,15 @@
   height: 100%;
   display: block;
   pointer-events: none;
+  flex: 0 0 auto;
 }
 
-/* Icon color theming */
-.info-tip-trigger svg path {
-  stroke: #AFBCC7;
-  stroke-width: 1;
+/* Icon color theming - support both path and circle elements */
+.info-tip-trigger svg path,
+.info-tip-trigger svg circle {
+  stroke: currentColor;
+  stroke-width: 1.5;
+  fill: none;
   transition: stroke 120ms ease-out;
 }
 

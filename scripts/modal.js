@@ -47,6 +47,50 @@ try {
       </div>
     `;
 
+    // --- Modal tooltips: add "i" triggers inside labels and bind ---
+    function addModalInfoTooltipsInModal() {
+      // Map label text → tooltip text (case-insensitive match)
+      const CONTENT = {
+        'emotional intensity':
+          'Total emotion percentage in the flower, relative to the maximum possible (all petals at 100%).',
+        'dominant valence':
+          "The emotion type—positive, negative, or neutral—that makes up the largest share of the metaphor's overall emotion.",
+        'dominant emotion':
+          'The single emotion with the highest percentage.',
+      };
+
+      // Find both desktop + mobile stat lists
+      const roots = document.querySelectorAll('.mg-stats-desktop, .mg-stats-mobile');
+
+      roots.forEach(root => {
+        root.querySelectorAll('li .label').forEach(labelEl => {
+          const key = labelEl.textContent.trim().toLowerCase();
+          const text = CONTENT[key];
+          if (!text) return;
+          if (labelEl.querySelector('.info-tip-trigger')) return; // avoid duplicates
+
+          // Create trigger button
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.setAttribute('aria-label', `More info about ${labelEl.textContent.trim()}`);
+          btn.innerHTML = `
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="9"></circle>
+              <path d="M12 10v7M12 7h.01"></path>
+            </svg>
+          `;
+          btn.style.marginLeft = '0.5ch';
+
+          labelEl.appendChild(btn);
+
+          // Use simple API - works anywhere!
+          if (window.InformationTooltip?.attach) {
+            window.InformationTooltip.attach(btn, text);
+          }
+        });
+      });
+    }
+
     // Wait for DOM to be ready before appending to body
     if (document.body) {
       document.body.appendChild(overlay);
@@ -813,6 +857,9 @@ try {
         Number.isFinite(flower.emotionalIntensity) ? `${Math.round(flower.emotionalIntensity)}%` : "—";
       overlay.querySelector("#mg-valence-mobile").textContent = flower.dominantValence || "—";
       overlay.querySelector("#mg-dominant-mobile").textContent = flower.dominantEmotionName || "—";
+
+      // Add info tooltips after stats are populated
+      addModalInfoTooltipsInModal();
   
       // render left panel (robust to your current renderer)
 const host = overlay.querySelector("#mg-flower-host");

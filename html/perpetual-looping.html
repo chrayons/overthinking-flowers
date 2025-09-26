@@ -8,6 +8,7 @@
   <link rel="preload" as="style" href="../Satoshi/WEB/css/satoshi.css">
   <link rel="stylesheet" href="../Satoshi/WEB/css/satoshi.css">
   <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="../information-tooltip.css">
 </head>
 <body class="category-page">
   <div class="wrapper">
@@ -68,6 +69,12 @@
     <script defer src="../scripts/flower-interactions.js"></script>
     <script defer src="../scripts/category-navigation.js"></script>
     <script defer src="../scripts/perpetual-looping.js"></script>
+
+    <!-- Information tooltip system -->
+    <script type="module">
+      import { InformationTooltip } from '../scripts/information-tooltip.js';
+      window.InformationTooltip = InformationTooltip;
+    </script>
 
     <!-- Non-critical scripts (can load after page renders) -->
     <script async src="../scripts/modal.js"></script>

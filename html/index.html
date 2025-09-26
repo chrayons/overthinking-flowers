@@ -130,12 +130,19 @@
   <!-- Information tooltip system -->
   <script type="module">
     import { InformationTooltip } from '../scripts/information-tooltip.js';
-    InformationTooltip.init({
+
+    // Expose globally for use anywhere
+    window.InformationTooltip = InformationTooltip;
+
+    // Initialize for existing page tooltips
+    window._infoTips = InformationTooltip.init({
       triggerSelector: '.info-tip-trigger',
       mobileWidthEl: null, // Let CSS handle width constraints
       offset: 8,
       breakpoint: 1160
     });
+
+    // Simple API available globally: InformationTooltip.attach(element, content)
   </script>
 </body>
 </html>

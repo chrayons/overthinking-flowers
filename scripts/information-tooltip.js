@@ -4,6 +4,8 @@
  */
 
 export class InformationTooltip {
+  static globalInstance = null;
+
   constructor(options = {}) {
     this.options = {
       triggerSelector: '.info-tip-trigger',
@@ -71,6 +73,45 @@ export class InformationTooltip {
     });
   }
 
+  /**
+   * Simple API: Attach a tooltip to any element
+   * Usage: InformationTooltip.attach(button, "Tooltip content")
+   */
+  static attach(triggerElement, content) {
+    // Auto-initialize global instance if needed
+    if (!this.globalInstance) {
+      this.globalInstance = new InformationTooltip();
+      this.globalInstance.initialize();
+    }
+
+    // Create tooltip element
+    const tooltipId = `tooltip-${Math.random().toString(36).substr(2, 9)}`;
+    const tooltip = document.createElement('div');
+    tooltip.id = tooltipId;
+    tooltip.className = 'information-tooltip';
+    tooltip.setAttribute('role', 'tooltip');
+    tooltip.innerHTML = `
+      ${content}
+      <span class="information-tooltip__arrow" aria-hidden="true"></span>
+    `;
+
+    // Insert tooltip after trigger
+    triggerElement.parentNode.insertBefore(tooltip, triggerElement.nextSibling);
+
+    // Set aria relationship
+    triggerElement.setAttribute('aria-describedby', tooltipId);
+
+    // Add trigger class if not present
+    if (!triggerElement.classList.contains('info-tip-trigger')) {
+      triggerElement.classList.add('info-tip-trigger');
+    }
+
+    // Bind events to this single trigger
+    this.globalInstance.bindSingleTrigger(triggerElement);
+
+    return { trigger: triggerElement, tooltip, tooltipId };
+  }
+
   initialize() {
     this.calculateMobileWidth();
     this.bindTriggers();
@@ -116,6 +157,23 @@ export class InformationTooltip {
 
       this.triggers.add(trigger);
     });
+  }
+
+  /**
+   * Bind events to a single trigger element
+   */
+  bindSingleTrigger(trigger) {
+    if (this.triggers.has(trigger)) {
+      return; // Already bound
+    }
+
+    trigger.addEventListener('mouseenter', this.handleMouseEnter);
+    trigger.addEventListener('mouseleave', this.handleMouseLeave);
+    trigger.addEventListener('focusin', this.handleFocusIn);
+    trigger.addEventListener('focusout', this.handleFocusOut);
+    trigger.addEventListener('touchstart', this.handleTouchStart, { passive: false });
+
+    this.triggers.add(trigger);
   }
 
   setupEventListeners() {
