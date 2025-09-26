@@ -10,6 +10,7 @@ export class InformationTooltip {
       mobileWidthEl: '.modal__lower-right',
       offset: 10,
       breakpoint: 1160,
+      mobileTimeout: 1000, // 1 second auto-close on mobile
       ...options
     };
 
@@ -17,12 +18,15 @@ export class InformationTooltip {
     this.activeTrigger = null;
     this.triggers = new Set();
     this.mobileWidth = null;
+    this.autoCloseTimer = null;
+    this.isTouchInteraction = false;
 
     // Bind methods
     this.handleMouseEnter = this.handleMouseEnter.bind(this);
     this.handleMouseLeave = this.handleMouseLeave.bind(this);
     this.handleFocusIn = this.handleFocusIn.bind(this);
     this.handleFocusOut = this.handleFocusOut.bind(this);
+    this.handleTouchStart = this.handleTouchStart.bind(this);
     this.handleKeydown = this.handleKeydown.bind(this);
     this.handleOutsideClick = this.handleOutsideClick.bind(this);
     this.handleResize = this.handleResize.bind(this);
@@ -108,6 +112,7 @@ export class InformationTooltip {
       trigger.addEventListener('mouseleave', this.handleMouseLeave);
       trigger.addEventListener('focusin', this.handleFocusIn);
       trigger.addEventListener('focusout', this.handleFocusOut);
+      trigger.addEventListener('touchstart', this.handleTouchStart, { passive: false });
 
       this.triggers.add(trigger);
     });
@@ -161,11 +166,17 @@ export class InformationTooltip {
   }
 
   handleMouseEnter(e) {
+    // Skip mouse events if we just had a touch interaction
+    if (this.isTouchInteraction) return;
+
     const trigger = e.currentTarget;
     this.showTooltip(trigger);
   }
 
   handleMouseLeave(e) {
+    // Skip mouse events if we just had a touch interaction
+    if (this.isTouchInteraction) return;
+
     const trigger = e.currentTarget;
     const tooltip = this.getTooltipForTrigger(trigger);
 
@@ -195,6 +206,26 @@ export class InformationTooltip {
         this.hideTooltip();
       }
     }, 10);
+  }
+
+  handleTouchStart(e) {
+    // Set touch interaction flag to prevent mouse events
+    this.isTouchInteraction = true;
+    setTimeout(() => { this.isTouchInteraction = false; }, 300);
+
+    // Prevent mouse events from also firing
+    e.preventDefault();
+
+    const trigger = e.currentTarget;
+    const isMobile = window.innerWidth < this.options.breakpoint;
+
+    if (isMobile) {
+      // Show tooltip with auto-close timer on mobile
+      this.showTooltip(trigger, true);
+    } else {
+      // Use regular behavior on desktop
+      this.showTooltip(trigger);
+    }
   }
 
   handleKeydown(e) {
@@ -243,7 +274,7 @@ export class InformationTooltip {
     return tooltipId ? document.getElementById(tooltipId) : null;
   }
 
-  showTooltip(trigger) {
+  showTooltip(trigger, withAutoClose = false) {
     if (!trigger) return;
 
     const tooltip = this.getTooltipForTrigger(trigger);
@@ -266,9 +297,22 @@ export class InformationTooltip {
     // Show tooltip
     tooltip.classList.add('information-tooltip--open');
     this.positionTooltip(tooltip, trigger);
+
+    // Set auto-close timer for mobile if requested
+    if (withAutoClose && this.options.mobileTimeout > 0) {
+      this.autoCloseTimer = setTimeout(() => {
+        this.hideTooltip();
+      }, this.options.mobileTimeout);
+    }
   }
 
   hideTooltip() {
+    // Clear any active auto-close timer
+    if (this.autoCloseTimer) {
+      clearTimeout(this.autoCloseTimer);
+      this.autoCloseTimer = null;
+    }
+
     if (this.activeTooltip) {
       this.activeTooltip.classList.remove('information-tooltip--open');
 
@@ -309,8 +353,24 @@ export class InformationTooltip {
     let left, top;
 
     if (isMobile) {
-      // Position above trigger, horizontally centered (viewport coordinates)
-      left = triggerRect.left + (triggerRect.width / 2) - (tooltipRect.width / 2);
+      // Where is the center of the trigger (icon) in the viewport?
+      const triggerCenterX = triggerRect.left + (triggerRect.width / 2);
+
+      // Read arrow size (in px) from CSS variable; fallback to 8
+      const styles = getComputedStyle(document.documentElement);
+      const arrowSize = parseFloat(styles.getPropertyValue('--info-tip-arrow-size')) || 8;
+
+      // Our arrow is bottom-right, inset 8px from the right,
+      // and its "tip" sits arrowSize/2 outside the box.
+      const arrowInsetRight = 8; // keep in sync with CSS
+
+      // X position (inside the tooltip) where the arrow sits
+      const anchorXInsideTooltip = tooltipRect.width - arrowInsetRight - (arrowSize / 2);
+
+      // Place tooltip so that this anchor point lines up with the icon center
+      left = triggerCenterX - anchorXInsideTooltip;
+
+      // Y position: box above the icon with your configured offset
       top = triggerRect.top - tooltipRect.height - this.options.offset;
     } else {
       // Position to the right, vertically centered (viewport coordinates)
@@ -351,6 +411,7 @@ export class InformationTooltip {
       trigger.removeEventListener('mouseleave', this.handleMouseLeave);
       trigger.removeEventListener('focusin', this.handleFocusIn);
       trigger.removeEventListener('focusout', this.handleFocusOut);
+      trigger.removeEventListener('touchstart', this.handleTouchStart);
     });
 
     document.removeEventListener('keydown', this.handleKeydown);

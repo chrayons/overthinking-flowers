@@ -107,6 +107,16 @@
   margin-left: calc(-1 * var(--info-tip-arrow-size) / 2);
 }
 
+/* Mobile: arrow on the bottom edge, 8px from right */
+@media (max-width: 1159px) {
+  .information-tooltip[data-placement="top"] .information-tooltip__arrow {
+    bottom: calc(-1 * var(--info-tip-arrow-size) / 2);
+    right: 8px;
+    left: auto;
+    margin-left: 0;
+  }
+}
+
 /* Trigger button styles */
 .info-tip-trigger {
   background: none;
@@ -125,16 +135,6 @@
   vertical-align: -0.75em;
   border-radius: 1px;
   transition: background-color 120ms ease-out;
-}
-
-.info-tip-trigger:focus-visible {
-  outline: 2px solid #0066CC;
-  outline-offset: 2px;
-}
-
-
-.info-tip-trigger:focus {
-  background-color: rgba(175, 188, 199, 0.15);
 }
 
 /* SVG icon styles */
