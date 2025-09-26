@@ -62,6 +62,19 @@
   --cols:   8;               /* desktop/laptop: 8 columns (each cell spans 2) */
 }
 
+/* ===== MOBILE TAP HIGHLIGHT REMOVAL ===== */
+/* Remove default blue tap highlight on all elements for mobile */
+*, *:before, *:after {
+  -webkit-tap-highlight-color: transparent !important;
+  tap-highlight-color: transparent !important;
+}
+
+/* Additional mobile tap behavior fixes */
+button, a, [role="button"], [tabindex] {
+  -webkit-tap-highlight-color: transparent !important;
+  tap-highlight-color: transparent !important;
+}
+
 html, body {
   background: var(--page-bg);
   margin: 0;
