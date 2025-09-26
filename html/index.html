@@ -31,17 +31,7 @@
 
     <section id="themes-desktop">
       <h2 class="eyebrow">EXPLORE BY THEME
-        <button type="button" class="info-tip-trigger" aria-describedby="tip-themes" aria-label="More info about exploring by theme">
-          <svg viewBox="0 0 33 33" fill="none" aria-hidden="true">
-            <g clip-path="url(#clip0_923_2720_themes)">
-              <path d="M17.235 19.1439V16.7687M17.235 14.3934H17.2409M23.1731 16.7687C23.1731 20.0482 20.5145 22.7068 17.235 22.7068C13.9555 22.7068 11.2969 20.0482 11.2969 16.7687C11.2969 13.4892 13.9555 10.8306 17.235 10.8306C20.5145 10.8306 23.1731 13.4892 23.1731 16.7687Z" stroke="#AFBCC7" stroke-width="1.04762" stroke-linecap="round" stroke-linejoin="round"/>
-            </g>
-            <defs>
-              <clipPath id="clip0_923_2720_themes">
-                <rect width="14.2515" height="14.2515" fill="white" transform="translate(10.1094 9.64282)"/>
-              </clipPath>
-            </defs>
-          </svg>
+        <button type="button" class="info-tip-trigger" aria-label="More info about exploring by theme" data-tip-text="Click into a theme to see reflections about overthinking">
           <span class="sr-only">More info about exploring by theme</span>
         </button>
       </h2>
@@ -51,17 +41,7 @@
     <!-- Enhanced Mobile carousel UI -->
 <section id="themes-mobile">
   <h2 class="eyebrow">EXPLORE BY THEME
-    <button type="button" class="info-tip-trigger" aria-describedby="tip-themes-mobile" aria-label="More info about exploring by theme">
-      <svg viewBox="0 0 33 33" fill="none" aria-hidden="true">
-        <g clip-path="url(#clip0_923_2720_themes_mobile)">
-          <path d="M17.235 19.1439V16.7687M17.235 14.3934H17.2409M23.1731 16.7687C23.1731 20.0482 20.5145 22.7068 17.235 22.7068C13.9555 22.7068 11.2969 20.0482 11.2969 16.7687C11.2969 13.4892 13.9555 10.8306 17.235 10.8306C20.5145 10.8306 23.1731 13.4892 23.1731 16.7687Z" stroke="#AFBCC7" stroke-width="1.04762" stroke-linecap="round" stroke-linejoin="round"/>
-        </g>
-        <defs>
-          <clipPath id="clip0_923_2720_themes_mobile">
-            <rect width="14.2515" height="14.2515" fill="white" transform="translate(10.1094 9.64282)"/>
-          </clipPath>
-        </defs>
-      </svg>
+    <button type="button" class="info-tip-trigger" aria-label="More info about exploring by theme" data-tip-text="Click into a theme to see reflections about overthinking">
       <span class="sr-only">More info about exploring by theme</span>
     </button>
   </h2>
@@ -106,16 +86,6 @@
 </section>
 </div>
 
-<!-- Information tooltips -->
-<div class="information-tooltip" id="tip-themes" role="tooltip">
-  Click into a theme to see reflections about overthinking
-  <span class="information-tooltip__arrow" aria-hidden="true"></span>
-</div>
-
-<div class="information-tooltip" id="tip-themes-mobile" role="tooltip">
-  Click into a theme to see reflections about overthinking
-  <span class="information-tooltip__arrow" aria-hidden="true"></span>
-</div>
 
   <!-- Critical scripts (needed for initial render) -->
   <script defer src="../scripts/shared.js"></script>
@@ -129,20 +99,30 @@
 
   <!-- Information tooltip system -->
   <script type="module">
-    import { InformationTooltip } from '../scripts/information-tooltip.js';
+    import { InformationTooltip, createInfoTipSVG } from '../scripts/information-tooltip.js';
 
     // Expose globally for use anywhere
     window.InformationTooltip = InformationTooltip;
+    window.InformationTooltip.createInfoTipSVG = createInfoTipSVG;
 
-    // Initialize for existing page tooltips
+    // Initialize tooltip system
     window._infoTips = InformationTooltip.init({
       triggerSelector: '.info-tip-trigger',
       mobileWidthEl: null, // Let CSS handle width constraints
-      offset: 8,
+      offset: 4,
       breakpoint: 1160
     });
 
-    // Simple API available globally: InformationTooltip.attach(element, content)
+    // Set up tooltips for existing buttons using dynamic creation
+    document.querySelectorAll('.info-tip-trigger[data-tip-text]').forEach(button => {
+      const content = button.getAttribute('data-tip-text');
+      if (content) {
+        // Add SVG icon
+        button.innerHTML = createInfoTipSVG() + button.innerHTML;
+        // Attach tooltip
+        InformationTooltip.attach(button, content);
+      }
+    });
   </script>
 </body>
 </html>

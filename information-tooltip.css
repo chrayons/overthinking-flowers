@@ -154,9 +154,8 @@
   flex: 0 0 auto;
 }
 
-/* Icon color theming - support both path and circle elements */
-.info-tip-trigger svg path,
-.info-tip-trigger svg circle {
+/* Icon color theming - all SVGs now use only path elements */
+.info-tip-trigger svg path {
   stroke: currentColor;
   stroke-width: 1;
   fill: none;

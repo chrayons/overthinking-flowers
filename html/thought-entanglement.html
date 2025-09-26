@@ -71,8 +71,9 @@
 
     <!-- Information tooltip system -->
     <script type="module">
-      import { InformationTooltip } from '../scripts/information-tooltip.js';
+      import { InformationTooltip, createInfoTipSVG } from '../scripts/information-tooltip.js';
       window.InformationTooltip = InformationTooltip;
+      window.InformationTooltip.createInfoTipSVG = createInfoTipSVG;
     </script>
 
     <!-- Non-critical scripts (can load after page renders) -->

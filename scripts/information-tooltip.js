@@ -3,6 +3,26 @@
  * Framework-agnostic responsive tooltip component
  */
 
+/**
+ * Shared SVG template for info tip triggers
+ * Generates unique clipPath IDs to avoid conflicts
+ */
+export function createInfoTipSVG() {
+  const uniqueId = `clip_${Math.random().toString(36).substr(2, 9)}`;
+  return `
+    <svg viewBox="0 0 33 33" fill="none" aria-hidden="true">
+      <g clip-path="url(#${uniqueId})">
+        <path d="M17.235 19.1439V16.7687M17.235 14.3934H17.2409M23.1731 16.7687C23.1731 20.0482 20.5145 22.7068 17.235 22.7068C13.9555 22.7068 11.2969 20.0482 11.2969 16.7687C11.2969 13.4892 13.9555 10.8306 17.235 10.8306C20.5145 10.8306 23.1731 13.4892 23.1731 16.7687Z" stroke="#AFBCC7" stroke-width="1.04762" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+      <defs>
+        <clipPath id="${uniqueId}">
+          <rect width="14.2515" height="14.2515" fill="white" transform="translate(10.1094 9.64282)"/>
+        </clipPath>
+      </defs>
+    </svg>
+  `;
+}
+
 export class InformationTooltip {
   static globalInstance = null;
 
