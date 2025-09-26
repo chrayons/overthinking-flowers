@@ -725,28 +725,28 @@ try {
     }
   
     function open(flower) {
-      // Aggressively clear any existing tooltips before opening modal
+      // Let FlowerInteractions handle its own tooltip cleanup for mobile tap-to-reveal
+      // Only clear tooltips that are NOT managed by FlowerInteractions
+      const flowerInteractionsTooltip = window.FlowerInteractions?.tooltip;
+
       document.querySelectorAll('.mg-tooltip, .flower-tooltip, [data-tooltip], .tippy-box, .tooltip').forEach(n => {
+        // Skip the active FlowerInteractions tooltip to avoid breaking mobile tap flow
+        if (flowerInteractionsTooltip && n === flowerInteractionsTooltip) {
+          return;
+        }
+
         // Remove wrapper if it exists
         const wrapper = n.closest('.tippy-root, .tooltip-wrapper');
         (wrapper || n).remove();
       });
 
-      // Clear hover states that might be showing tooltips
-      if (window.FlowerInteractions) {
-        if (window.FlowerInteractions.restoreOtherFlowers) {
-          window.FlowerInteractions.restoreOtherFlowers();
-        }
-        window.FlowerInteractions.currentHoveredFlower = null;
+      // Don't clear FlowerInteractions hover states - let it manage its own cleanup
+      // This preserves the mobile double-tap functionality
 
-        // Force clear any internal tooltip cache/state
-        if (window.FlowerInteractions.hideAllTooltips) {
-          window.FlowerInteractions.hideAllTooltips();
-        }
-      }
-
-      // Clear any focus that might maintain tooltip
-      if (document.activeElement && document.activeElement !== document.body) {
+      // Clear any focus that might maintain tooltip (non-FlowerInteractions)
+      if (document.activeElement &&
+          document.activeElement !== document.body &&
+          !document.activeElement.closest('.flower')) {
         document.activeElement.blur();
       }
 
