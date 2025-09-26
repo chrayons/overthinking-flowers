@@ -366,8 +366,17 @@ try {
         const pct = summary[zone] ?? 0;
         tip.innerHTML = `${zoneLabel(zone)}: ${pct}% of<br>Emotional Intensity`;
         tip.hidden = false;
+        // Add CSS class for smooth animation
+        tip.classList.add('valence-center-tip--visible');
       };
-      const hide = ()=> { tip.hidden = true; };
+      const hide = ()=> {
+        // Remove CSS class for smooth animation
+        tip.classList.remove('valence-center-tip--visible');
+        // Hide after animation completes
+        setTimeout(() => {
+          tip.hidden = true;
+        }, 120);
+      };
 
       // Helper function to get emotions for a valence zone
       const getEmotionsForZone = (zone) => {

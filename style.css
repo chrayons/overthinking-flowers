@@ -1682,7 +1682,27 @@ body {
   /* Position relative to the stage center, not the valence container */
   left: 50%;
   top: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%) translateY(-4px);
+  /* Smooth animations matching information tooltip */
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 120ms ease-out, visibility 120ms ease-out, transform 120ms ease-out;
+}
+
+/* Visible state for smooth animation */
+.valence-center-tip--visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, -50%) translateY(0);
+}
+
+/* Smooth transitions for emotion slice overlays and fading */
+.mg-overlay-sector {
+  transition: opacity 120ms ease-out, fill 120ms ease-out;
+}
+
+.mg-fade-sector {
+  transition: opacity 120ms ease-out;
 }
 
 /* Responsive nicety: let JS handle font sizing for curved labels */
@@ -1690,9 +1710,19 @@ body {
   svg .valence-labels text { font-size: inherit; }
 }
 
-/* Respect reduced motion if you add any animations later */
+/* Respect reduced motion for all flower modal animations */
 @media (prefers-reduced-motion: reduce) {
-  .valence-center-tip { transition: none !important; animation: none !important; }
+  .valence-center-tip,
+  .mg-overlay-sector,
+  .mg-fade-sector {
+    transition: none !important;
+    animation: none !important;
+    transform: none !important;
+  }
+
+  .valence-center-tip {
+    transform: translate(-50%, -50%) !important;
+  }
 }
 
 
