@@ -62,8 +62,8 @@ export class InformationTooltip {
         <span class="information-tooltip__arrow" aria-hidden="true"></span>
       `;
 
-      // Insert tooltip after trigger
-      trigger.parentNode.insertBefore(tooltip, trigger.nextSibling);
+      // Portal: append to the modal overlay so transforms on the modal don't affect us
+      (document.getElementById('mg-modal-overlay') || document.body).appendChild(tooltip);
 
       // Set aria relationship
       trigger.setAttribute('aria-describedby', tooltipId);
@@ -95,8 +95,8 @@ export class InformationTooltip {
       <span class="information-tooltip__arrow" aria-hidden="true"></span>
     `;
 
-    // Insert tooltip after trigger
-    triggerElement.parentNode.insertBefore(tooltip, triggerElement.nextSibling);
+    // Portal: append to the modal overlay (or body fallback)
+    (document.getElementById('mg-modal-overlay') || document.body).appendChild(tooltip);
 
     // Set aria relationship
     triggerElement.setAttribute('aria-describedby', tooltipId);
