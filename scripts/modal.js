@@ -74,9 +74,15 @@ try {
           btn.type = 'button';
           btn.setAttribute('aria-label', `More info about ${labelEl.textContent.trim()}`);
           btn.innerHTML = `
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <circle cx="12" cy="12" r="9"></circle>
-              <path d="M12 10v7M12 7h.01"></path>
+            <svg width="33" height="33" viewBox="0 0 33 33" fill="none" aria-hidden="true">
+              <g clip-path="url(#clip0_923_2720_themes)">
+                <path d="M17.235 19.1439V16.7687M17.235 14.3934H17.2409M23.1731 16.7687C23.1731 20.0482 20.5145 22.7068 17.235 22.7068C13.9555 22.7068 11.2969 20.0482 11.2969 16.7687C11.2969 13.4892 13.9555 10.8306 17.235 10.8306C20.5145 10.8306 23.1731 13.4892 23.1731 16.7687Z" stroke="#AFBCC7" stroke-width="1.04762" stroke-linecap="round" stroke-linejoin="round"/>
+              </g>
+              <defs>
+                <clipPath id="clip0_923_2720_themes">
+                  <rect width="14.2515" height="14.2515" fill="white" transform="translate(10.1094 9.64282)"/>
+                </clipPath>
+              </defs>
             </svg>
           `;
           btn.style.marginLeft = '0.5ch';
