@@ -27,7 +27,7 @@
   line-height: 1.4;
   padding: 12px 16px;
   word-wrap: break-word;
-  hyphens: auto;
+  hyphens: none;
   transform: translateY(-4px);
   transition: opacity 120ms ease-out, visibility 120ms ease-out, transform 120ms ease-out;
 }
