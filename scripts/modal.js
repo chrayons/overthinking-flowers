@@ -478,6 +478,7 @@ try {
       const wire = (node, zone, textElement = null)=>{
         if (!node) return;
         let valenceMobileTimeout = null;
+        let hoverDebounceTimeout = null;
 
         const triggerValenceEffect = () => {
           show(zone);
@@ -532,8 +533,22 @@ try {
           }
         };
 
-        node.addEventListener('mouseenter', triggerValenceEffect);
-        node.addEventListener('mouseleave', clearValenceEffect);
+        node.addEventListener('mouseenter', () => {
+          // Cancel any pending hide timer to prevent flickering
+          if (hoverDebounceTimeout) {
+            clearTimeout(hoverDebounceTimeout);
+            hoverDebounceTimeout = null;
+          }
+          triggerValenceEffect();
+        });
+
+        node.addEventListener('mouseleave', () => {
+          // Add small delay before hiding to prevent flickering on letter gaps
+          hoverDebounceTimeout = setTimeout(() => {
+            clearValenceEffect();
+            hoverDebounceTimeout = null;
+          }, 75); // 75ms delay to ignore rapid enter/leave events
+        });
 
         // Mobile touch support for valence labels
         node.addEventListener('touchstart', (e) => {
@@ -570,7 +585,7 @@ try {
         if (textElement && textElement.tagName === 'text') {
           // Add invisible stroke to expand hit area
           textElement.setAttribute('stroke', 'transparent');
-          textElement.setAttribute('stroke-width', '10'); // 10px invisible border
+          textElement.setAttribute('stroke-width', '400'); // 400px invisible border for easier targeting
           textElement.style.cursor = 'pointer';
         }
       };

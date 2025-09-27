@@ -1047,6 +1047,26 @@ body {
   text-decoration: underline; /* Add underline */
 }
 
+/* Hover and active states for shuffle cards */
+#shuffle-cards .card {
+  cursor: pointer;
+  transition: color 0.2s ease;
+  color: #101720; /* Default state - dark grey */
+}
+
+/* When any card is hovered, make other cards inactive (light grey) */
+#shuffle-cards:hover .card {
+  color: #AFBCC7; /* All cards become light grey on container hover */
+}
+
+#shuffle-cards:hover .card:hover {
+  color: #101720; /* But the hovered card stays dark grey */
+}
+
+#shuffle-cards .card:active {
+  color: #101720; /* Dark grey on tap/click */
+}
+
 /* Responsive card visibility: 3→2→1 cards */
 /* Hide 3rd card when screen is too narrow for 3 cards */
 @media (max-width: 1141px) {
