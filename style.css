@@ -1558,11 +1558,11 @@ body {
   position: absolute;
   z-index: 15;
   pointer-events: none;
-  background: rgba(255, 255, 255, 0.85); /* White with 85% opacity - better readability */
+  background: #E5EAEE; /* Light grey background */
   border: 0.5px solid #F8F8FF; /* Border matching SVG */
   border-radius: 5px; /* Rounded corners */
   padding: 8px 16px; /* 8px top/bottom, 16px left/right */
-  font: 500 13px/1 "Satoshi-Medium", sans-serif; /* Medium weight */
+  font: 500 14px/1.4 "Satoshi-Medium", sans-serif; /* Medium weight */
   color: var(--text-primary); /* Black text */
   white-space: nowrap;
   user-select: none;
@@ -1702,7 +1702,7 @@ body {
   border: 0.5px solid #F8F8FF; /* Match mg-tooltip border */
   border-radius: 5px; /* Match mg-tooltip radius */
   padding: 8px 16px; /* Match mg-tooltip padding */
-  font: 700 13px/1.2 "Satoshi-Medium", sans-serif; /* Updated to use Satoshi-Medium */
+  font: 700 14px/1.4 "Satoshi-Medium", sans-serif; /* Consistent font size and line-height */
   color: var(--text-primary); /* Match mg-tooltip text color */
   text-align: center;
   width: max-content; /* Hug the text content */
