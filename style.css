@@ -837,16 +837,19 @@ body {
   border-radius: 50%;
   margin: 0;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* Smooth material design easing */
+  transform: scale(1);
   pointer-events: auto; /* Enable dot clicking */
 }
 
 .category-nav-dot.active {
   background: var(--text-secondary); /* Match home page active dots */
+  transform: scale(1.15); /* Slightly larger when active */
 }
 
 .category-nav-dot:hover:not(.active) {
   background: #8B98A5; /* Match home page hover color */
+  transform: scale(1.05); /* Slight scale on hover */
 }
 
 /* Desktop font sizing and spacing */
@@ -863,6 +866,11 @@ body {
   .category-nav-dot {
     width: 10px; /* Slightly larger dots on desktop */
     height: 10px;
+  }
+
+  /* Maintain active state scaling on desktop */
+  .category-nav-dot.active {
+    transform: scale(1.15);
   }
 }
 

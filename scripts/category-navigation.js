@@ -35,26 +35,27 @@ const CategoryNavigation = {
   },
 
   setupNavigationDots: function() {
-    const dotsContainer = document.querySelector('.category-nav-dots');
-    if (!dotsContainer) return;
+    const dots = document.querySelectorAll('.category-nav-dot');
+    if (!dots.length) return;
 
-    // Clear existing dots
-    dotsContainer.innerHTML = '';
+    // Clear any existing active states (in case of double initialization)
+    dots.forEach(dot => dot.classList.remove('active'));
 
-    // Create dots for each category
-    CATEGORY_ORDER.forEach((category, index) => {
-      const dot = document.createElement('div');
-      dot.className = 'category-nav-dot';
-      if (index === this.currentCategoryIndex) {
-        dot.classList.add('active');
-      }
+    // Set current active dot
+    if (dots[this.currentCategoryIndex]) {
+      dots[this.currentCategoryIndex].classList.add('active');
+    }
 
-      // Add click handler for dot navigation
-      dot.addEventListener('click', () => {
+    // Add click handlers to all dots
+    dots.forEach((dot, index) => {
+      // Remove any existing listeners to prevent duplicates
+      const newDot = dot.cloneNode(true);
+      dot.parentNode.replaceChild(newDot, dot);
+
+      // Add fresh click handler
+      newDot.addEventListener('click', () => {
         this.navigateToCategory(index);
       });
-
-      dotsContainer.appendChild(dot);
     });
   },
 
