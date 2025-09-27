@@ -3,20 +3,92 @@
     const recentIds = [];   // simple session buffer to avoid immediate repeats
     let currentPicks = [];  // store current cards to avoid regenerating on resize
 
+    // Track all seen metaphors across sessions using localStorage
+    const SEEN_KEY = 'shuffle-seen-metaphors';
+    let seenIds = new Set();
+
+    // Load previously seen IDs from localStorage
+    try {
+        const stored = localStorage.getItem(SEEN_KEY);
+        if (stored) {
+            seenIds = new Set(JSON.parse(stored));
+        }
+    } catch (e) {
+        console.warn('Could not load seen metaphors from storage:', e);
+        seenIds = new Set();
+    }
+
     // Cache for text measurements to avoid DOM manipulation on repeated calls
     const measureCache = new Map();
 
     // getCardCount removed - CSS now handles responsive visibility
 
+    // Save seen IDs to localStorage
+    function saveSeenIds() {
+        try {
+            localStorage.setItem(SEEN_KEY, JSON.stringify([...seenIds]));
+        } catch (e) {
+            console.warn('Could not save seen metaphors to storage:', e);
+        }
+    }
+
+    // Reset seen metaphors (useful if user wants to start fresh)
+    function resetSeenMetaphors() {
+        seenIds.clear();
+        saveSeenIds();
+        console.log('Shuffle history reset - all metaphors will be treated as unseen');
+    }
+
     function sampleUnique(list, cardCount, bannedIds = new Set()) {
-      const pool = list.filter(x => !bannedIds.has(x.id));
-      if (pool.length < cardCount) bannedIds = new Set(); // fallback if pool too small
-      const picks = [];
-      while (picks.length < cardCount) {
-        const item = (pool.length ? pool : list)[Math.floor(Math.random() * (pool.length ? pool.length : list.length))];
-        if (!picks.find(p => p.id === item.id)) picks.push(item);
-      }
-      return picks;
+        // Separate unseen from seen metaphors
+        const unseen = list.filter(x => !bannedIds.has(x.id) && !seenIds.has(x.id));
+        const seen = list.filter(x => !bannedIds.has(x.id) && seenIds.has(x.id));
+
+        const picks = [];
+
+        // Strategy: Prioritize unseen, then fall back to seen, then to banned if needed
+        let primaryPool = unseen;
+        let secondaryPool = seen;
+        let tertiaryPool = list; // includes banned as last resort
+
+        // First, try to fill from unseen metaphors
+        while (picks.length < cardCount && primaryPool.length > 0) {
+            const randomIndex = Math.floor(Math.random() * primaryPool.length);
+            const item = primaryPool[randomIndex];
+
+            if (!picks.find(p => p.id === item.id)) {
+                picks.push(item);
+            }
+
+            // Remove from pool to avoid duplicates
+            primaryPool.splice(randomIndex, 1);
+        }
+
+        // If we need more, use seen metaphors
+        while (picks.length < cardCount && secondaryPool.length > 0) {
+            const randomIndex = Math.floor(Math.random() * secondaryPool.length);
+            const item = secondaryPool[randomIndex];
+
+            if (!picks.find(p => p.id === item.id)) {
+                picks.push(item);
+            }
+
+            secondaryPool.splice(randomIndex, 1);
+        }
+
+        // Last resort: use any available metaphor (including recently banned)
+        while (picks.length < cardCount && tertiaryPool.length > 0) {
+            const randomIndex = Math.floor(Math.random() * tertiaryPool.length);
+            const item = tertiaryPool[randomIndex];
+
+            if (!picks.find(p => p.id === item.id)) {
+                picks.push(item);
+            }
+
+            tertiaryPool.splice(randomIndex, 1);
+        }
+
+        return picks;
     }
   
     function clampSnippetToFit(text, maxWidth, maxHeight = 52) {
@@ -101,8 +173,16 @@
       const banned = new Set(recentIds);
       const picks = sampleUnique(flowers, maxCards, banned);
 
-      // update recent buffer (keep last 9 IDs so immediate reshuffles feel fresh)
-      picks.forEach(p => recentIds.push(p.id));
+      // Mark picked metaphors as seen
+      picks.forEach(p => {
+          seenIds.add(p.id);
+          recentIds.push(p.id);
+      });
+
+      // Save to localStorage
+      saveSeenIds();
+
+      // Keep recent buffer (last 9 IDs) for immediate repeat prevention
       while (recentIds.length > 9) recentIds.shift();
 
       currentPicks = picks;
@@ -232,7 +312,8 @@
         bindButton(flowers);
         generateNewCards(flowers); // initial draw - CSS handles responsive behavior
       },
-      refresh(flowers) { generateNewCards(flowers); }
+      refresh(flowers) { generateNewCards(flowers); },
+      resetHistory() { resetSeenMetaphors(); }
     };
   
     global.Shuffle = Shuffle;
