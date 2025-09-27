@@ -1669,7 +1669,7 @@ body {
 /* Centered tooltip matching existing emotion hover style */
 .valence-center-tip {
   position: absolute;
-  z-index: 15;
+  z-index: 50; /* Above valence overlay (zIndex 20) */
   pointer-events: none;
   background: rgba(255, 255, 255, 0.85); /* Match mg-tooltip transparency */
   border: 0.5px solid #F8F8FF; /* Match mg-tooltip border */

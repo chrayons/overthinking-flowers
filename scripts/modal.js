@@ -361,8 +361,16 @@ try {
       const stage = host.querySelector('.mg-stage');
       if (stage && tip.parentNode !== stage) stage.appendChild(tip);
 
+      // Add timeout cancellation to prevent hide/show races
+      let tipHideTimer = null;
+
       const zoneLabel = (z)=> z==='pos'?'Positive':z==='neu'?'Neutral':'Negative';
       const show = (zone)=>{
+        // Cancel any pending hide timer
+        if (tipHideTimer) {
+          clearTimeout(tipHideTimer);
+          tipHideTimer = null;
+        }
         const pct = summary[zone] ?? 0;
         tip.innerHTML = `${zoneLabel(zone)}: ${pct}% of<br>Emotional Intensity`;
         tip.hidden = false;
@@ -372,9 +380,10 @@ try {
       const hide = ()=> {
         // Remove CSS class for smooth animation
         tip.classList.remove('valence-center-tip--visible');
-        // Hide after animation completes
-        setTimeout(() => {
+        // Hide after animation completes, with cancellable timer
+        tipHideTimer = setTimeout(() => {
           tip.hidden = true;
+          tipHideTimer = null;
         }, 120);
       };
 
@@ -556,49 +565,22 @@ try {
         }, true);
       };
 
-      // Create larger invisible hover areas for easier targeting
-      const createLargerHoverArea = (textElement, zone) => {
-        // Wait for text to be positioned
-        requestAnimationFrame(() => {
-          const textRect = textElement.getBBox();
-
-          // Create a larger invisible rect positioned over the text area
-          const hoverArea = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-
-          // Make hover area larger but not too large - expand by 5px in all directions
-          const expandSize = 5;
-          hoverArea.setAttribute('x', textRect.x - expandSize);
-          hoverArea.setAttribute('y', textRect.y - expandSize);
-          hoverArea.setAttribute('width', textRect.width + (expandSize * 2));
-          hoverArea.setAttribute('height', textRect.height + (expandSize * 2));
-          hoverArea.setAttribute('fill', 'transparent');
-          hoverArea.setAttribute('stroke', 'none');
-          hoverArea.style.pointerEvents = 'all';
-          hoverArea.style.cursor = 'pointer';
-          hoverArea.classList.add('valence-hover-area', `valence-hover-${zone}`);
-
-          // Debug: Add a test touch listener directly to the hover area
-          hoverArea.addEventListener('touchstart', (e) => {
-            console.log('Direct hover area touch for zone:', zone, 'area:', hoverArea);
-          }, true);
-
-          // Insert before the text so text appears on top
-          layer.insertBefore(hoverArea, textElement);
-
-          // Wire events to this hover area with text styling support
-          // Debug: log what textElement we're passing
-          console.log('Creating hover area for zone:', zone, 'textElement:', textElement);
-          wire(hoverArea, zone, textElement);
-        });
+      // Make text elements easier to hover with invisible stroke padding
+      const makeTextResponsive = (textElement) => {
+        if (textElement && textElement.tagName === 'text') {
+          // Add invisible stroke to expand hit area
+          textElement.setAttribute('stroke', 'transparent');
+          textElement.setAttribute('stroke-width', '10'); // 10px invisible border
+          textElement.style.cursor = 'pointer';
+        }
       };
 
-      // Create larger hover areas for each text element
-      createLargerHoverArea(pos.parentNode, 'pos');
-      createLargerHoverArea(neg.parentNode, 'neg');
-      createLargerHoverArea(neu.parentNode, 'neu');
+      // Make all valence text elements more responsive
+      makeTextResponsive(pos.parentNode);
+      makeTextResponsive(neg.parentNode);
+      makeTextResponsive(neu.parentNode);
 
-      // Keep the original text elements interactive as backup
-      // Wire events to the <text> nodes (parents of textPath) for better hit detection
+      // Wire events directly to the text elements
       wire(pos.parentNode, 'pos', pos.parentNode);
       wire(neu.parentNode, 'neu', neu.parentNode);
       wire(neg.parentNode, 'neg', neg.parentNode);
