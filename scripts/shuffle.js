@@ -175,7 +175,40 @@
     function bindButton(flowers) {
       const btn = document.getElementById("shuffle-btn");
       if (btn) {
+        // Track if this is a touch interaction
+        let isTouchInteraction = false;
+
+        // Detect touch start
+        btn.addEventListener("touchstart", () => {
+          isTouchInteraction = true;
+          btn.classList.add("touch-active");
+        }, { passive: true });
+
+        // Detect touch end - reset to white after tap
+        btn.addEventListener("touchend", () => {
+          if (isTouchInteraction) {
+            setTimeout(() => {
+              btn.classList.remove("touch-active");
+              isTouchInteraction = false;
+            }, 150); // Short delay to show the blue state
+          }
+        }, { passive: true });
+
+        // Handle click (works for both mouse and touch)
         btn.addEventListener("click", () => generateNewCards(flowers));
+
+        // Prevent focus on mouse interaction but allow keyboard focus
+        btn.addEventListener("mousedown", (e) => {
+          // Only prevent default for mouse interactions
+          if (!isTouchInteraction) {
+            e.preventDefault();
+          }
+        });
+
+        // Reset touch interaction flag on mouse events
+        btn.addEventListener("mouseenter", () => {
+          isTouchInteraction = false;
+        });
 
         // Set initial text
         updateButtonText();

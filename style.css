@@ -101,16 +101,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Lightweight fade-in animation */
-  opacity: 0;
-  animation: categoryPageFade 0.4s ease-out forwards;
-}
-
-/* Category page fade animation */
-@keyframes categoryPageFade {
-  to {
-    opacity: 1;
-  }
+  /* Page content stays static - no animation */
+  opacity: 1;
 }
 
 /* Flower container for category pages */
@@ -184,9 +176,7 @@ body {
     transition: none !important;
   }
 
-  /* Disable entrance animations for users who prefer reduced motion */
-  .category-page-content,
-  .category-overlay,
+  /* Disable flower entrance animation for users who prefer reduced motion */
   #flower-container {
     animation: none !important;
     opacity: 1 !important;
@@ -277,7 +267,7 @@ body {
   z-index: 1000;
   font-family: "Satoshi-Medium", sans-serif;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 500;
   color: #005BA6;
   text-decoration: none;
   background: var(--page-bg);
@@ -400,7 +390,7 @@ body {
 
 .mobile-header-menu-item:first-child {
   font-family: "Satoshi-Medium", sans-serif;
-  font-weight: 700;
+  font-weight: 500;
 }
 
 .mobile-header-menu-item:hover {
@@ -686,7 +676,16 @@ body {
     box-sizing: border-box;
   }
 
-  #shuffle-btn:hover {
+  /* Only apply hover styles on devices that support hover (desktop) */
+  @media (hover: hover) {
+    #shuffle-btn:hover {
+      background: #005BA6;
+      color: #F8F8FF;
+    }
+  }
+
+  /* Touch-specific active state */
+  #shuffle-btn.touch-active {
     background: #005BA6;
     color: #F8F8FF;
   }
@@ -695,13 +694,19 @@ body {
     transform: translateY(1px);
   }
 
-  /* Reset focus state on mobile to prevent button staying blue after tap */
-  @media (max-width: 775px) {
-    #shuffle-btn:focus {
-      background: #F8F8FF;
-      color: #005BA6;
-      outline: none;
-    }
+  /* Reset focus state to prevent button staying blue after tap */
+  #shuffle-btn:focus {
+    background: #F8F8FF;
+    color: #005BA6;
+    outline: none;
+  }
+
+  /* But allow focus-visible for keyboard navigation */
+  #shuffle-btn:focus-visible {
+    background: #005BA6;
+    color: #F8F8FF;
+    outline: 2px solid #005BA6;
+    outline-offset: 2px;
   }
 }
 
@@ -733,16 +738,8 @@ body {
   gap: 40px;
   z-index: 10; /* Above flowers */
   pointer-events: none; /* Allow click-through to flowers */
-  /* Lightweight fade-in with slight delay */
-  opacity: 0;
-  animation: categoryOverlayFade 0.3s ease-out 0.1s forwards;
-}
-
-/* Category overlay fade animation */
-@keyframes categoryOverlayFade {
-  to {
-    opacity: 1;
-  }
+  /* Navigation overlay stays static - no animation */
+  opacity: 1;
 }
 
 /* Category title section - just the label */
@@ -1151,7 +1148,16 @@ body {
   box-sizing: border-box;
 }
 
-.btn-primary:hover {
+/* Only apply hover styles on devices that support hover (desktop) */
+@media (hover: hover) {
+  .btn-primary:hover {
+    background: #005BA6;
+    color: #F8F8FF;
+  }
+}
+
+/* Touch-specific active state for btn-primary */
+.btn-primary.touch-active {
   background: #005BA6;
   color: #F8F8FF;
 }
@@ -1740,7 +1746,7 @@ body {
   border: 0.5px solid #F8F8FF; /* Match mg-tooltip border */
   border-radius: 5px; /* Match mg-tooltip radius */
   padding: 8px 16px; /* Match mg-tooltip padding */
-  font: 700 14px/1.4 "Satoshi-Medium", sans-serif; /* Consistent font size and line-height */
+  font: 500 14px/1.4 "Satoshi-Medium", sans-serif; /* Consistent font size and line-height */
   color: var(--text-primary); /* Match mg-tooltip text color */
   text-align: center;
   width: max-content; /* Hug the text content */
