@@ -255,9 +255,11 @@ body {
   background: var(--page-bg);
   margin: 0;
   padding: 0;
+  transition: color 0.2s ease-out;
 }
 
 .header-link:hover {
+  color: #005BA6;
   text-decoration: underline;
 }
 
@@ -277,6 +279,11 @@ body {
   cursor: pointer;
   margin: 0;
   padding: 0;
+  transition: color 0.2s ease-out;
+}
+
+.header-label:hover {
+  color: #005BA6;
 }
 
 /* Mobile Header Dropdown - shows on very small screens to prevent header overlap */
