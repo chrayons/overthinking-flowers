@@ -101,6 +101,16 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  /* Lightweight fade-in animation */
+  opacity: 0;
+  animation: categoryPageFade 0.4s ease-out forwards;
+}
+
+/* Category page fade animation */
+@keyframes categoryPageFade {
+  to {
+    opacity: 1;
+  }
 }
 
 /* Flower container for category pages */
@@ -112,6 +122,16 @@ body {
   height: 100%;
   pointer-events: none; /* Allow clicks to pass through to underlying elements */
   z-index: 15; /* Above category overlay (z-index: 10) */
+  /* Lightweight fade-in */
+  opacity: 0;
+  animation: flowerContainerFade 0.5s ease-out 0.05s forwards;
+}
+
+/* Flower container fade animation */
+@keyframes flowerContainerFade {
+  to {
+    opacity: 1;
+  }
 }
 
 #flower-container .flower,
@@ -162,6 +182,14 @@ body {
 @media (prefers-reduced-motion: reduce) {
   #flower-container .flower {
     transition: none !important;
+  }
+
+  /* Disable entrance animations for users who prefer reduced motion */
+  .category-page-content,
+  .category-overlay,
+  #flower-container {
+    animation: none !important;
+    opacity: 1 !important;
   }
 }
 
@@ -705,6 +733,16 @@ body {
   gap: 40px;
   z-index: 10; /* Above flowers */
   pointer-events: none; /* Allow click-through to flowers */
+  /* Lightweight fade-in with slight delay */
+  opacity: 0;
+  animation: categoryOverlayFade 0.3s ease-out 0.1s forwards;
+}
+
+/* Category overlay fade animation */
+@keyframes categoryOverlayFade {
+  to {
+    opacity: 1;
+  }
 }
 
 /* Category title section - just the label */
@@ -1558,7 +1596,7 @@ body {
   position: absolute;
   z-index: 15;
   pointer-events: none;
-  background: #E5EAEE; /* Light grey background */
+  background: rgba(255, 255, 255, 0.85); /* White with 85% opacity - better readability */
   border: 0.5px solid #F8F8FF; /* Border matching SVG */
   border-radius: 5px; /* Rounded corners */
   padding: 8px 16px; /* 8px top/bottom, 16px left/right */
