@@ -1451,7 +1451,7 @@ body {
   .mg-text-container{ /* The container holding both text columns */
     display: flex;
     gap: 16px; /* 16px spacing between columns */
-    align-items: flex-start;
+    align-items: baseline; /* Use baseline alignment for text elements */
     margin-bottom: 36px; /* 36px space to back button - same as desktop */
   }
 
@@ -1494,11 +1494,13 @@ body {
     font-size: 12px;
     font-style: normal;
     font-weight: 400;
-    margin-bottom: 0; /* Remove bottom margin to align with stats */
-    line-height: normal;
+    margin: 0; /* Remove all margins */
+    padding: 0; /* Remove all padding */
+    line-height: 1.2; /* Match stats label line-height */
     letter-spacing: 1.2px;
     text-transform: capitalize;
     white-space: nowrap;
+    vertical-align: baseline; /* Ensure baseline alignment */
   }
 
   /* Mobile: Stats labels styling */
@@ -1508,10 +1510,13 @@ body {
     font-size: 12px;
     font-style: normal;
     font-weight: 400;
-    line-height: normal;
+    margin: 0; /* Remove all margins */
+    padding: 0; /* Remove all padding */
+    line-height: 1.2; /* Match category line-height */
     letter-spacing: 1.2px;
     text-transform: capitalize;
     white-space: nowrap;
+    vertical-align: baseline; /* Ensure baseline alignment */
     display: block; /* Label on its own line, value below */
   }
 
