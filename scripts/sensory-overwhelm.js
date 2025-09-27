@@ -51,6 +51,15 @@ function restoreLayout(isMobile) {
   }
 }
 
+// Progressive dissolve animation helper
+function triggerDissolveAnimation(flowerElement, delay = 0) {
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      flowerElement.classList.add('flower-dissolve-in');
+    }, delay);
+  });
+}
+
 // FLIP guard utility to prevent CSS transition conflicts
 async function withFlipGuard(run) {
   const page = document.querySelector('.category-page');
@@ -239,6 +248,7 @@ async function createSensoryOverwhelmLayout(flowers, isResize = false) {
       }
 
       container.appendChild(el);
+      triggerDissolveAnimation(el, index * 50);
     });
     return;
   }
@@ -250,7 +260,7 @@ async function createSensoryOverwhelmLayout(flowers, isResize = false) {
   // Use device state determined earlier and select positions
   const positions = isMobile ? FLOWER_POSITIONS.mobile : FLOWER_POSITIONS.desktop;
 
-  categoryFlowers.forEach((flowerData) => {
+  categoryFlowers.forEach((flowerData, index) => {
     // Simple fixed positioning - no complex algorithms
     let position = positions[flowerData.id];
 
@@ -313,6 +323,7 @@ async function createSensoryOverwhelmLayout(flowers, isResize = false) {
     }
 
     container.appendChild(el);
+    triggerDissolveAnimation(el, index * 50);
   });
 
   // Save layout for future use with device type

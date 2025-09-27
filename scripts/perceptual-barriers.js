@@ -52,6 +52,15 @@ function restoreLayout(isMobile) {
 // Hardened FLIP utilities for clean measurements and asset settling
 const nextFrame = () => new Promise(r => requestAnimationFrame(() => r()));
 
+// Progressive dissolve animation helper
+function triggerDissolveAnimation(flowerElement, delay = 0) {
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      flowerElement.classList.add('flower-dissolve-in');
+    }, delay);
+  });
+}
+
 async function settleLayout(el) {
   if (document.fonts?.ready) await document.fonts.ready;
   const imgs = el?.querySelectorAll?.('img') || [];
@@ -270,6 +279,7 @@ async function createPerceptualBarriersLayout(flowers, isResize = false) {
       }
 
       container.appendChild(el);
+      triggerDissolveAnimation(el, index * 50);
     });
     return;
   }
@@ -281,7 +291,7 @@ async function createPerceptualBarriersLayout(flowers, isResize = false) {
   // Use device state determined earlier and select positions
   const positions = isMobile ? FLOWER_POSITIONS.mobile : FLOWER_POSITIONS.desktop;
 
-  categoryFlowers.forEach((flowerData) => {
+  categoryFlowers.forEach((flowerData, index) => {
     // Simple fixed positioning - no complex algorithms
     let position = positions[flowerData.id];
 
@@ -344,6 +354,7 @@ async function createPerceptualBarriersLayout(flowers, isResize = false) {
     }
 
     container.appendChild(el);
+    triggerDissolveAnimation(el, index * 50);
   });
 
   // Save layout for future use with device type

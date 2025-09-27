@@ -55,6 +55,16 @@ function restoreLayout(isMobile) {
   }
 }
 
+// Progressive dissolve animation helper
+function triggerDissolveAnimation(flowerElement, delay = 0) {
+  // Use requestAnimationFrame to ensure DOM is ready
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      flowerElement.classList.add('flower-dissolve-in');
+    }, delay);
+  });
+}
+
 // FLIP guard utility to prevent CSS transition conflicts
 async function withFlipGuard(run) {
   const page = document.querySelector('.category-page');
@@ -185,7 +195,9 @@ async function createEmotionalDysregulationLayout(flowers, isResize = false) {
         FlowerInteractions.addBehavior(el, flowerData);
       }
 
+      // Progressive rendering: append immediately and trigger dissolve animation
       container.appendChild(el);
+      triggerDissolveAnimation(el, index * 50); // 50ms stagger between flowers
     });
     return;
   }
@@ -197,7 +209,7 @@ async function createEmotionalDysregulationLayout(flowers, isResize = false) {
   // Use device state determined earlier and select positions
   const positions = isMobile ? FLOWER_POSITIONS.mobile : FLOWER_POSITIONS.desktop;
 
-  categoryFlowers.forEach((flowerData) => {
+  categoryFlowers.forEach((flowerData, index) => {
     // Simple fixed positioning - no complex algorithms
     let position = positions[flowerData.id];
 
@@ -259,7 +271,9 @@ async function createEmotionalDysregulationLayout(flowers, isResize = false) {
       FlowerInteractions.addBehavior(el, flowerData);
     }
 
+    // Progressive rendering: append immediately and trigger dissolve animation
     container.appendChild(el);
+    triggerDissolveAnimation(el, index * 50); // 50ms stagger between flowers
   });
 
   // Save layout for future use with device type

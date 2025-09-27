@@ -100,6 +100,16 @@ function normalizeFlowerGraphic(el) {
 // Hardened FLIP utilities for clean measurements and asset settling
 const nextFrame = () => new Promise(r => requestAnimationFrame(() => r()));
 
+// Progressive dissolve animation helper
+function triggerDissolveAnimation(flowerElement, delay = 0) {
+  // Use requestAnimationFrame to ensure DOM is ready
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      flowerElement.classList.add('flower-dissolve-in');
+    }, delay);
+  });
+}
+
 async function settleLayout(el) {
   if (document.fonts?.ready) await document.fonts.ready;
   const imgs = el?.querySelectorAll?.('img') || [];
@@ -267,7 +277,9 @@ async function createPerpetualLoopingLayout(flowers, isResize = false) {
         FlowerInteractions.addBehavior(el, flowerData);
       }
 
+      // Progressive rendering: append immediately and trigger dissolve animation
       container.appendChild(el);
+      triggerDissolveAnimation(el, index * 50); // 50ms stagger between flowers
     });
     return;
   }
@@ -279,7 +291,7 @@ async function createPerpetualLoopingLayout(flowers, isResize = false) {
   // Use device state determined earlier and select positions
   const positions = isMobile ? FLOWER_POSITIONS.mobile : FLOWER_POSITIONS.desktop;
 
-  categoryFlowers.forEach((flowerData) => {
+  categoryFlowers.forEach((flowerData, index) => {
     // Simple fixed positioning - no complex algorithms
     let position = positions[flowerData.id];
 
@@ -341,7 +353,9 @@ async function createPerpetualLoopingLayout(flowers, isResize = false) {
       FlowerInteractions.addBehavior(el, flowerData);
     }
 
+    // Progressive rendering: append immediately and trigger dissolve animation
     container.appendChild(el);
+    triggerDissolveAnimation(el, index * 50); // 50ms stagger between flowers
   });
 
   // Save layout for future use with device type

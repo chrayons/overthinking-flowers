@@ -126,6 +126,29 @@ body {
   }
 }
 
+/* Individual flower dissolve animation */
+.flower {
+  /* Initial state - invisible and slightly scaled down */
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 400ms ease-out, transform 400ms ease-out;
+}
+
+.flower.flower-dissolve-in {
+  /* Final state - visible and normal scale */
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .flower {
+    transition: none !important;
+    opacity: 1 !important;
+    transform: scale(1) !important;
+  }
+}
+
 #flower-container .flower,
 #flower-container .flower * {
   box-sizing: border-box; /* Consistent measurements across breakpoints */
