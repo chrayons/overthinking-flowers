@@ -175,39 +175,48 @@
     function bindButton(flowers) {
       const btn = document.getElementById("shuffle-btn");
       if (btn) {
-        // Track if this is a touch interaction
-        let isTouchInteraction = false;
+        let touchResetTimeout = null;
 
-        // Detect touch start
-        btn.addEventListener("touchstart", () => {
-          isTouchInteraction = true;
+        // Simple touch handling - always turn blue on touchstart, always reset on touchend
+        btn.addEventListener("touchstart", (e) => {
+          // Clear any pending timeout
+          if (touchResetTimeout) {
+            clearTimeout(touchResetTimeout);
+            touchResetTimeout = null;
+          }
+
+          // Always add the class on touch start
           btn.classList.add("touch-active");
         }, { passive: true });
 
-        // Detect touch end - reset to white after tap
-        btn.addEventListener("touchend", () => {
-          if (isTouchInteraction) {
-            setTimeout(() => {
-              btn.classList.remove("touch-active");
-              isTouchInteraction = false;
-            }, 150); // Short delay to show the blue state
+        btn.addEventListener("touchend", (e) => {
+          // Clear any existing timeout
+          if (touchResetTimeout) {
+            clearTimeout(touchResetTimeout);
           }
+
+          // Always schedule removal after delay
+          touchResetTimeout = setTimeout(() => {
+            btn.classList.remove("touch-active");
+            touchResetTimeout = null;
+          }, 150);
         }, { passive: true });
 
         // Handle click (works for both mouse and touch)
         btn.addEventListener("click", () => generateNewCards(flowers));
 
-        // Prevent focus on mouse interaction but allow keyboard focus
+        // Prevent focus on mouse but keep for keyboard
         btn.addEventListener("mousedown", (e) => {
-          // Only prevent default for mouse interactions
-          if (!isTouchInteraction) {
-            e.preventDefault();
-          }
+          e.preventDefault();
         });
 
-        // Reset touch interaction flag on mouse events
+        // Clear touch state on mouse enter (desktop)
         btn.addEventListener("mouseenter", () => {
-          isTouchInteraction = false;
+          if (touchResetTimeout) {
+            clearTimeout(touchResetTimeout);
+            touchResetTimeout = null;
+          }
+          btn.classList.remove("touch-active");
         });
 
         // Set initial text

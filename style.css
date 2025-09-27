@@ -1479,7 +1479,7 @@ body {
 
   /* Mobile: Override stats margin to match desktop spacing */
   .mg-stats {
-    margin: 0 0 0 0; /* Remove bottom margin from stats */
+    margin: 0; /* Remove all margins to align with category */
   }
 
   /* Mobile: back button centered below with consistent spacing */
@@ -1494,6 +1494,7 @@ body {
     font-size: 12px;
     font-style: normal;
     font-weight: 400;
+    margin-bottom: 0; /* Remove bottom margin to align with stats */
     line-height: normal;
     letter-spacing: 1.2px;
     text-transform: capitalize;
