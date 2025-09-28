@@ -56,6 +56,53 @@
     @media (max-width: 775px) {
       #themes-desktop { display: none; }
     }
+
+    /* Loading spinner for immediate user feedback */
+    .page-loader {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #F8F8FF;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      transition: opacity 0.4s ease-out;
+    }
+
+    .loader {
+      width: 36px; /* Smaller size */
+      aspect-ratio: 1;
+      border-radius: 50%;
+      border: 4px solid; /* Thinner border */
+      border-color: #005BA6 #005BA600; /* Blue with transparent */
+      animation: variableSpin 2s ease-in-out infinite;
+    }
+
+    @keyframes variableSpin {
+      0% { transform: rotate(0deg); }
+      25% { transform: rotate(45deg); } /* Slow start */
+      50% { transform: rotate(180deg); } /* Speed up */
+      75% { transform: rotate(300deg); } /* Fast section */
+      100% { transform: rotate(360deg); } /* Complete rotation */
+    }
+
+    .page-loader.fade-out {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* Respect reduced motion preferences */
+    @media (prefers-reduced-motion: reduce) {
+      .loader {
+        animation: none;
+      }
+      .page-loader {
+        transition: none;
+      }
+    }
   </style>
 
   <link rel="preload" as="style" href="../Satoshi/WEB/css/satoshi.css">
@@ -64,6 +111,11 @@
   <link rel="stylesheet" href="../information-tooltip.css">
 </head>
 <body>
+  <!-- Loading spinner for immediate user feedback -->
+  <div class="page-loader">
+    <div class="loader"></div>
+  </div>
+
   <div class="wrapper">
     <a href="index.html" class="header-link">METAPHOR GARDEN</a>
     <div class="header-label">OVERTHINKING ZINE</div>
@@ -165,23 +217,96 @@
 
   <!-- Critical scripts (loaded after LCP for better performance) -->
   <script>
-    // Defer heavy scripts until after LCP to improve performance
-    window.addEventListener('load', () => {
-      // Load scripts after initial render is complete
-      const scripts = [
-        '../scripts/shared.js',
-        '../scripts/flower-renderer.js',
-        '../scripts/home.js',
-        '../scripts/shuffle.js'
-      ];
+    // Loading management with fallback
+    let loaderHidden = false;
+    let contentReady = false;
 
-      scripts.forEach((src, index) => {
+    function hideLoader() {
+      if (loaderHidden) return;
+      loaderHidden = true;
+
+      const loader = document.querySelector('.page-loader');
+      if (loader) {
+        loader.classList.add('fade-out');
+        // Remove from DOM after transition
         setTimeout(() => {
-          const script = document.createElement('script');
-          script.src = src;
-          document.head.appendChild(script);
-        }, index * 100); // Stagger loading by 100ms each
-      });
+          if (loader.parentNode) {
+            loader.parentNode.removeChild(loader);
+          }
+        }, 400);
+      }
+    }
+
+    // Fallback: hide loader after 5 seconds maximum (extended for full content loading)
+    setTimeout(hideLoader, 5000);
+
+    // Hide loader when fonts are loaded and content is visually ready
+    function checkAndHideLoader() {
+      if (contentReady && document.fonts.ready) {
+        document.fonts.ready.then(() => {
+          // Wait longer for content to actually render and be visible
+          setTimeout(() => {
+            // Check if category grid has been populated with content
+            const categoryGrid = document.getElementById('category-grid');
+            const shuffleCards = document.getElementById('shuffle-cards');
+
+            // Wait for visual content to be populated
+            if (categoryGrid && categoryGrid.children.length > 0 &&
+                shuffleCards && shuffleCards.children.length > 0) {
+              // Additional delay to ensure animations and flowers are rendered
+              setTimeout(() => {
+                hideLoader();
+                // Re-initialize tooltips after content is fully loaded
+                if (window.initTooltips) {
+                  window.initTooltips();
+                }
+              }, 800);
+            } else {
+              // If content isn't ready yet, check again in a bit
+              setTimeout(checkAndHideLoader, 200);
+            }
+          }, 300);
+        });
+      }
+    }
+
+    // Load critical scripts immediately but track when they're ready
+    const scripts = [
+      '../scripts/shared.js',
+      '../scripts/flower-renderer.js',
+      '../scripts/home.js',
+      '../scripts/shuffle.js'
+    ];
+
+    let loadedScripts = 0;
+    scripts.forEach((src) => {
+      const script = document.createElement('script');
+      script.src = src;
+      script.onload = () => {
+        loadedScripts++;
+        // When all critical scripts are loaded, mark content as ready
+        if (loadedScripts === scripts.length) {
+          contentReady = true;
+          // Ensure tooltips are working after all scripts load
+          setTimeout(() => {
+            if (window.initTooltips) {
+              window.initTooltips();
+            }
+          }, 100);
+          checkAndHideLoader();
+        }
+      };
+      document.head.appendChild(script);
+    });
+
+    // Also hide on DOMContentLoaded if scripts fail to load
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        if (!loaderHidden) {
+          contentReady = true;
+          checkAndHideLoader();
+        }
+      }, 2500); // Extended to allow more time for content loading
     });
   </script>
 
@@ -197,24 +322,42 @@
     window.InformationTooltip = InformationTooltip;
     window.InformationTooltip.createInfoTipSVG = createInfoTipSVG;
 
-    // Initialize tooltip system
-    window._infoTips = InformationTooltip.init({
-      triggerSelector: '.info-tip-trigger',
-      mobileWidthEl: null, // Let CSS handle width constraints
-      offset: 4,
-      breakpoint: 1160
-    });
+    // Initialize tooltip system with proper timing
+    function initTooltips() {
+      console.log('Initializing tooltips...');
 
-    // Set up tooltips for existing buttons using dynamic creation
-    document.querySelectorAll('.info-tip-trigger[data-tip-text]').forEach(button => {
-      const content = button.getAttribute('data-tip-text');
-      if (content) {
-        // Add SVG icon
-        button.innerHTML = createInfoTipSVG() + button.innerHTML;
-        // Attach tooltip
-        InformationTooltip.attach(button, content);
-      }
-    });
+      // Initialize tooltip system
+      window._infoTips = InformationTooltip.init({
+        triggerSelector: '.info-tip-trigger',
+        mobileWidthEl: null, // Let CSS handle width constraints
+        offset: 4,
+        breakpoint: 1160
+      });
+
+      // Set up tooltips for existing buttons using dynamic creation
+      document.querySelectorAll('.info-tip-trigger[data-tip-text]').forEach(button => {
+        const content = button.getAttribute('data-tip-text');
+        if (content) {
+          console.log('Setting up tooltip for button:', content);
+          // Clear any existing content first
+          button.innerHTML = '';
+          // Add SVG icon
+          button.innerHTML = createInfoTipSVG();
+          // Attach tooltip
+          InformationTooltip.attach(button, content);
+        }
+      });
+    }
+
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initTooltips);
+    } else {
+      initTooltips();
+    }
+
+    // Also expose initialization function globally for later use
+    window.initTooltips = initTooltips;
   </script>
 </body>
 </html>
