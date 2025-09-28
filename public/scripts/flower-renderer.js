@@ -7,11 +7,25 @@ const negativeEmotions = ['fear', 'disgust', 'anger', 'sadness', 'pessimism'];
 
 // Global gradient definitions flag to prevent duplicate creation
 let globalGradientsCreated = false;
+let globalTextureCreated = false;
 
-// Mobile detection for performance optimization
+// Enhanced device detection for performance optimization
 function isMobileDevice() {
     return window.innerWidth <= 1160 ||
            /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
+
+// Performance budget detection for lower-end devices
+function isLowEndDevice() {
+    // Check for low-end device indicators
+    const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    const isSlowConnection = connection && connection.effectiveType &&
+                           (connection.effectiveType === 'slow-2g' || connection.effectiveType === '2g');
+    const isLowMemory = navigator.deviceMemory && navigator.deviceMemory < 4;
+    const isLowCpu = navigator.hardwareConcurrency && navigator.hardwareConcurrency < 4;
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    return isSlowConnection || isLowMemory || isLowCpu || prefersReducedMotion;
 }
 
 // Create shared gradient definitions once for all flowers
@@ -33,6 +47,37 @@ function createGlobalGradients() {
 
         globalSvg.appendChild(globalDefs);
         document.body.appendChild(globalSvg);
+    }
+
+    // Create global texture pattern once for better performance
+    // Only skip texture on very slow connections or if user prefers reduced motion
+    const skipTexture = (() => {
+        const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+        const verySlowConnection = connection && connection.effectiveType === 'slow-2g';
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        return verySlowConnection || prefersReducedMotion;
+    })();
+
+    if (!globalTextureCreated && !skipTexture) {
+        console.log("Creating global texture pattern...");
+        const texturePattern = document.createElementNS("http://www.w3.org/2000/svg", "pattern");
+        texturePattern.setAttribute("id", "global-petal-texture");
+        texturePattern.setAttribute("patternUnits", "objectBoundingBox");
+        texturePattern.setAttribute("width", "1");
+        texturePattern.setAttribute("height", "1");
+
+        const textureImage = document.createElementNS("http://www.w3.org/2000/svg", "image");
+        textureImage.setAttribute("href", "textures/flowertexture.jpg");
+        textureImage.setAttribute("width", "100%");
+        textureImage.setAttribute("height", "100%");
+        textureImage.setAttribute("preserveAspectRatio", "xMidYMid slice");
+
+        texturePattern.appendChild(textureImage);
+        globalDefs.appendChild(texturePattern);
+        globalTextureCreated = true;
+        console.log("Global texture pattern created successfully");
+    } else {
+        console.log("Skipping texture creation - skipTexture:", skipTexture, "globalTextureCreated:", globalTextureCreated);
     }
 
     // Helper function to create gradient
@@ -185,16 +230,23 @@ function createFlower(flowerData, options = {}) {
     // Ensure global gradients are created
     createGlobalGradients();
 
-    // Create texture pattern for this flower (only once globally for performance)
-    const uniqueId = Math.random().toString(36).substr(2, 9);
-    const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+    // Check if texture should be used and create local pattern for this flower
+    const shouldUseTexture = !(() => {
+        const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+        const verySlowConnection = connection && connection.effectiveType === 'slow-2g';
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        return verySlowConnection || prefersReducedMotion;
+    })();
 
-    // Only create texture pattern if not on mobile or if mobile performance is acceptable
-    const shouldUseTexture = !isMobileDevice() || window.innerWidth > 768; // Only use texture on larger mobile screens
-
+    // Create local texture pattern for this specific flower SVG
+    let texturePatternId = null;
     if (shouldUseTexture) {
+        const uniqueId = Math.random().toString(36).substr(2, 9);
+        texturePatternId = `petal-texture-${uniqueId}`;
+
+        const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
         const texturePattern = document.createElementNS("http://www.w3.org/2000/svg", "pattern");
-        texturePattern.setAttribute("id", `petal-texture-${uniqueId}`);
+        texturePattern.setAttribute("id", texturePatternId);
         texturePattern.setAttribute("patternUnits", "objectBoundingBox");
         texturePattern.setAttribute("width", "1");
         texturePattern.setAttribute("height", "1");
@@ -208,7 +260,11 @@ function createFlower(flowerData, options = {}) {
         texturePattern.appendChild(textureImage);
         defs.appendChild(texturePattern);
         svg.appendChild(defs);
+
+        console.log("Created local texture pattern:", texturePatternId);
     }
+
+    console.log("Flower texture check - shouldUseTexture:", shouldUseTexture);
     
     // Helper function for polar coordinates
     function getCoordinates(angle, length) {
@@ -290,14 +346,16 @@ function createFlower(flowerData, options = {}) {
             petalGroup.appendChild(petalElement);
 
             // Add texture overlay for neutral petal (performance optimized)
-            if (shouldUseTexture) {
+            if (shouldUseTexture && texturePatternId) {
+                console.log("Adding texture overlay to neutral petal with pattern:", texturePatternId);
                 const textureOverlay = document.createElementNS("http://www.w3.org/2000/svg", "path");
                 textureOverlay.setAttribute("d", isDominant ? dominantNeutralPetalPath : neutralPetalPath);
-                textureOverlay.setAttribute("fill", `url(#petal-texture-${uniqueId})`);
+                textureOverlay.setAttribute("fill", `url(#${texturePatternId})`);
                 textureOverlay.setAttribute("opacity", "0.4");
                 textureOverlay.setAttribute("transform", "translate(-92.81, -121.49)");
-                textureOverlay.style.mixBlendMode = "normal";
                 petalGroup.appendChild(textureOverlay);
+            } else {
+                console.log("Skipping texture overlay - shouldUseTexture:", shouldUseTexture, "texturePatternId:", texturePatternId);
             }
 
             svg.appendChild(petalGroup);
@@ -326,14 +384,16 @@ function createFlower(flowerData, options = {}) {
             petalGroup.appendChild(petalElement);
 
             // Add texture overlay for positive petal (performance optimized)
-            if (shouldUseTexture) {
+            if (shouldUseTexture && texturePatternId) {
+                console.log("Adding texture overlay to positive petal with pattern:", texturePatternId);
                 const textureOverlayPos = document.createElementNS("http://www.w3.org/2000/svg", "path");
                 textureOverlayPos.setAttribute("d", isDominant ? dominantPositivePetalPath : positivePetalPath);
-                textureOverlayPos.setAttribute("fill", `url(#petal-texture-${uniqueId})`);
+                textureOverlayPos.setAttribute("fill", `url(#${texturePatternId})`);
                 textureOverlayPos.setAttribute("opacity", "0.4");
                 textureOverlayPos.setAttribute("transform", isDominant ? "translate(-47.48, -122.2)" : "translate(-47.47, -122.21)");
-                textureOverlayPos.style.mixBlendMode = "normal";
                 petalGroup.appendChild(textureOverlayPos);
+            } else {
+                console.log("Skipping positive texture overlay - shouldUseTexture:", shouldUseTexture, "texturePatternId:", texturePatternId);
             }
 
             svg.appendChild(petalGroup);
@@ -363,14 +423,16 @@ function createFlower(flowerData, options = {}) {
             petalGroup.appendChild(petalElement);
 
             // Add texture overlay for negative petal (performance optimized)
-            if (shouldUseTexture) {
+            if (shouldUseTexture && texturePatternId) {
+                console.log("Adding texture overlay to negative petal with pattern:", texturePatternId);
                 const textureOverlayNeg = document.createElementNS("http://www.w3.org/2000/svg", "path");
                 textureOverlayNeg.setAttribute("d", isDominant ? dominantNegativePetalPath : negativePetalPath);
-                textureOverlayNeg.setAttribute("fill", `url(#petal-texture-${uniqueId})`);
+                textureOverlayNeg.setAttribute("fill", `url(#${texturePatternId})`);
                 textureOverlayNeg.setAttribute("opacity", "0.4");
                 textureOverlayNeg.setAttribute("transform", "translate(-37.8, -122.27)");
-                textureOverlayNeg.style.mixBlendMode = "normal";
                 petalGroup.appendChild(textureOverlayNeg);
+            } else {
+                console.log("Skipping negative texture overlay - shouldUseTexture:", shouldUseTexture, "texturePatternId:", texturePatternId);
             }
 
             svg.appendChild(petalGroup);
