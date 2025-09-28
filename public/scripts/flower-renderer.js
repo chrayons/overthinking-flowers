@@ -153,6 +153,23 @@ function createFlower(flowerData, options = {}) {
     ];
     
     gradients.forEach(gradient => defs.appendChild(gradient));
+
+    // Create texture pattern
+    const texturePattern = document.createElementNS("http://www.w3.org/2000/svg", "pattern");
+    texturePattern.setAttribute("id", `petal-texture-${uniqueId}`);
+    texturePattern.setAttribute("patternUnits", "objectBoundingBox");
+    texturePattern.setAttribute("width", "1");
+    texturePattern.setAttribute("height", "1");
+
+    const textureImage = document.createElementNS("http://www.w3.org/2000/svg", "image");
+    textureImage.setAttribute("href", "textures/flowertexture.jpg");
+    textureImage.setAttribute("width", "100%");
+    textureImage.setAttribute("height", "100%");
+    textureImage.setAttribute("preserveAspectRatio", "xMidYMid slice");
+
+    texturePattern.appendChild(textureImage);
+    defs.appendChild(texturePattern);
+
     svg.appendChild(defs);
     
     // Helper function for polar coordinates
@@ -231,8 +248,18 @@ function createFlower(flowerData, options = {}) {
             petalElement.setAttribute("d", isDominant ? dominantNeutralPetalPath : neutralPetalPath);
             petalElement.setAttribute("fill", `url(#${isDominant ? 'dominant_neutral' : 'neutral'}_${uniqueId})`);
             petalElement.setAttribute("transform", "translate(-92.81, -121.49)");
-            
+
             petalGroup.appendChild(petalElement);
+
+            // Add texture overlay for neutral petal
+            const textureOverlay = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            textureOverlay.setAttribute("d", isDominant ? dominantNeutralPetalPath : neutralPetalPath);
+            textureOverlay.setAttribute("fill", `url(#petal-texture-${uniqueId})`);
+            textureOverlay.setAttribute("opacity", "0.4");
+            textureOverlay.setAttribute("transform", "translate(-92.81, -121.49)");
+            textureOverlay.style.mixBlendMode = "normal";
+
+            petalGroup.appendChild(textureOverlay);
             svg.appendChild(petalGroup);
             
         } else if (positiveEmotions.includes(emotion)) {
@@ -255,8 +282,18 @@ function createFlower(flowerData, options = {}) {
             petalElement.setAttribute("d", isDominant ? dominantPositivePetalPath : positivePetalPath);
             petalElement.setAttribute("fill", `url(#${isDominant ? 'dominant_positive' : 'positive'}_${uniqueId})`);
             petalElement.setAttribute("transform", isDominant ? "translate(-47.48, -122.2)" : "translate(-47.47, -122.21)");
-            
+
             petalGroup.appendChild(petalElement);
+
+            // Add texture overlay for positive petal
+            const textureOverlayPos = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            textureOverlayPos.setAttribute("d", isDominant ? dominantPositivePetalPath : positivePetalPath);
+            textureOverlayPos.setAttribute("fill", `url(#petal-texture-${uniqueId})`);
+            textureOverlayPos.setAttribute("opacity", "0.4");
+            textureOverlayPos.setAttribute("transform", isDominant ? "translate(-47.48, -122.2)" : "translate(-47.47, -122.21)");
+            textureOverlayPos.style.mixBlendMode = "normal";
+
+            petalGroup.appendChild(textureOverlayPos);
             svg.appendChild(petalGroup);
             
         } else if (negativeEmotions.includes(emotion)) {
@@ -280,8 +317,18 @@ function createFlower(flowerData, options = {}) {
             petalElement.setAttribute("d", isDominant ? dominantNegativePetalPath : negativePetalPath);
             petalElement.setAttribute("fill", `url(#${isDominant ? 'dominant_negative' : 'negative'}_${uniqueId})`);
             petalElement.setAttribute("transform", "translate(-37.8, -122.27)");
-            
+
             petalGroup.appendChild(petalElement);
+
+            // Add texture overlay for negative petal
+            const textureOverlayNeg = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            textureOverlayNeg.setAttribute("d", isDominant ? dominantNegativePetalPath : negativePetalPath);
+            textureOverlayNeg.setAttribute("fill", `url(#petal-texture-${uniqueId})`);
+            textureOverlayNeg.setAttribute("opacity", "0.4");
+            textureOverlayNeg.setAttribute("transform", "translate(-37.8, -122.27)");
+            textureOverlayNeg.style.mixBlendMode = "normal";
+
+            petalGroup.appendChild(textureOverlayNeg);
             svg.appendChild(petalGroup);
             
         } else {
@@ -297,7 +344,7 @@ function createFlower(flowerData, options = {}) {
             svg.appendChild(petal);
         }
     });
-    
+
     return svg;
 }
 
