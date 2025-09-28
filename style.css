@@ -297,6 +297,11 @@ body {
   margin: 0;
   padding: 0;
   transition: color 0.2s ease-out;
+  /* Prevent flicker during page loads */
+  opacity: 1;
+  visibility: visible;
+  font-display: swap;
+  will-change: auto;
 }
 
 .header-link:hover {
@@ -321,6 +326,11 @@ body {
   margin: 0;
   padding: 0;
   transition: color 0.2s ease-out;
+  /* Prevent flicker during page loads */
+  opacity: 1;
+  visibility: visible;
+  font-display: swap;
+  will-change: auto;
 }
 
 .header-label:hover {
@@ -894,6 +904,11 @@ body {
   pointer-events: auto; /* Enable clicking */
   transition: all 0.3s ease; /* Allow smooth transitions */
   view-transition-name: return-btn; /* Enable cross-page transitions */
+  /* Prevent flicker during page loads */
+  opacity: 1;
+  visibility: visible;
+  font-display: swap;
+  will-change: auto;
 }
 
 /* Blue hover state for return button */
