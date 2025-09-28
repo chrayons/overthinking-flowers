@@ -829,6 +829,20 @@ body {
   margin: 0;
   pointer-events: none; /* Allow click-through to flowers */
   view-transition-name: category-title; /* Enable cross-page transitions */
+
+  /* Carousel-style animation on page load */
+  opacity: 0;
+  animation: categoryLabelAppear 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.1s forwards;
+}
+
+/* Keyframe animation for category label appearance */
+@keyframes categoryLabelAppear {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* Category navigation dots */
