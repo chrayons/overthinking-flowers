@@ -173,7 +173,7 @@ export class InformationTooltip {
       trigger.addEventListener('mouseleave', this.handleMouseLeave);
       trigger.addEventListener('focusin', this.handleFocusIn);
       trigger.addEventListener('focusout', this.handleFocusOut);
-      trigger.addEventListener('touchstart', this.handleTouchStart, { passive: false });
+      trigger.addEventListener('touchstart', this.handleTouchStart, { passive: true });
 
       this.triggers.add(trigger);
     });
@@ -191,7 +191,7 @@ export class InformationTooltip {
     trigger.addEventListener('mouseleave', this.handleMouseLeave);
     trigger.addEventListener('focusin', this.handleFocusIn);
     trigger.addEventListener('focusout', this.handleFocusOut);
-    trigger.addEventListener('touchstart', this.handleTouchStart, { passive: false });
+    trigger.addEventListener('touchstart', this.handleTouchStart, { passive: true });
 
     this.triggers.add(trigger);
   }
@@ -293,8 +293,10 @@ export class InformationTooltip {
     this.isTouchInteraction = true;
     setTimeout(() => { this.isTouchInteraction = false; }, 150);
 
-    // Prevent mouse events from also firing
-    e.preventDefault();
+    // Only prevent default if the event is cancelable
+    if (e.cancelable) {
+      e.preventDefault();
+    }
 
     const trigger = e.currentTarget;
     const isMobile = window.innerWidth < this.options.breakpoint;
