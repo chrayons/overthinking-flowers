@@ -248,10 +248,7 @@
               // Hide loader and then trigger flower animations
               hideLoader();
 
-              // Re-initialize tooltips after content is loaded
-              if (window.initTooltips) {
-                window.initTooltips();
-              }
+              // Tooltips already initialized on DOMContentLoaded
 
               // Trigger flower animations after a brief delay
               setTimeout(() => {
@@ -286,12 +283,7 @@
         // When all critical scripts are loaded, mark content as ready
         if (loadedScripts === scripts.length) {
           contentReady = true;
-          // Ensure tooltips are working after all scripts load
-          setTimeout(() => {
-            if (window.initTooltips) {
-              window.initTooltips();
-            }
-          }, 100);
+          // Tooltips already initialized separately
           checkAndHideLoader();
         }
       };
@@ -321,42 +313,53 @@
     window.InformationTooltip = InformationTooltip;
     window.InformationTooltip.createInfoTipSVG = createInfoTipSVG;
 
-    // Initialize tooltip system with proper timing
-    function initTooltips() {
-      console.log('Initializing tooltips...');
+    // Simple tooltip initialization - run once when module loads
+    console.log('Initializing tooltips...');
 
-      // Initialize tooltip system
-      window._infoTips = InformationTooltip.init({
-        triggerSelector: '.info-tip-trigger',
-        mobileWidthEl: null, // Let CSS handle width constraints
-        offset: 4,
-        breakpoint: 1160
-      });
+    // Initialize tooltip system
+    window._infoTips = InformationTooltip.init({
+      triggerSelector: '.info-tip-trigger',
+      mobileWidthEl: null, // Let CSS handle width constraints
+      offset: 4,
+      breakpoint: 1160
+    });
 
-      // Set up tooltips for existing buttons using dynamic creation
+    // Set up tooltips for existing buttons
+    document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('.info-tip-trigger[data-tip-text]').forEach(button => {
         const content = button.getAttribute('data-tip-text');
         if (content) {
           console.log('Setting up tooltip for button:', content);
-          // Clear any existing content first
-          button.innerHTML = '';
-          // Add SVG icon
-          button.innerHTML = createInfoTipSVG();
-          // Attach tooltip
-          InformationTooltip.attach(button, content);
+          // Add SVG icon if not already there
+          if (!button.innerHTML.includes('svg')) {
+            button.innerHTML = createInfoTipSVG() + button.innerHTML;
+          }
+
+          // Create tooltip element manually and use the existing instance
+          const tooltipId = `tooltip-${Math.random().toString(36).substr(2, 9)}`;
+          const tooltip = document.createElement('div');
+          tooltip.id = tooltipId;
+          tooltip.className = 'information-tooltip';
+          tooltip.setAttribute('role', 'tooltip');
+          tooltip.innerHTML = `
+            ${content}
+            <span class="information-tooltip__arrow" aria-hidden="true"></span>
+          `;
+
+          // Append to body
+          document.body.appendChild(tooltip);
+
+          // Set aria relationship
+          button.setAttribute('aria-describedby', tooltipId);
+
+          // Use the existing instance to bind events
+          window._infoTips.bindSingleTrigger(button);
+
+          console.log('Tooltip created with ID:', tooltipId);
+          console.log('Button aria-describedby:', button.getAttribute('aria-describedby'));
         }
       });
-    }
-
-    // Initialize when DOM is ready
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initTooltips);
-    } else {
-      initTooltips();
-    }
-
-    // Also expose initialization function globally for later use
-    window.initTooltips = initTooltips;
+    });
   </script>
 </body>
 </html>

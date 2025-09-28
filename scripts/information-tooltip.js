@@ -248,6 +248,8 @@ export class InformationTooltip {
     if (this.isTouchInteraction) return;
 
     const trigger = e.currentTarget;
+    console.log('Mouse enter on trigger:', trigger);
+    console.log('Trigger aria-describedby:', trigger.getAttribute('aria-describedby'));
     this.showTooltip(trigger);
   }
 
@@ -353,10 +355,18 @@ export class InformationTooltip {
   }
 
   showTooltip(trigger, withAutoClose = false) {
-    if (!trigger) return;
+    if (!trigger) {
+      console.log('showTooltip: no trigger');
+      return;
+    }
 
+    console.log('showTooltip called for trigger:', trigger);
     const tooltip = this.getTooltipForTrigger(trigger);
-    if (!tooltip) return;
+    console.log('Found tooltip:', tooltip);
+    if (!tooltip) {
+      console.log('showTooltip: no tooltip found for trigger');
+      return;
+    }
 
     // Hide any existing tooltip
     this.hideTooltip();
