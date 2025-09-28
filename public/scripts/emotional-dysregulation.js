@@ -36,6 +36,15 @@ const FLOWER_POSITIONS = {
 // Simple layout storage - one layout for all devices
 const ED_LAYOUT_KEY = 'ed-simple-layout-v3';
 
+// Mobile detection and performance optimization
+function isMobileDevice() {
+  return window.innerWidth <= 1160 ||
+         /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
+
+function getOptimalStaggerDelay() {
+  return isMobileDevice() ? 25 : 50; // Faster stagger on mobile for better perceived performance
+}
 // Set to true to ignore cache and always use fresh positions (for experimentation)
 const IGNORE_CACHE = false;
 
@@ -197,7 +206,7 @@ async function createEmotionalDysregulationLayout(flowers, isResize = false) {
 
       // Progressive rendering: append immediately and trigger dissolve animation
       container.appendChild(el);
-      triggerDissolveAnimation(el, index * 50); // 50ms stagger between flowers
+      triggerDissolveAnimation(el, index * getOptimalStaggerDelay()); // Optimized stagger timing // 50ms stagger between flowers
     });
     return;
   }
@@ -273,7 +282,7 @@ async function createEmotionalDysregulationLayout(flowers, isResize = false) {
 
     // Progressive rendering: append immediately and trigger dissolve animation
     container.appendChild(el);
-    triggerDissolveAnimation(el, index * 50); // 50ms stagger between flowers
+    triggerDissolveAnimation(el, index * getOptimalStaggerDelay()); // Optimized stagger timing // 50ms stagger between flowers
   });
 
   // Save layout for future use with device type

@@ -37,6 +37,16 @@ const LOA_LAYOUT_KEY = 'loa-simple-layout-v17';
 // Set to true to ignore cache and always use fresh positions (for experimentation)
 const IGNORE_CACHE = false;
 
+// Mobile detection and performance optimization
+function isMobileDevice() {
+  return window.innerWidth <= 1160 ||
+         /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
+
+function getOptimalStaggerDelay() {
+  return isMobileDevice() ? 25 : 50; // Faster stagger on mobile for better perceived performance
+}
+
 function saveLayout(placed, isMobile) {
   try {
     const deviceKey = isMobile ? LOA_LAYOUT_KEY + '-mobile' : LOA_LAYOUT_KEY + '-desktop';
@@ -211,7 +221,7 @@ async function createLossOfAgencyLayout(flowers, isResize = false) {
 
       // Progressive rendering: append immediately and trigger dissolve animation
       container.appendChild(el);
-      triggerDissolveAnimation(el, index * 50); // 50ms stagger between flowers
+      triggerDissolveAnimation(el, index * getOptimalStaggerDelay()); // Optimized stagger timing
     });
     return;
   }

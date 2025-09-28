@@ -48,6 +48,16 @@ const FLOWER_POSITIONS = {
 // Simple layout storage - one layout for all devices
 const TE_LAYOUT_KEY = 'te-simple-layout-v5';
 
+// Mobile detection and performance optimization
+function isMobileDevice() {
+  return window.innerWidth <= 1160 ||
+         /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
+
+function getOptimalStaggerDelay() {
+  return isMobileDevice() ? 25 : 50; // Faster stagger on mobile for better perceived performance
+}
+
 // Set to true to ignore cache and always use fresh positions (for experimentation)
 const IGNORE_CACHE = false;
 
@@ -247,7 +257,7 @@ async function createThoughtEntanglementLayout(flowers, isResize = false) {
       }
 
       container.appendChild(el);
-      triggerDissolveAnimation(el, index * 50);
+      triggerDissolveAnimation(el, index * getOptimalStaggerDelay()); // Optimized stagger timing
     });
     return;
   }

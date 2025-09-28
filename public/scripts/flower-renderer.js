@@ -5,6 +5,113 @@ const neutralEmotions = ['anticipation', 'surprise'];
 const positiveEmotions = ['trust', 'optimism', 'joy', 'love'];
 const negativeEmotions = ['fear', 'disgust', 'anger', 'sadness', 'pessimism'];
 
+// Global gradient definitions flag to prevent duplicate creation
+let globalGradientsCreated = false;
+
+// Mobile detection for performance optimization
+function isMobileDevice() {
+    return window.innerWidth <= 1160 ||
+           /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
+
+// Create shared gradient definitions once for all flowers
+function createGlobalGradients() {
+    if (globalGradientsCreated) return;
+
+    // Find or create global defs element
+    let globalDefs = document.querySelector('svg defs#global-flower-gradients');
+    if (!globalDefs) {
+        // Create a hidden SVG with global definitions
+        const globalSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        globalSvg.style.position = 'absolute';
+        globalSvg.style.width = '0';
+        globalSvg.style.height = '0';
+        globalSvg.style.visibility = 'hidden';
+
+        globalDefs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+        globalDefs.setAttribute("id", "global-flower-gradients");
+
+        globalSvg.appendChild(globalDefs);
+        document.body.appendChild(globalSvg);
+    }
+
+    // Helper function to create gradient
+    function createGradient(id, stops, x1, y1, x2, y2) {
+        const gradient = document.createElementNS("http://www.w3.org/2000/svg", "linearGradient");
+        gradient.setAttribute("id", id);
+        gradient.setAttribute("x1", x1);
+        gradient.setAttribute("y1", y1);
+        gradient.setAttribute("x2", x2);
+        gradient.setAttribute("y2", y2);
+        gradient.setAttribute("gradientUnits", "userSpaceOnUse");
+
+        stops.forEach(stop => {
+            const stopElement = document.createElementNS("http://www.w3.org/2000/svg", "stop");
+            stopElement.setAttribute("offset", stop.offset);
+            stopElement.setAttribute("stop-color", stop.color);
+            gradient.appendChild(stopElement);
+        });
+
+        return gradient;
+    }
+
+    // Create all global gradients
+    const gradients = [
+        createGradient("global-neutral", [
+            { offset: "0", color: "#efe173" },
+            { offset: ".49", color: "#e9eab0" },
+            { offset: "1", color: "#f8fbf4" }
+        ], "92.81", "0", "92.81", "248.13"),
+
+        createGradient("global-dominant-neutral", [
+            { offset: "0", color: "#d4c441" },
+            { offset: ".49", color: "#efe173" },
+            { offset: "1", color: "#fffdf0" }
+        ], "92.81", "0", "92.81", "248.13"),
+
+        createGradient("global-positive", [
+            { offset: "0", color: "#7db056" },
+            { offset: ".49", color: "#a7c97b" },
+            { offset: "1", color: "#fff" }
+        ], "47.47", "0", "47.47", "249.59"),
+
+        createGradient("global-dominant-positive", [
+            { offset: "0", color: "#5a9a3d" },
+            { offset: ".49", color: "#7db056" },
+            { offset: "1", color: "#e8f5e1" }
+        ], "47.47", "0", "47.47", "244.42"),
+
+        createGradient("global-negative", [
+            { offset: "0", color: "#b3e3f9" },
+            { offset: ".06", color: "#a8e0f8" },
+            { offset: ".16", color: "#8dd8f5" },
+            { offset: ".28", color: "#61ccf2" },
+            { offset: ".43", color: "#25bced" },
+            { offset: ".52", color: "#00b2ea" },
+            { offset: ".56", color: "#02a8e1" },
+            { offset: ".75", color: "#0b82c1" },
+            { offset: ".9", color: "#106bae" },
+            { offset: "1", color: "#1363a7" }
+        ], "37.8", "244.53", "37.8", "-5.18"),
+
+        createGradient("global-dominant-negative", [
+            { offset: "0", color: "#b3e3f9" },
+            { offset: ".06", color: "#a8e0f8" },
+            { offset: ".16", color: "#8dd8f5" },
+            { offset: ".28", color: "#61ccf2" },
+            { offset: ".43", color: "#25bced" },
+            { offset: ".52", color: "#00b2ea" },
+            { offset: ".56", color: "#02a8e1" },
+            { offset: ".75", color: "#0b82c1" },
+            { offset: ".90", color: "#106bae" },
+            { offset: "1", color: "#1363a7" }
+        ], "37.8", "244.53", "37.8", "-5.18")
+    ];
+
+    gradients.forEach(gradient => globalDefs.appendChild(gradient));
+    globalGradientsCreated = true;
+}
+
 // SVG petal paths
 const neutralPetalPath = "M178.75,63.24C173.34,28.66,129.57,0,91.12,0h-2.55C50.12,0,6.35,28.66.94,63.24c-4.32,22.7,6.88,42.97,19.58,63.46,23.05,37.19,48.73,79.38,69.32,116.26-17.99-37.08-46.12-80.81-66.21-122.32-10.92-22.57-17.28-39.03-13.5-55.24C16.25,39.17,48.39,13.86,89.82,13.57c41.43.29,73.62,25.6,79.74,51.83,3.78,16.21-2.58,32.67-13.5,55.24-20.09,41.51-48.22,85.24-66.22,122.32h0s.01.01.01.01c20.6-36.88,46.27-79.08,69.32-116.27,12.7-20.49,23.9-40.76,19.58-63.46Z";
 
@@ -74,103 +181,34 @@ function createFlower(flowerData, options = {}) {
     
     const centerX = width / 2;
     const centerY = height / 2;
+
+    // Ensure global gradients are created
+    createGlobalGradients();
+
+    // Create texture pattern for this flower (only once globally for performance)
     const uniqueId = Math.random().toString(36).substr(2, 9);
-    
-    // Create gradients
     const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
-    
-    // Helper function to create gradient
-    function createGradient(id, stops, x1, y1, x2, y2) {
-        const gradient = document.createElementNS("http://www.w3.org/2000/svg", "linearGradient");
-        gradient.setAttribute("id", `${id}_${uniqueId}`);
-        gradient.setAttribute("x1", x1);
-        gradient.setAttribute("y1", y1);
-        gradient.setAttribute("x2", x2);
-        gradient.setAttribute("y2", y2);
-        gradient.setAttribute("gradientUnits", "userSpaceOnUse");
-        
-        stops.forEach(stop => {
-            const stopElement = document.createElementNS("http://www.w3.org/2000/svg", "stop");
-            stopElement.setAttribute("offset", stop.offset);
-            stopElement.setAttribute("stop-color", stop.color);
-            gradient.appendChild(stopElement);
-        });
-        
-        return gradient;
+
+    // Only create texture pattern if not on mobile or if mobile performance is acceptable
+    const shouldUseTexture = !isMobileDevice() || window.innerWidth > 768; // Only use texture on larger mobile screens
+
+    if (shouldUseTexture) {
+        const texturePattern = document.createElementNS("http://www.w3.org/2000/svg", "pattern");
+        texturePattern.setAttribute("id", `petal-texture-${uniqueId}`);
+        texturePattern.setAttribute("patternUnits", "objectBoundingBox");
+        texturePattern.setAttribute("width", "1");
+        texturePattern.setAttribute("height", "1");
+
+        const textureImage = document.createElementNS("http://www.w3.org/2000/svg", "image");
+        textureImage.setAttribute("href", "textures/flowertexture.jpg");
+        textureImage.setAttribute("width", "100%");
+        textureImage.setAttribute("height", "100%");
+        textureImage.setAttribute("preserveAspectRatio", "xMidYMid slice");
+
+        texturePattern.appendChild(textureImage);
+        defs.appendChild(texturePattern);
+        svg.appendChild(defs);
     }
-    
-    // Create all gradients
-    const gradients = [
-        createGradient("neutral", [
-            { offset: "0", color: "#efe173" },
-            { offset: ".49", color: "#e9eab0" },
-            { offset: "1", color: "#f8fbf4" }
-        ], "92.81", "0", "92.81", "248.13"),
-        
-        createGradient("dominant_neutral", [
-            { offset: "0", color: "#d4c441" },
-            { offset: ".49", color: "#efe173" },
-            { offset: "1", color: "#fffdf0" }
-        ], "92.81", "0", "92.81", "248.13"),
-        
-        createGradient("positive", [
-            { offset: "0", color: "#7db056" },
-            { offset: ".49", color: "#a7c97b" },
-            { offset: "1", color: "#fff" }
-        ], "47.47", "0", "47.47", "249.59"),
-        
-        createGradient("dominant_positive", [
-            { offset: "0", color: "#5a9a3d" },
-            { offset: ".49", color: "#7db056" },
-            { offset: "1", color: "#e8f5e1" }
-        ], "47.47", "0", "47.47", "244.42"),
-        
-        createGradient("negative", [
-            { offset: "0", color: "#b3e3f9" },
-            { offset: ".06", color: "#a8e0f8" },
-            { offset: ".16", color: "#8dd8f5" },
-            { offset: ".28", color: "#61ccf2" },
-            { offset: ".43", color: "#25bced" },
-            { offset: ".52", color: "#00b2ea" },
-            { offset: ".56", color: "#02a8e1" },
-            { offset: ".75", color: "#0b82c1" },
-            { offset: ".9", color: "#106bae" },
-            { offset: "1", color: "#1363a7" }
-        ], "37.8", "244.53", "37.8", "-5.18"),
-        
-        createGradient("dominant_negative", [
-            { offset: "0", color: "#b3e3f9" },
-            { offset: ".06", color: "#a8e0f8" },
-            { offset: ".16", color: "#8dd8f5" },
-            { offset: ".28", color: "#61ccf2" },
-            { offset: ".43", color: "#25bced" },
-            { offset: ".52", color: "#00b2ea" },
-            { offset: ".56", color: "#02a8e1" },
-            { offset: ".75", color: "#0b82c1" },
-            { offset: ".9", color: "#106bae" },
-            { offset: "1", color: "#1363a7" }
-        ], "37.8", "244.53", "37.8", "-5.18")
-    ];
-    
-    gradients.forEach(gradient => defs.appendChild(gradient));
-
-    // Create texture pattern
-    const texturePattern = document.createElementNS("http://www.w3.org/2000/svg", "pattern");
-    texturePattern.setAttribute("id", `petal-texture-${uniqueId}`);
-    texturePattern.setAttribute("patternUnits", "objectBoundingBox");
-    texturePattern.setAttribute("width", "1");
-    texturePattern.setAttribute("height", "1");
-
-    const textureImage = document.createElementNS("http://www.w3.org/2000/svg", "image");
-    textureImage.setAttribute("href", "textures/flowertexture.jpg");
-    textureImage.setAttribute("width", "100%");
-    textureImage.setAttribute("height", "100%");
-    textureImage.setAttribute("preserveAspectRatio", "xMidYMid slice");
-
-    texturePattern.appendChild(textureImage);
-    defs.appendChild(texturePattern);
-
-    svg.appendChild(defs);
     
     // Helper function for polar coordinates
     function getCoordinates(angle, length) {
@@ -246,20 +284,22 @@ function createFlower(flowerData, options = {}) {
             
             const petalElement = document.createElementNS("http://www.w3.org/2000/svg", "path");
             petalElement.setAttribute("d", isDominant ? dominantNeutralPetalPath : neutralPetalPath);
-            petalElement.setAttribute("fill", `url(#${isDominant ? 'dominant_neutral' : 'neutral'}_${uniqueId})`);
+            petalElement.setAttribute("fill", `url(#${isDominant ? 'global-dominant-neutral' : 'global-neutral'})`);
             petalElement.setAttribute("transform", "translate(-92.81, -121.49)");
 
             petalGroup.appendChild(petalElement);
 
-            // Add texture overlay for neutral petal
-            const textureOverlay = document.createElementNS("http://www.w3.org/2000/svg", "path");
-            textureOverlay.setAttribute("d", isDominant ? dominantNeutralPetalPath : neutralPetalPath);
-            textureOverlay.setAttribute("fill", `url(#petal-texture-${uniqueId})`);
-            textureOverlay.setAttribute("opacity", "0.4");
-            textureOverlay.setAttribute("transform", "translate(-92.81, -121.49)");
-            textureOverlay.style.mixBlendMode = "normal";
+            // Add texture overlay for neutral petal (performance optimized)
+            if (shouldUseTexture) {
+                const textureOverlay = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                textureOverlay.setAttribute("d", isDominant ? dominantNeutralPetalPath : neutralPetalPath);
+                textureOverlay.setAttribute("fill", `url(#petal-texture-${uniqueId})`);
+                textureOverlay.setAttribute("opacity", "0.4");
+                textureOverlay.setAttribute("transform", "translate(-92.81, -121.49)");
+                textureOverlay.style.mixBlendMode = "normal";
+                petalGroup.appendChild(textureOverlay);
+            }
 
-            petalGroup.appendChild(textureOverlay);
             svg.appendChild(petalGroup);
             
         } else if (positiveEmotions.includes(emotion)) {
@@ -280,20 +320,22 @@ function createFlower(flowerData, options = {}) {
             
             const petalElement = document.createElementNS("http://www.w3.org/2000/svg", "path");
             petalElement.setAttribute("d", isDominant ? dominantPositivePetalPath : positivePetalPath);
-            petalElement.setAttribute("fill", `url(#${isDominant ? 'dominant_positive' : 'positive'}_${uniqueId})`);
+            petalElement.setAttribute("fill", `url(#${isDominant ? 'global-dominant-positive' : 'global-positive'})`);
             petalElement.setAttribute("transform", isDominant ? "translate(-47.48, -122.2)" : "translate(-47.47, -122.21)");
 
             petalGroup.appendChild(petalElement);
 
-            // Add texture overlay for positive petal
-            const textureOverlayPos = document.createElementNS("http://www.w3.org/2000/svg", "path");
-            textureOverlayPos.setAttribute("d", isDominant ? dominantPositivePetalPath : positivePetalPath);
-            textureOverlayPos.setAttribute("fill", `url(#petal-texture-${uniqueId})`);
-            textureOverlayPos.setAttribute("opacity", "0.4");
-            textureOverlayPos.setAttribute("transform", isDominant ? "translate(-47.48, -122.2)" : "translate(-47.47, -122.21)");
-            textureOverlayPos.style.mixBlendMode = "normal";
+            // Add texture overlay for positive petal (performance optimized)
+            if (shouldUseTexture) {
+                const textureOverlayPos = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                textureOverlayPos.setAttribute("d", isDominant ? dominantPositivePetalPath : positivePetalPath);
+                textureOverlayPos.setAttribute("fill", `url(#petal-texture-${uniqueId})`);
+                textureOverlayPos.setAttribute("opacity", "0.4");
+                textureOverlayPos.setAttribute("transform", isDominant ? "translate(-47.48, -122.2)" : "translate(-47.47, -122.21)");
+                textureOverlayPos.style.mixBlendMode = "normal";
+                petalGroup.appendChild(textureOverlayPos);
+            }
 
-            petalGroup.appendChild(textureOverlayPos);
             svg.appendChild(petalGroup);
             
         } else if (negativeEmotions.includes(emotion)) {
@@ -315,20 +357,22 @@ function createFlower(flowerData, options = {}) {
             
             const petalElement = document.createElementNS("http://www.w3.org/2000/svg", "path");
             petalElement.setAttribute("d", isDominant ? dominantNegativePetalPath : negativePetalPath);
-            petalElement.setAttribute("fill", `url(#${isDominant ? 'dominant_negative' : 'negative'}_${uniqueId})`);
+            petalElement.setAttribute("fill", `url(#${isDominant ? 'global-dominant-negative' : 'global-negative'})`);
             petalElement.setAttribute("transform", "translate(-37.8, -122.27)");
 
             petalGroup.appendChild(petalElement);
 
-            // Add texture overlay for negative petal
-            const textureOverlayNeg = document.createElementNS("http://www.w3.org/2000/svg", "path");
-            textureOverlayNeg.setAttribute("d", isDominant ? dominantNegativePetalPath : negativePetalPath);
-            textureOverlayNeg.setAttribute("fill", `url(#petal-texture-${uniqueId})`);
-            textureOverlayNeg.setAttribute("opacity", "0.4");
-            textureOverlayNeg.setAttribute("transform", "translate(-37.8, -122.27)");
-            textureOverlayNeg.style.mixBlendMode = "normal";
+            // Add texture overlay for negative petal (performance optimized)
+            if (shouldUseTexture) {
+                const textureOverlayNeg = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                textureOverlayNeg.setAttribute("d", isDominant ? dominantNegativePetalPath : negativePetalPath);
+                textureOverlayNeg.setAttribute("fill", `url(#petal-texture-${uniqueId})`);
+                textureOverlayNeg.setAttribute("opacity", "0.4");
+                textureOverlayNeg.setAttribute("transform", "translate(-37.8, -122.27)");
+                textureOverlayNeg.style.mixBlendMode = "normal";
+                petalGroup.appendChild(textureOverlayNeg);
+            }
 
-            petalGroup.appendChild(textureOverlayNeg);
             svg.appendChild(petalGroup);
             
         } else {
