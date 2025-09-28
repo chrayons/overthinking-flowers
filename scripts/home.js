@@ -101,20 +101,21 @@ function addFlowersToExistingCell(cell, categoryName, flowers) {
     el.style.setProperty('--end-scale', scale);
     el.style.setProperty('--end-rotation', `${rot}deg`);
 
-    // start at center
-    el.style.left = `${startX}px`;
-    el.style.top  = `${startY}px`;
-    el.style.opacity = '0';
-    el.classList.add('animate-entrance');
+    // Position flowers for transform-only animation (better performance)
+    el.style.left = `${centerX}px`; // Base position at label center
+    el.style.top = `${centerY}px`;   // Base position at label center
+    el.style.transform = `translate(-50%, -50%) rotate(${rot}deg) scale(0.05)`; // Start tiny (5% scale)
+    el.style.opacity = '1'; // Visible but tiny
+    el.style.willChange = 'transform'; // Optimize for animation
+    el.classList.add('flower-ready'); // Mark as ready for animation
 
-    // lock final state after animation
-    setTimeout(() => {
-      el.classList.remove('animate-entrance');
-      el.style.left = `${endX}px`;
-      el.style.top  = `${endY}px`;
-      el.style.transform = `translate(-50%,-50%) rotate(${rot}deg) scale(${scale})`;
-      el.style.opacity = '1';
-    }, 800);
+    // Calculate offset from center to final position for transform animation
+    const offsetX = endX - centerX;
+    const offsetY = endY - centerY;
+    el.dataset.offsetX = offsetX;
+    el.dataset.offsetY = offsetY;
+    el.dataset.finalScale = scale;
+    el.dataset.finalRotation = rot;
 
     cell.appendChild(el);
   });
@@ -362,6 +363,37 @@ function createHomePage(flowers) {
   const reflections = document.getElementById('reflections');
   if (themes && reflections) themes.insertAdjacentElement('afterend', reflections);
 }
+
+// Global function to trigger flower animations after loading
+window.triggerFlowerAnimations = function() {
+  console.log('Triggering flower expansion animations...');
+
+  const allFlowers = document.querySelectorAll('.flower-ready');
+
+  // Use requestAnimationFrame for smoother performance
+  requestAnimationFrame(() => {
+    // Animate ALL flowers simultaneously using transform-only (GPU accelerated)
+    allFlowers.forEach((flower) => {
+      const offsetX = parseFloat(flower.dataset.offsetX);
+      const offsetY = parseFloat(flower.dataset.offsetY);
+      const finalScale = flower.dataset.finalScale;
+      const finalRotation = flower.dataset.finalRotation;
+
+      // Use transform-only animation for best performance
+      flower.style.transition = 'transform 0.6s cubic-bezier(0, 0, 0.3, 1)';
+
+      // Animate using only transform (no layout changes)
+      flower.style.transform = `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px)) rotate(${finalRotation}deg) scale(${finalScale})`;
+
+      // Clean up after animation
+      setTimeout(() => {
+        flower.classList.remove('flower-ready');
+        flower.style.transition = '';
+        flower.style.willChange = 'auto'; // Reset will-change
+      }, 600);
+    });
+  });
+};
 
 // keep mobile carousel centered on resize (no desktop re-render needed - CSS handles it)
 let _t;

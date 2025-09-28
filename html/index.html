@@ -199,16 +199,7 @@
 <section id="reflections">
   <h2>REFLECTIONS</h2>
   <div id="shuffle-cards">
-    <!-- Simple loading text with pulse animation -->
-    <div class="card" data-card-index="0">
-      <span class="snippet loading-text">Loading reflections...</span>
-    </div>
-    <div class="card" data-card-index="1">
-      <span class="snippet loading-text">Preparing thoughts...</span>
-    </div>
-    <div class="card" data-card-index="2">
-      <span class="snippet loading-text">Gathering insights...</span>
-    </div>
+    <!-- Cards will be populated immediately by JavaScript -->
   </div>
   <button id="shuffle-btn" class="btn-primary">Shuffle Thoughts</button>
 </section>
@@ -244,23 +235,31 @@
     function checkAndHideLoader() {
       if (contentReady && document.fonts.ready) {
         document.fonts.ready.then(() => {
-          // Wait longer for content to actually render and be visible
+          // Wait for structural content to be ready, then trigger flower animations
           setTimeout(() => {
-            // Check if category grid has been populated with content
+            // Check if structural content is ready
             const categoryGrid = document.getElementById('category-grid');
             const shuffleCards = document.getElementById('shuffle-cards');
 
-            // Wait for visual content to be populated
+            // Wait for basic content structure to be populated
             if (categoryGrid && categoryGrid.children.length > 0 &&
                 shuffleCards && shuffleCards.children.length > 0) {
-              // Additional delay to ensure animations and flowers are rendered
+
+              // Hide loader and then trigger flower animations
+              hideLoader();
+
+              // Re-initialize tooltips after content is loaded
+              if (window.initTooltips) {
+                window.initTooltips();
+              }
+
+              // Trigger flower animations after a brief delay
               setTimeout(() => {
-                hideLoader();
-                // Re-initialize tooltips after content is fully loaded
-                if (window.initTooltips) {
-                  window.initTooltips();
+                if (window.triggerFlowerAnimations) {
+                  window.triggerFlowerAnimations();
                 }
-              }, 800);
+              }, 200);
+
             } else {
               // If content isn't ready yet, check again in a bit
               setTimeout(checkAndHideLoader, 200);
