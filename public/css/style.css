@@ -769,22 +769,41 @@ body {
   position: relative;
 }
 
-/* Mobile carousel positioning following rule of thirds */
+/* Mobile carousel positioning - natural scroll with reasonable spacing */
 @media (max-width: 1160px) {
   .mobile-carousel {
-    position: fixed;
-    top: 30vh; /* Consistent positioning with category pages */
-    left: 50%;
-    transform: translateX(-50%);
-    margin: 0;
-    gap: 16px; /* Tighter spacing for mobile */
+    position: relative; /* Natural scroll behavior instead of fixed */
+    margin-top: 80px; /* Page positioning from top */
+    margin-bottom: 0;
+    margin-left: 0;
+    margin-right: 0;
+    transform: none; /* Remove transform since we're not using fixed positioning */
+    gap: 20px; /* Internal spacing between carousel elements */
+  }
+
+  /* Control spacing between EXPLORE BY THEME and carousel */
+  #themes-mobile .mobile-carousel {
+    margin-top: 16px; /* 16px gap between eyebrow and carousel */
+  }
+
+  .eyebrow {
+    margin-bottom: 0; /* Remove default margin, use specific spacing above */
   }
 }
 
 @media (max-width: 775px) {
   .mobile-carousel {
-    top: 30vh; /* Slightly higher on very small screens for better thumb zone */
-    gap: 12px; /* Even tighter spacing for mobile */
+    margin-top: 60px; /* Page positioning from top */
+    gap: 20px; /* Internal spacing between carousel elements */
+  }
+
+  /* Control spacing between EXPLORE BY THEME and carousel */
+  #themes-mobile .mobile-carousel {
+    margin-top: 12px; /* 12px gap between eyebrow and carousel */
+  }
+
+  .eyebrow {
+    margin-bottom: 0; /* Remove default margin, use specific spacing above */
   }
 }
 
