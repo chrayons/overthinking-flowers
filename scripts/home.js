@@ -56,10 +56,7 @@ function categoryToFilename(categoryName) {
   return categoryName.toLowerCase().replace(/\s+/g, '-') + '.html';
 }
 
-function createCategoryCluster(categoryName, flowers, parentGrid) {
-  const cell = document.createElement('div');
-  cell.className = 'category-cell';
-
+function addFlowersToExistingCell(cell, categoryName, flowers) {
   // Make entire cell clickable - navigate to category page
   cell.style.cursor = 'pointer';
   cell.addEventListener('click', () => {
@@ -68,65 +65,60 @@ function createCategoryCluster(categoryName, flowers, parentGrid) {
     window.location.href = filename;
   });
 
-  const label = document.createElement('div');
-  label.className = 'category-label';
-  label.innerHTML = categoryName.replace(/ (?=[^ ]*$)/, "<br>");
-  label.style.zIndex = '2';
-  cell.appendChild(label);
+  // Label already exists in HTML, just ensure z-index
+  const label = cell.querySelector('.category-label');
+  if (label) {
+    label.style.zIndex = '2';
+  }
 
   // ---- Use pre-calculated positions for consistent, fast rendering ----
   const maxFlowers = Math.min(flowers.length, 25);
   const centerX = 144;  // half of 288
   const centerY = 99;   // half of 198
 
-flowers.slice(0, maxFlowers).forEach((flower, i) => {
-  // Get pre-calculated position data
-  const position = FLOWER_POSITIONS[i] || FLOWER_POSITIONS[0]; // fallback to first position
-  const { x, y, scale, rotation: rot } = position;
+  flowers.slice(0, maxFlowers).forEach((flower, i) => {
+    // Get pre-calculated position data
+    const position = FLOWER_POSITIONS[i] || FLOWER_POSITIONS[0]; // fallback to first position
+    const { x, y, scale, rotation: rot } = position;
 
+    const el = FlowerRenderer.createFlower(flower, 0, 0);
+    el.classList.add('flower');
+    el.style.position = 'absolute';
+    el.style.pointerEvents = 'none';
+    el.style.zIndex = '1';
 
-  const el = FlowerRenderer.createFlower(flower, 0, 0);
-  el.classList.add('flower');
-  el.style.position = 'absolute';
-  el.style.pointerEvents = 'none';
-  el.style.zIndex = '1';
-  // IMPORTANT: don’t force width/height; let the SVG use its own box
-  // (remove any previous el.style.width/height lines)
+    // --- Animate from label center to final (CENTER-BASED!) ---
+    const startX = centerX;
+    const startY = centerY;
+    const endX   = x;
+    const endY   = y;
 
-  // --- Animate from label center to final (CENTER-BASED!) ---
-  const startX = centerX;
-  const startY = centerY;
-  const endX   = x;
-  const endY   = y;
+    // Use CSS custom properties for position-specific values with reusable animation
+    el.style.setProperty('--start-x', `${startX}px`);
+    el.style.setProperty('--start-y', `${startY}px`);
+    el.style.setProperty('--end-x', `${endX}px`);
+    el.style.setProperty('--end-y', `${endY}px`);
+    el.style.setProperty('--end-scale', scale);
+    el.style.setProperty('--end-rotation', `${rot}deg`);
 
-  // Use CSS custom properties for position-specific values with reusable animation
-  el.style.setProperty('--start-x', `${startX}px`);
-  el.style.setProperty('--start-y', `${startY}px`);
-  el.style.setProperty('--end-x', `${endX}px`);
-  el.style.setProperty('--end-y', `${endY}px`);
-  el.style.setProperty('--end-scale', scale);
-  el.style.setProperty('--end-rotation', `${rot}deg`);
+    // start at center
+    el.style.left = `${startX}px`;
+    el.style.top  = `${startY}px`;
+    el.style.opacity = '0';
+    el.classList.add('animate-entrance');
 
-  // start at center
-  el.style.left = `${startX}px`;
-  el.style.top  = `${startY}px`;
-  el.style.opacity = '0';
-  el.classList.add('animate-entrance');
+    // lock final state after animation
+    setTimeout(() => {
+      el.classList.remove('animate-entrance');
+      el.style.left = `${endX}px`;
+      el.style.top  = `${endY}px`;
+      el.style.transform = `translate(-50%,-50%) rotate(${rot}deg) scale(${scale})`;
+      el.style.opacity = '1';
+    }, 800);
 
-  // lock final state after animation
-  setTimeout(() => {
-    el.classList.remove('animate-entrance');
-    el.style.left = `${endX}px`;
-    el.style.top  = `${endY}px`;
-    el.style.transform = `translate(-50%,-50%) rotate(${rot}deg) scale(${scale})`;
-    el.style.opacity = '1';
-  }, 800);
-
-  cell.appendChild(el);
-});
-
-parentGrid.appendChild(cell); // ← add this
-} // ← and this (end of createCategoryCluster)
+    cell.appendChild(el);
+  });
+}
 
 // Order to render categories (CSS controls placement)
 const CATEGORY_ORDER = [
@@ -139,19 +131,23 @@ const CATEGORY_ORDER = [
   "Temporal Disconnection"
 ];
 
-// ---------- render desktop grid (no positions set here) ----------
+// ---------- enhance pre-rendered desktop grid with flowers ----------
 function renderThemes(flowers) {
   const categories = groupFlowersByCategory(flowers);
   const grid = document.getElementById('category-grid');
   if (!grid) return;
-  grid.innerHTML = '';
 
-  CATEGORY_ORDER.forEach((name) => {
-    const list = categories[name];
+  // Find existing category cells and add flowers to them
+  const existingCells = grid.querySelectorAll('.category-cell');
+  existingCells.forEach(cell => {
+    const categoryName = cell.dataset.category;
+    const list = categories[categoryName];
     if (list && list.length) {
-      createCategoryCluster(name, list, grid);
+      addFlowersToExistingCell(cell, categoryName, list);
     }
   });
+
+  // Content is immediately visible for better mobile performance
 
   // Add efficient hover event handling to replace expensive :has() selector
   grid.addEventListener('mouseover', (e) => {
@@ -173,6 +169,13 @@ let _flowers = [];
 let currentMobileIndex = 0;  // Active index (0..n-1)
 let _mobileCount = 0;        // Number of categories
 let _carouselItems = [];     // Array of DOM elements
+
+// Cache DOM elements for better INP performance
+let _cachedContainer = null;
+let _cachedTrack = null;
+let _cachedPrevBtn = null;
+let _cachedNextBtn = null;
+let _cachedDots = null;
 
 function renderMobileThemes(flowers) {
   const categories = groupFlowersByCategory(flowers);
@@ -204,7 +207,25 @@ function renderMobileThemes(flowers) {
     const dot = document.createElement('div');
     dot.className = 'dot';
     dot.dataset.index = index;
-    dot.addEventListener('click', () => goToSlide(index));
+
+    // Add immediate visual feedback and optimized click handler
+    dot.addEventListener('touchstart', () => {
+      dot.style.transform = 'scale(0.9)';
+    }, { passive: true });
+
+    dot.addEventListener('touchend', () => {
+      dot.style.transform = 'scale(1)';
+    }, { passive: true });
+
+    // Optimized click handler with immediate response
+    dot.addEventListener('click', (e) => {
+      e.preventDefault();
+      // Immediate visual feedback
+      dot.classList.add('active');
+      // Fast slide update
+      goToSlide(index);
+    }, { passive: false });
+
     dotsContainer.appendChild(dot);
   });
 
@@ -218,61 +239,64 @@ function renderMobileThemes(flowers) {
   currentMobileIndex = initial;
 
   updateCarousel();
+
+  // Mobile carousel is immediately visible for better performance
 }
 
 function updateCarousel() {
-  const container = document.querySelector('.carousel-container');
-  const track = document.getElementById('mobile-category-track');
-  const prevBtn = document.querySelector('.carousel-prev');
-  const nextBtn = document.querySelector('.carousel-next');
-  const dots = document.querySelectorAll('.dot');
-  if (!container || !track || !prevBtn || !nextBtn || _mobileCount === 0) return;
+  // Use cached elements (only query once)
+  if (!_cachedContainer) {
+    _cachedContainer = document.querySelector('.carousel-container');
+    _cachedTrack = document.getElementById('mobile-category-track');
+    _cachedPrevBtn = document.querySelector('.carousel-prev');
+    _cachedNextBtn = document.querySelector('.carousel-next');
+    _cachedDots = document.querySelectorAll('.dot');
+  }
 
-  // Position each item based on its relationship to the active index
-  _carouselItems.forEach((item, index) => {
-    const offset = (index - currentMobileIndex + _mobileCount) % _mobileCount;
+  if (!_cachedContainer || !_cachedTrack || !_cachedPrevBtn || !_cachedNextBtn || _mobileCount === 0) return;
 
-    // Remove all position classes
-    item.classList.remove('active', 'prev', 'next', 'hidden');
+  // Batch DOM updates with requestAnimationFrame for better performance
+  requestAnimationFrame(() => {
+    // Position each item based on its relationship to the active index
+    _carouselItems.forEach((item, index) => {
+      const offset = (index - currentMobileIndex + _mobileCount) % _mobileCount;
 
-    if (offset === 0) {
-      // Active item - center
-      item.classList.add('active');
-      item.style.transform = 'translateX(0%) translateZ(0px)';
-      item.style.filter = 'blur(0px)';
-      item.style.opacity = '1';
-      item.style.zIndex = '10';
-    } else if (offset === _mobileCount - 1) {
-      // Previous item - left
-      item.classList.add('prev');
-      item.style.transform = 'translateX(-120%) translateZ(-50px)';
-      item.style.filter = 'blur(2px)';
-      item.style.opacity = '0.6';
-      item.style.zIndex = '5';
-    } else if (offset === 1) {
-      // Next item - right
-      item.classList.add('next');
-      item.style.transform = 'translateX(120%) translateZ(-50px)';
-      item.style.filter = 'blur(2px)';
-      item.style.opacity = '0.6';
-      item.style.zIndex = '5';
-    } else {
-      // Hidden items - far offscreen
-      item.classList.add('hidden');
-      const direction = offset < _mobileCount / 2 ? 300 : -300;
-      item.style.transform = `translateX(${direction}%) translateZ(-100px)`;
-      item.style.filter = 'blur(5px)';
-      item.style.opacity = '0';
-      item.style.zIndex = '1';
-    }
+      // Remove all position classes in one operation
+      item.className = item.className.replace(/\b(active|prev|next|hidden)\b/g, '').trim() + ' mobile-category-item';
+
+      if (offset === 0) {
+        // Active item - center
+        item.classList.add('active');
+        item.style.cssText = 'transform: translateX(0%) translateZ(0px); filter: blur(0px); opacity: 1; z-index: 10;';
+      } else if (offset === _mobileCount - 1) {
+        // Previous item - left
+        item.classList.add('prev');
+        item.style.cssText = 'transform: translateX(-120%) translateZ(-50px); filter: blur(2px); opacity: 0.6; z-index: 5;';
+      } else if (offset === 1) {
+        // Next item - right
+        item.classList.add('next');
+        item.style.cssText = 'transform: translateX(120%) translateZ(-50px); filter: blur(2px); opacity: 0.6; z-index: 5;';
+      } else {
+        // Hidden items - far offscreen
+        item.classList.add('hidden');
+        const direction = offset < _mobileCount / 2 ? 300 : -300;
+        item.style.cssText = `transform: translateX(${direction}%) translateZ(-100px); filter: blur(5px); opacity: 0; z-index: 1;`;
+      }
+    });
+
+    // Update dots efficiently
+    _cachedDots.forEach((dot, i) => {
+      if (i === currentMobileIndex) {
+        dot.classList.add('active');
+      } else {
+        dot.classList.remove('active');
+      }
+    });
   });
 
-  // Update dots
-  dots.forEach((dot, i) => dot.classList.toggle('active', i === currentMobileIndex));
-
   // Arrows always enabled for infinite carousel
-  prevBtn.disabled = false;
-  nextBtn.disabled = false;
+  _cachedPrevBtn.disabled = false;
+  _cachedNextBtn.disabled = false;
 
   // Update CTA
   const seeReflectionsBtn = document.getElementById('mobile-see-reflections-btn');
@@ -318,6 +342,10 @@ function initMobileCarousel() {
 
 function goToSlide(index) {
   if (_mobileCount === 0) return;
+
+  // Early return if already at target index
+  if (currentMobileIndex === index) return;
+
   currentMobileIndex = ((index % _mobileCount) + _mobileCount) % _mobileCount;
   updateCarousel();
 }

@@ -219,10 +219,9 @@
         text.style.overflow = "hidden";
         text.style.lineHeight = "1.3";
 
-        // Create metaphor span with Satoshi italic font and quotes
+        // Create metaphor span with CSS-defined styling
         const metaphorSpan = document.createElement("span");
-        metaphorSpan.style.fontFamily = '"Satoshi-Italic", system-ui';
-        metaphorSpan.style.fontStyle = "italic";
+        metaphorSpan.className = "metaphor-text";
 
         // Only add "..." if the text was actually truncated
         if (result.needsTruncation) {
@@ -241,6 +240,8 @@
         card.appendChild(text);
         container.appendChild(card);
       });
+
+      // Content is immediately visible for better mobile performance
     }
   
     function updateButtonText() {

@@ -27,25 +27,27 @@
        url('../fonts/Satoshi-Light.woff') format('woff'),
        url('../fonts/Satoshi-Light.ttf') format('truetype');
   font-weight: 300;
-  font-display: swap;
+  font-display: fallback;
   font-style: normal;
 }
+/* Note: Satoshi-LightItalic files don't exist, using regular Italic instead
 @font-face {
   font-family: 'Satoshi-LightItalic';
   src: url('../fonts/Satoshi-LightItalic.woff2') format('woff2'),
        url('../fonts/Satoshi-LightItalic.woff') format('woff'),
        url('../fonts/Satoshi-LightItalic.ttf') format('truetype');
   font-weight: 300;
-  font-display: swap;
+  font-display: fallback;
   font-style: italic;
 }
+*/
 @font-face {
   font-family: 'Satoshi-Regular';
   src: url('../fonts/Satoshi-Regular.woff2') format('woff2'),
        url('../fonts/Satoshi-Regular.woff') format('woff'),
        url('../fonts/Satoshi-Regular.ttf') format('truetype');
   font-weight: 400;
-  font-display: swap;
+  font-display: fallback;
   font-style: normal;
 }
 @font-face {
@@ -54,7 +56,7 @@
        url('../fonts/Satoshi-Italic.woff') format('woff'),
        url('../fonts/Satoshi-Italic.ttf') format('truetype');
   font-weight: 400;
-  font-display: swap;
+  font-display: fallback;
   font-style: italic;
 }
 @font-face {
@@ -63,7 +65,7 @@
        url('../fonts/Satoshi-Medium.woff') format('woff'),
        url('../fonts/Satoshi-Medium.ttf') format('truetype');
   font-weight: 500;
-  font-display: swap;
+  font-display: fallback;
   font-style: normal;
 }
 @font-face {
@@ -72,7 +74,7 @@
        url('../fonts/Satoshi-MediumItalic.woff') format('woff'),
        url('../fonts/Satoshi-MediumItalic.ttf') format('truetype');
   font-weight: 500;
-  font-display: swap;
+  font-display: fallback;
   font-style: italic;
 }
 @font-face {
@@ -81,7 +83,7 @@
        url('../fonts/Satoshi-Bold.woff') format('woff'),
        url('../fonts/Satoshi-Bold.ttf') format('truetype');
   font-weight: 700;
-  font-display: swap;
+  font-display: fallback;
   font-style: normal;
 }
 @font-face {
@@ -90,7 +92,7 @@
        url('../fonts/Satoshi-BoldItalic.woff') format('woff'),
        url('../fonts/Satoshi-BoldItalic.ttf') format('truetype');
   font-weight: 700;
-  font-display: swap;
+  font-display: fallback;
   font-style: italic;
 }
 @font-face {
@@ -99,7 +101,7 @@
        url('../fonts/Satoshi-Black.woff') format('woff'),
        url('../fonts/Satoshi-Black.ttf') format('truetype');
   font-weight: 900;
-  font-display: swap;
+  font-display: fallback;
   font-style: normal;
 }
 @font-face {
@@ -108,7 +110,7 @@
        url('../fonts/Satoshi-BlackItalic.woff') format('woff'),
        url('../fonts/Satoshi-BlackItalic.ttf') format('truetype');
   font-weight: 900;
-  font-display: swap;
+  font-display: fallback;
   font-style: italic;
 }
 /**
@@ -125,7 +127,7 @@
        url('../fonts/Satoshi-Variable.woff') format('woff'),
        url('../fonts/Satoshi-Variable.ttf') format('truetype');
   font-weight: 300 900;
-  font-display: swap;
+  font-display: fallback;
   font-style: normal;
 }
 /**
@@ -142,7 +144,7 @@
        url('../fonts/Satoshi-VariableItalic.woff') format('woff'),
        url('../fonts/Satoshi-VariableItalic.ttf') format('truetype');
   font-weight: 300 900;
-  font-display: swap;
+  font-display: fallback;
   font-style: italic;
 }
 

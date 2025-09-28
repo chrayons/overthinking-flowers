@@ -4,6 +4,60 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Metaphor Garden</title>
+  <!-- Critical font preloading for immediate render -->
+  <link rel="preload" as="font" href="../Satoshi/WEB/fonts/Satoshi-Light.woff2" type="font/woff2" crossorigin>
+  <link rel="preload" as="font" href="../Satoshi/WEB/fonts/Satoshi-Italic.woff2" type="font/woff2" crossorigin>
+
+  <!-- Critical CSS for immediate LCP rendering -->
+  <style>
+    /* Inline critical category grid CSS for faster LCP */
+    #category-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 288px);
+      column-gap: clamp(40px, 6vw, 90px);
+      row-gap: clamp(40px, 5vh, 72px);
+      justify-content: center;
+      justify-items: center;
+      margin: 40px auto;
+      max-width: 1400px;
+    }
+
+    .category-cell {
+      position: relative;
+      width: 288px;
+      height: 198px;
+      overflow: visible;
+    }
+
+    .category-label {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      font-family: "Satoshi-Light", system-ui;
+      font-size: 24px;
+      font-weight: 300;
+      text-align: center;
+      line-height: 1.2;
+      color: #101720;
+      z-index: 2;
+      cursor: pointer;
+    }
+
+    /* Mobile responsive for critical CSS */
+    @media (max-width: 1160px) {
+      #category-grid {
+        grid-template-columns: repeat(2, 288px);
+        column-gap: clamp(12px, 2vw, 20px);
+        row-gap: clamp(40px, 5vh, 72px);
+      }
+    }
+
+    @media (max-width: 775px) {
+      #themes-desktop { display: none; }
+    }
+  </style>
+
   <link rel="preload" as="style" href="../Satoshi/WEB/css/satoshi.css">
   <link rel="stylesheet" href="../Satoshi/WEB/css/satoshi.css">
   <link rel="stylesheet" href="../style.css">
@@ -34,7 +88,30 @@
           <span class="sr-only">More info about exploring by theme</span>
         </button>
       </h2>
-      <div id="category-grid"></div>
+      <div id="category-grid">
+        <!-- Pre-rendered category labels for immediate LCP -->
+        <div class="category-cell" data-category="Perpetual Looping">
+          <div class="category-label">Perpetual<br>Looping</div>
+        </div>
+        <div class="category-cell" data-category="Loss of Agency">
+          <div class="category-label">Loss of<br>Agency</div>
+        </div>
+        <div class="category-cell" data-category="Sensory Overwhelm">
+          <div class="category-label">Sensory<br>Overwhelm</div>
+        </div>
+        <div class="category-cell" data-category="Emotional Dysregulation">
+          <div class="category-label">Emotional<br>Dysregulation</div>
+        </div>
+        <div class="category-cell" data-category="Perceptual Barriers">
+          <div class="category-label">Perceptual<br>Barriers</div>
+        </div>
+        <div class="category-cell" data-category="Thought Entanglement">
+          <div class="category-label">Thought<br>Entanglement</div>
+        </div>
+        <div class="category-cell" data-category="Temporal Disconnection">
+          <div class="category-label">Temporal<br>Disconnection</div>
+        </div>
+      </div>
     </section>
     
     <!-- Enhanced Mobile carousel UI -->
@@ -70,15 +147,15 @@
 <section id="reflections">
   <h2>REFLECTIONS</h2>
   <div id="shuffle-cards">
-    <!-- Pre-rendered content for fast LCP -->
+    <!-- Simple loading text with pulse animation -->
     <div class="card" data-card-index="0">
-      <span class="snippet">Loading reflections...</span>
+      <span class="snippet loading-text">Loading reflections...</span>
     </div>
     <div class="card" data-card-index="1">
-      <span class="snippet">Preparing thoughts...</span>
+      <span class="snippet loading-text">Preparing thoughts...</span>
     </div>
     <div class="card" data-card-index="2">
-      <span class="snippet">Gathering insights...</span>
+      <span class="snippet loading-text">Gathering insights...</span>
     </div>
   </div>
   <button id="shuffle-btn" class="btn-primary">Shuffle Thoughts</button>
@@ -86,11 +163,27 @@
 </div>
 
 
-  <!-- Critical scripts (needed for initial render) -->
-  <script defer src="../scripts/shared.js"></script>
-  <script defer src="../scripts/flower-renderer.js"></script>
-  <script defer src="../scripts/home.js"></script>
-  <script defer src="../scripts/shuffle.js"></script>
+  <!-- Critical scripts (loaded after LCP for better performance) -->
+  <script>
+    // Defer heavy scripts until after LCP to improve performance
+    window.addEventListener('load', () => {
+      // Load scripts after initial render is complete
+      const scripts = [
+        '../scripts/shared.js',
+        '../scripts/flower-renderer.js',
+        '../scripts/home.js',
+        '../scripts/shuffle.js'
+      ];
+
+      scripts.forEach((src, index) => {
+        setTimeout(() => {
+          const script = document.createElement('script');
+          script.src = src;
+          document.head.appendChild(script);
+        }, index * 100); // Stagger loading by 100ms each
+      });
+    });
+  </script>
 
   <!-- Non-critical scripts (can load after page renders) -->
   <script async src="../scripts/modal.js"></script>
