@@ -82,12 +82,20 @@ html, body {
   min-height: 100vh; /* Allow vertical centering while maintaining scroll */
 }
 
-/* Apply grid centering to all pages */
+/* Apply grid centering to desktop, normal flow to mobile */
 body {
-  display: grid;
-  place-items: center; /* Center content vertically and horizontally when space allows */
-  grid-template-rows: 1fr; /* Explicit grid template to prevent layout shifts */
-  grid-template-columns: 1fr;
+  /* Default mobile layout - normal document flow */
+  display: block;
+}
+
+/* Desktop and larger screens (>775px) - use grid centering */
+@media (min-width: 776px) {
+  body {
+    display: grid;
+    place-items: center; /* Center content vertically and horizontally when space allows */
+    grid-template-rows: 1fr; /* Explicit grid template to prevent layout shifts */
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Full-bleed stage for category pages - allow flowers to extend beyond bounds */
@@ -461,6 +469,7 @@ body {
   box-sizing: border-box; /* Include padding in width calculation */
 }
 
+
 /* eyebrow */
 .eyebrow{
   text-align: center;
@@ -692,7 +701,10 @@ body {
 @media (max-width: 775px){
   #themes-desktop{ display:none; }
   #themes-mobile { display:block; padding-bottom: 96px; } /* 96px space after themes section on mobile */
-  .wrapper { padding-top: 240px; } /* Mobile content starts 240px from top */
+  .wrapper {
+    padding-top: 240px; /* Mobile content starts 240px from top */
+    margin: 0 auto; /* Explicit centering for mobile without grid interference */
+  }
 
   /* Make shuffle button use mobile styling */
   #shuffle-btn {
