@@ -1,54 +1,50 @@
-// emotional-dysregulation.js
-// Displays flowers for the "Emotional Dysregulation" category with fixed positioning
+// sensory-overwhelm.js
+// Displays flowers for the "Sensory Overwhelm" category with fixed positioning
 
-console.log("Emotional Dysregulation page loading...");
+console.log("Sensory Overwhelm page loading...");
 
 // Fixed flower positions - captured from working layout
 const FLOWER_POSITIONS = {
   desktop: {
-    'ID3': { x: 5, y: 30 },   // Elmo screaming with fire meme
-    'ID10': { x: 52, y: 10 },  // darkness, spring under tension
-    'ID12': { x: 71, y: 40 },  // A beating chest 
-    'ID13': { x: 90, y: 38 },  // being locked in a sound proof box periodically screaming and lashing out only to calm down and pretend everything is normal
-    'ID14': { x: 12, y: 52 },  // head pounding, dizzying, heat flash/fever
-    'ID20': { x: 22, y: 94 },  // U know when squidward left the krusty krab for spongebob to run alone and he couldn’t relax
-    'ID28': { x: 73, y: 77 },  // A hyperventilating stuffed animal (hehehe)
-    'ID30': { x: 80, y: 75 },  // loads of trains going in the same direction at the same time (bound to crash), a lift where people keep getting on even though it’s uncomfortably full and hard to breathe 
-    'ID36': { x: 42, y: 20 },  // the “this is fine” dog meme
-    'ID40': { x: 6, y: 85 },  // Chicken running around with its head cut off
-    'ID70': { x: 94, y: 92 }   // nail biting
+    'ID24': { x: 70, y: 85 },  // Maybe it's bc I have ADHD. I think of flashes of images in my head rapidly appearing...
+    'ID47': { x: 85, y: 20 },  // A heavy, buzzing cloud over my head throughout the day.
+    'ID49': { x: 10, y: 40 },  // The movie: anything everywhere all at once
+    'ID50': { x: 15, y: 80 },  // Racing ants
+    'ID61': { x: 80, y: 50 },  // network/electric movements, overlapping people talking
+    'ID62': { x: 22, y: 69 },  // Dark cloud, lots of tornados in my head
+    'ID63': { x: 41, y: 7 },  // a band with 100 instruments playing
+    'ID65': { x: 60, y: 27 },  // a swarm of bees that won't stop buzzing
+    'ID72': { x: 90, y: 64 }   // Like that scene in Harry Potter when he has to grab the right key...
   },
   mobile: {
-    'ID3': { x: 20, y: 30 },   // Elmo screaming with fire meme
-    'ID10': { x: 22, y: 20 },  // darkness, spring under tension
-    'ID12': { x: 71, y: 40 },  // A beating chest 
-    'ID13': { x: 18, y: 38 },  // being locked in a sound proof box periodically screaming and lashing out only to calm down and pretend everything is normal
-    'ID14': { x: 12, y: 70 },  // head pounding, dizzying, heat flash/fever
-    'ID20': { x: 50, y: 80 },  // U know when squidward left the krusty krab for spongebob to run alone and he couldn’t relax
-    'ID28': { x: 70, y: 67 },  // A hyperventilating stuffed animal (hehehe)
-    'ID30': { x: 77, y: 25 },  // loads of trains going in the same direction at the same time (bound to crash), a lift where people keep getting on even though it’s uncomfortably full and hard to breathe 
-    'ID36': { x: 56, y: 26 },  // the “this is fine” dog meme
-    'ID40': { x: 35, y: 75 },  // Chicken running around with its head cut off
-    'ID70': { x: 80, y: 72 }   // nail biting
+    'ID24': { x: 47, y: 72 },  // Maybe it's bc I have ADHD. I think of flashes of images in my head rapidly appearing...
+    'ID47': { x: 75, y: 20 },  // A heavy, buzzing cloud over my head throughout the day.
+    'ID49': { x: 15, y: 40 },  // The movie: anything everywhere all at once
+    'ID50': { x: 25, y: 70 },  // Racing ants
+    'ID61': { x: 80, y: 44 },  // network/electric movements, overlapping people talking
+    'ID62': { x: 10, y: 70 },  // Dark cloud, lots of tornados in my head
+    'ID63': { x: 37, y: 27 },  // a band with 100 instruments playing
+    'ID65': { x: 60, y: 35 },  // a swarm of bees that won't stop buzzing
+    'ID72': { x: 85, y: 68 }   // Like that scene in Harry Potter when he has to grab the right key...
   }
 };
 
 // Simple layout storage - one layout for all devices
-const ED_LAYOUT_KEY = 'ed-simple-layout-v3';
+const SO_LAYOUT_KEY = 'so-simple-layout-v4';
 
 // Set to true to ignore cache and always use fresh positions (for experimentation)
 const IGNORE_CACHE = false;
 
 function saveLayout(placed, isMobile) {
   try {
-    const deviceKey = isMobile ? ED_LAYOUT_KEY + '-mobile' : ED_LAYOUT_KEY + '-desktop';
+    const deviceKey = isMobile ? SO_LAYOUT_KEY + '-mobile' : SO_LAYOUT_KEY + '-desktop';
     sessionStorage.setItem(deviceKey, JSON.stringify(placed));
   } catch {}
 }
 
 function restoreLayout(isMobile) {
   try {
-    const deviceKey = isMobile ? ED_LAYOUT_KEY + '-mobile' : ED_LAYOUT_KEY + '-desktop';
+    const deviceKey = isMobile ? SO_LAYOUT_KEY + '-mobile' : SO_LAYOUT_KEY + '-desktop';
     return JSON.parse(sessionStorage.getItem(deviceKey) || 'null');
   } catch {
     return null;
@@ -57,7 +53,6 @@ function restoreLayout(isMobile) {
 
 // Progressive dissolve animation helper
 function triggerDissolveAnimation(flowerElement, delay = 0) {
-  // Use requestAnimationFrame to ensure DOM is ready
   requestAnimationFrame(() => {
     setTimeout(() => {
       flowerElement.classList.add('flower-dissolve-in');
@@ -105,20 +100,77 @@ function normalizeFlowerGraphic(el) {
 
 // Hardened FLIP utilities
 const nextFrame = () => new Promise(r => requestAnimationFrame(() => r()));
-async function settleLayout(el) { if (document.fonts?.ready) await document.fonts.ready; const imgs = el?.querySelectorAll?.('img') || []; await Promise.all([...imgs].map(img => (img.decode?.() ?? Promise.resolve()).catch(() => {}))); await nextFrame(); await nextFrame(); }
-function measurePureBox(el) { const prevTransition = el.style.transition, prevTransform = el.style.transform; el.style.transition = 'none'; el.style.transform = 'none'; const rect = el.getBoundingClientRect(); el.style.transform = prevTransform; el.style.transition = prevTransition; return rect; }
-async function flipWithScale(el, flowerData, { duration = 420, easing = 'cubic-bezier(.22, .61, .36, 1)' } = {}) { if (!el) return; el.getAnimations?.().forEach(a => a.cancel()); const first = measurePureBox(el); const isMobile = window.innerWidth <= 1160; const positions = isMobile ? FLOWER_POSITIONS.mobile : FLOWER_POSITIONS.desktop; let position = positions[flowerData.id] || { x: 50, y: 50 }; const intensity = (flowerData.emotionalIntensity || 35) / 100; const tSize = Math.max(0.35, Math.min(1, intensity)); let flowerSize = Math.round(100 + (300 - 100) * tSize); if (!isMobile) flowerSize = Math.round(flowerSize * Math.min(2.0, window.innerWidth / 720)); el.style.transition = 'none'; el.style.left = `${position.x}%`; el.style.top = `${position.y}%`; el.style.width = `${flowerSize}px`; el.style.height = `${flowerSize}px`;
 
-// Normalize inner SVG to scale with wrapper
-normalizeFlowerGraphic(el);
+async function settleLayout(el) {
+  if (document.fonts?.ready) await document.fonts.ready;
+  const imgs = el?.querySelectorAll?.('img') || [];
+  await Promise.all([...imgs].map(img => (img.decode?.() ?? Promise.resolve()).catch(() => {})));
+  await nextFrame(); await nextFrame();
+}
 
-await settleLayout(el); const last = measurePureBox(el); const dx = first.left - last.left, dy = first.top - last.top; const sx = first.width / (last.width || 1), sy = first.height / (last.height || 1); if (Math.abs(dx) > 0.1 || Math.abs(dy) > 0.1 || Math.abs(sx - 1) > 0.01 || Math.abs(sy - 1) > 0.01) { el.style.willChange = 'transform'; el.style.transformOrigin = 'top left'; el.style.transition = 'none'; el.style.transform = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`; await nextFrame(); const anim = el.animate([{ transform: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`, transformOrigin: 'top left' }, { transform: 'translate(0, 0) scale(1, 1)', transformOrigin: 'top left' }], { duration, easing, fill: 'forwards' }); anim.addEventListener?.('finish', () => { el.style.transform = ''; el.style.willChange = ''; el.style.transition = ''; }); } }
+function measurePureBox(el) {
+  const prevTransition = el.style.transition;
+  const prevTransform = el.style.transform;
+  el.style.transition = 'none';
+  el.style.transform = 'none';
+  const rect = el.getBoundingClientRect();
+  el.style.transform = prevTransform;
+  el.style.transition = prevTransition;
+  return rect;
+}
+
+async function flipWithScale(el, flowerData, { duration = 420, easing = 'cubic-bezier(.22, .61, .36, 1)' } = {}) {
+  if (!el) return;
+  el.getAnimations?.().forEach(a => a.cancel());
+  const first = measurePureBox(el);
+
+  const isMobile = window.innerWidth <= 1160;
+  const positions = isMobile ? FLOWER_POSITIONS.mobile : FLOWER_POSITIONS.desktop;
+  let position = positions[flowerData.id] || { x: 50, y: 50 };
+
+  const intensity = (flowerData.emotionalIntensity || 35) / 100;
+  const tSize = Math.max(0.35, Math.min(1, intensity));
+  let flowerSize = Math.round(100 + (300 - 100) * tSize);
+  if (!isMobile) flowerSize = Math.round(flowerSize * Math.min(2.0, window.innerWidth / 720));
+
+  el.style.transition = 'none';
+  el.style.left = `${position.x}%`;
+  el.style.top = `${position.y}%`;
+  el.style.width = `${flowerSize}px`;
+  el.style.height = `${flowerSize}px`;
+
+  // Normalize inner SVG to scale with wrapper
+  normalizeFlowerGraphic(el);
+
+  await settleLayout(el);
+  const last = measurePureBox(el);
+
+  const dx = first.left - last.left, dy = first.top - last.top;
+  const sx = first.width / (last.width || 1), sy = first.height / (last.height || 1);
+
+  if (Math.abs(dx) > 0.1 || Math.abs(dy) > 0.1 || Math.abs(sx - 1) > 0.01 || Math.abs(sy - 1) > 0.01) {
+    el.style.willChange = 'transform';
+    el.style.transformOrigin = 'top left';
+    el.style.transition = 'none';
+    el.style.transform = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
+    await nextFrame();
+
+    const anim = el.animate([
+      { transform: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`, transformOrigin: 'top left' },
+      { transform: 'translate(0, 0) scale(1, 1)', transformOrigin: 'top left' }
+    ], { duration, easing, fill: 'forwards' });
+
+    anim.addEventListener?.('finish', () => {
+      el.style.transform = ''; el.style.willChange = ''; el.style.transition = '';
+    });
+  }
+}
 
 async function flipFlowers(flowers) {
   const container = document.getElementById('flower-container');
   if (!container) return;
 
-  const categoryFlowers = flowers.filter(f => f.category === "Emotional Dysregulation");
+  const categoryFlowers = flowers.filter(f => f.category === "Sensory Overwhelm");
   const byId = new Map(categoryFlowers.map(f => [f.id, f]));
   const existingFlowers = container.querySelectorAll('.flower');
 
@@ -133,11 +185,11 @@ async function flipFlowers(flowers) {
 }
 
 // Simple, universal layout calculation
-async function createEmotionalDysregulationLayout(flowers, isResize = false) {
+async function createSensoryOverwhelmLayout(flowers, isResize = false) {
   const container = document.getElementById('flower-container');
   if (!container) return;
 
-  const categoryFlowers = flowers.filter(f => f.category === "Emotional Dysregulation");
+  const categoryFlowers = flowers.filter(f => f.category === "Sensory Overwhelm");
 
   // Skip clearing and recreation if this is a resize operation
   if (isResize) {
@@ -195,9 +247,8 @@ async function createEmotionalDysregulationLayout(flowers, isResize = false) {
         FlowerInteractions.addBehavior(el, flowerData);
       }
 
-      // Progressive rendering: append immediately and trigger dissolve animation
       container.appendChild(el);
-      triggerDissolveAnimation(el, index * 50); // 50ms stagger between flowers
+      triggerDissolveAnimation(el, index * 50);
     });
     return;
   }
@@ -271,9 +322,8 @@ async function createEmotionalDysregulationLayout(flowers, isResize = false) {
       FlowerInteractions.addBehavior(el, flowerData);
     }
 
-    // Progressive rendering: append immediately and trigger dissolve animation
     container.appendChild(el);
-    triggerDissolveAnimation(el, index * 50); // 50ms stagger between flowers
+    triggerDissolveAnimation(el, index * 50);
   });
 
   // Save layout for future use with device type
@@ -281,7 +331,7 @@ async function createEmotionalDysregulationLayout(flowers, isResize = false) {
 }
 
 // Load data and initialize page
-fetch('../data.json')
+fetch('metaphordata/data.json')
   .then(r => r.json())
   .then(rawData => {
     const flowers = parseFlowerData(rawData);
@@ -295,7 +345,7 @@ fetch('../data.json')
 
     // Ensure layout runs after page is fully rendered and settled
     const initializeLayout = () => {
-      createEmotionalDysregulationLayout(flowers);
+      createSensoryOverwhelmLayout(flowers);
     };
 
     // Use requestAnimationFrame to ensure DOM is fully rendered
@@ -313,10 +363,10 @@ fetch('../data.json')
       if (currentIsDesktop !== lastIsDesktop) {
         console.log('Breakpoint crossed, animating flower transitions:', window.innerWidth);
 
-        // Clear cache and trigger FLIP animation
-        sessionStorage.removeItem(ED_LAYOUT_KEY + '-desktop');
-        sessionStorage.removeItem(ED_LAYOUT_KEY + '-mobile');
-        await createEmotionalDysregulationLayout(flowers, true); // isResize = true
+        // Clear cache and trigger hardened FLIP animation
+        sessionStorage.removeItem(SO_LAYOUT_KEY + '-desktop');
+        sessionStorage.removeItem(SO_LAYOUT_KEY + '-mobile');
+        await createSensoryOverwhelmLayout(flowers, true); // isResize = true
 
         lastIsDesktop = currentIsDesktop;
       }
@@ -336,4 +386,4 @@ fetch('../data.json')
       }, 150);
     });
   })
-  .catch(err => console.error("Error loading data for Emotional Dysregulation:", err));
+  .catch(err => console.error("Error loading data for Sensory Overwhelm:", err));

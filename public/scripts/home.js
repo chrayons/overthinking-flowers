@@ -405,7 +405,7 @@ window.addEventListener('resize', () => {
 });
 
 // Load + init
-fetch('../data.json')
+fetch('metaphordata/data.json')
   .then(r => r.json())
   .then(rawData => {
     const flowers = parseFlowerData(rawData);

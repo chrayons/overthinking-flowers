@@ -1,70 +1,87 @@
-// thought-entanglement.js
-// Displays flowers for the "Thought Entanglement" category with fixed positioning
+// loss-of-agency.js
+// Displays flowers for the "Loss of Agency" category with fixed positioning
 
-console.log("Thought Entanglement page loading...");
+console.log("Loss of Agency page loading...");
 
 // Fixed flower positions - captured from working layout
 const FLOWER_POSITIONS = {
   desktop: {
-    'ID5': { x: 12, y: 8 },   // scribbles, messy, black/dark, cloudy
-    'ID8': { x: 52, y: 10 },   // scribbles, clouds, messy, gray
-    'ID15': { x: 45, y: 20 },  // Trying to find the right information in a messy library
-    'ID18': { x: 5, y: 45 },  // ball of yarn/thread except it’s alive
-    'ID22': { x: 22, y: 31 },  // Like messed up bottle of yarn!
-    'ID23': { x: 8, y: 67 },  // Its like those thought bubbles and all thats inside are scribbles
-    'ID27': { x: 15, y: 65 },  // unending scribbles
-    'ID29': { x: 90, y: 35 },  // A scribble , and just things moving around without anything clear just a string curing 
-    'ID32': { x: 85, y: 42 },  // It’s like a matter but it’s always shifting. Any time i think i can grasp it, it changes to something different.
-    'ID43': { x: 76, y: 95 },  // word cloud, labyrinth, drowning, freezing, being stuck
-    'ID46': { x: 27, y: 75 },  // Storm, tangle
-    'ID48': { x: 65, y: 75 },  // a knot, a racecar going around track at extremely high speeds, me running around a room restlessly
-    'ID51': { x: 98, y: 48 },  // sort of like a small central point (the initial thought) and then a larger chaotic spiky/scribbly/zigzag circle around it (the associated thought spiral)
-    'ID55': { x: 13, y: 35 },  // Scribbles / spiraling staircase leading downwards
-    'ID56': { x: 70, y: 10 },  // A ball of yarn. You know the beginning and the end are there somewhere, but getting there is frustrating and takes ages. Also, others just tell you to buy a new one
-    'ID57': { x: 20, y: 88 },  // I see problems as knots. Thinking would be the act of untying them in my head. Overthinking would be complicating the untying process, it may have been a simple fix or there was no solution, either way there is no need to keep trying to untie over and over
-    'ID59': { x: 90, y: 73 }   // a tangled thread
+    'ID7': { x: 77, y: 47 },  // sunshine and rainbows then sud...
+    'ID16': { x: 35, y: 70 }, // Having a lovely married life w...
+    'ID21': { x: 81, y: 29 }, // I cannaur...
+    'ID25': { x: 64, y: 17 }, // a whirlpool...
+    'ID33': { x: 33, y: 35 }, // walls closing in...
+    'ID35': { x: 76, y: 87 }, // Starts out like a sauna. And t...
+    'ID38': { x: 15, y: 37 }, // Drowning...
+    'ID53': { x: 90, y: 75 }, // That one pic of the cartoon do...
+    'ID67': { x: 6, y: 58 },  // the last bowling pin wobbling ...
+    'ID71': { x: 18, y: 10 }  // Being completely submerged in ...
   },
   mobile: {
-    'ID5': { x: 15, y: 25 },   // scribbles, messy, black/dark, cloudy
-    'ID8': { x: 44, y: 10 },   // scribbles, clouds, messy, gray
-    'ID15': { x: 45, y: 25 },  // Trying to find the right information in a messy library
-    'ID18': { x: 90, y: 30 },  // ball of yarn/thread except it’s alive
-    'ID22': { x: 25, y: 35 },  // Like messed up bottle of yarn!
-    'ID23': { x: 10, y: 75 },  // Its like those thought bubbles and all thats inside are scribbles
-    'ID27': { x: 12, y: 65 },  // unending scribbles
-    'ID29': { x: 75, y: 35 },  // A scribble , and just things moving around without anything clear just a string curing 
-    'ID32': { x: 15, y: 42 },  // It’s like a matter but it’s always shifting. Any time i think i can grasp it, it changes to something different.
-    'ID43': { x: 76, y: 70 },  // word cloud, labyrinth, drowning, freezing, being stuck
-    'ID46': { x: 21, y: 75 },  // Storm, tangle
-    'ID48': { x: 56, y: 75 },  // a knot, a racecar going around track at extremely high speeds, me running around a room restlessly
-    'ID51': { x: 85, y: 48 },  // sort of like a small central point (the initial thought) and then a larger chaotic spiky/scribbly/zigzag circle around it (the associated thought spiral)
-    'ID55': { x: 13, y: 35 },  // Scribbles / spiraling staircase leading downwards
-    'ID56': { x: 65, y: 19 },  // A ball of yarn. You know the beginning and the end are there somewhere, but getting there is frustrating and takes ages. Also, others just tell you to buy a new one
-    'ID57': { x: 50, y: 66 },  // I see problems as knots. Thinking would be the act of untying them in my head. Overthinking would be complicating the untying process, it may have been a simple fix or there was no solution, either way there is no need to keep trying to untie over and over
-    'ID59': { x: 40, y: 80 }   // a tangled thread
+    'ID7': { x: 90, y: 45 },  // sunshine and rainbows then sud...
+    'ID16': { x: 25, y: 68 }, // Having a lovely married life w...
+    'ID21': { x: 70, y: 29 }, // I cannaur...
+    'ID25': { x: 59, y: 35 }, // a whirlpool...
+    'ID33': { x: 33, y: 35 }, // walls closing in...
+    'ID35': { x: 75, y: 68 }, // Starts out like a sauna. And t...
+    'ID38': { x: 10, y: 37 }, // Drowning...
+    'ID53': { x: 55, y: 75 }, // That one pic of the cartoon do...
+    'ID67': { x: 16, y: 50 },  // the last bowling pin wobbling ...
+    'ID71': { x: 48, y: 20 }  // Being completely submerged in ...
   }
 };
 
 // Simple layout storage - one layout for all devices
-const TE_LAYOUT_KEY = 'te-simple-layout-v5';
+const LOA_LAYOUT_KEY = 'loa-simple-layout-v17';
 
 // Set to true to ignore cache and always use fresh positions (for experimentation)
 const IGNORE_CACHE = false;
 
 function saveLayout(placed, isMobile) {
   try {
-    const deviceKey = isMobile ? TE_LAYOUT_KEY + '-mobile' : TE_LAYOUT_KEY + '-desktop';
+    const deviceKey = isMobile ? LOA_LAYOUT_KEY + '-mobile' : LOA_LAYOUT_KEY + '-desktop';
     sessionStorage.setItem(deviceKey, JSON.stringify(placed));
   } catch {}
 }
 
 function restoreLayout(isMobile) {
   try {
-    const deviceKey = isMobile ? TE_LAYOUT_KEY + '-mobile' : TE_LAYOUT_KEY + '-desktop';
+    const deviceKey = isMobile ? LOA_LAYOUT_KEY + '-mobile' : LOA_LAYOUT_KEY + '-desktop';
     return JSON.parse(sessionStorage.getItem(deviceKey) || 'null');
   } catch {
     return null;
   }
+}
+
+// Hardened FLIP utilities
+const nextFrame = () => new Promise(r => requestAnimationFrame(() => r()));
+
+// Progressive dissolve animation helper
+function triggerDissolveAnimation(flowerElement, delay = 0) {
+  // Use requestAnimationFrame to ensure DOM is ready
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      flowerElement.classList.add('flower-dissolve-in');
+    }, delay);
+  });
+}
+
+async function settleLayout(el) {
+  if (document.fonts?.ready) await document.fonts.ready;
+  const imgs = el?.querySelectorAll?.('img') || [];
+  await Promise.all([...imgs].map(img => (img.decode?.() ?? Promise.resolve()).catch(() => {})));
+  await nextFrame();
+  await nextFrame();
+}
+
+function measurePureBox(el) {
+  const prevTransition = el.style.transition, prevTransform = el.style.transform;
+  el.style.transition = 'none';
+  el.style.transform = 'none';
+  const rect = el.getBoundingClientRect();
+  el.style.transform = prevTransform;
+  el.style.transition = prevTransition;
+  return rect;
 }
 
 // FLIP guard utility to prevent CSS transition conflicts
@@ -104,72 +121,14 @@ function normalizeFlowerGraphic(el) {
     svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
   }
 }
+async function flipWithScale(el, flowerData, { duration = 420, easing = 'cubic-bezier(.22, .61, .36, 1)' } = {}) { if (!el) return; el.getAnimations?.().forEach(a => a.cancel()); const first = measurePureBox(el); const isMobile = window.innerWidth <= 1160; const positions = isMobile ? FLOWER_POSITIONS.mobile : FLOWER_POSITIONS.desktop; let position = positions[flowerData.id] || { x: 50, y: 50 }; const intensity = (flowerData.emotionalIntensity || 35) / 100; const tSize = Math.max(0.35, Math.min(1, intensity)); let flowerSize = Math.round(100 + (300 - 100) * tSize); if (!isMobile) flowerSize = Math.round(flowerSize * Math.min(2.0, window.innerWidth / 720)); el.style.transition = 'none'; el.style.left = `${position.x}%`; el.style.top = `${position.y}%`; el.style.width = `${flowerSize}px`; el.style.height = `${flowerSize}px`; normalizeFlowerGraphic(el); await settleLayout(el); const last = measurePureBox(el); const dx = first.left - last.left, dy = first.top - last.top; const sx = first.width / (last.width || 1), sy = first.height / (last.height || 1); if (Math.abs(dx) > 0.1 || Math.abs(dy) > 0.1 || Math.abs(sx - 1) > 0.01 || Math.abs(sy - 1) > 0.01) { el.style.willChange = 'transform'; el.style.transformOrigin = 'top left'; el.style.transition = 'none'; el.style.transform = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`; await nextFrame(); const anim = el.animate([{ transform: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`, transformOrigin: 'top left' }, { transform: 'translate(0, 0) scale(1, 1)', transformOrigin: 'top left' }], { duration, easing, fill: 'forwards' }); anim.addEventListener?.('finish', () => { el.style.transform = ''; el.style.willChange = ''; el.style.transition = ''; }); } }
 
-// Progressive dissolve animation helper
-function triggerDissolveAnimation(flowerElement, delay = 0) {
-  requestAnimationFrame(() => {
-    setTimeout(() => {
-      flowerElement.classList.add('flower-dissolve-in');
-    }, delay);
-  });
-}
-
-// Hardened FLIP utilities
-const nextFrame = () => new Promise(r => requestAnimationFrame(() => r()));
-async function settleLayout(el) {
-  if (document.fonts?.ready) await document.fonts.ready;
-  const imgs = el?.querySelectorAll?.('img') || [];
-  await Promise.all([...imgs].map(img => (img.decode?.() ?? Promise.resolve()).catch(() => {})));
-  await nextFrame(); await nextFrame();
-}
-function measurePureBox(el) {
-  const prevTransition = el.style.transition, prevTransform = el.style.transform;
-  el.style.transition = 'none'; el.style.transform = 'none';
-  const rect = el.getBoundingClientRect();
-  el.style.transform = prevTransform; el.style.transition = prevTransition;
-  return rect;
-}
-async function flipWithScale(el, flowerData, { duration = 420, easing = 'cubic-bezier(.22, .61, .36, 1)' } = {}) {
-  if (!el) return;
-  el.getAnimations?.().forEach(a => a.cancel());
-  const first = measurePureBox(el);
-  const isMobile = window.innerWidth <= 1160;
-  const positions = isMobile ? FLOWER_POSITIONS.mobile : FLOWER_POSITIONS.desktop;
-  let position = positions[flowerData.id] || { x: 50, y: 50 };
-  const intensity = (flowerData.emotionalIntensity || 35) / 100;
-  const tSize = Math.max(0.35, Math.min(1, intensity));
-  let flowerSize = Math.round(100 + (300 - 100) * tSize);
-  if (!isMobile) flowerSize = Math.round(flowerSize * Math.min(2.0, window.innerWidth / 720));
-  el.style.transition = 'none';
-  el.style.left = `${position.x}%`; el.style.top = `${position.y}%`;
-  el.style.width = `${flowerSize}px`; el.style.height = `${flowerSize}px`;
-
-  // Normalize inner SVG to scale with wrapper
-  normalizeFlowerGraphic(el);
-  await settleLayout(el);
-  const last = measurePureBox(el);
-  const dx = first.left - last.left, dy = first.top - last.top;
-  const sx = first.width / (last.width || 1), sy = first.height / (last.height || 1);
-  if (Math.abs(dx) > 0.1 || Math.abs(dy) > 0.1 || Math.abs(sx - 1) > 0.01 || Math.abs(sy - 1) > 0.01) {
-    el.style.willChange = 'transform'; el.style.transformOrigin = 'top left';
-    el.style.transition = 'none';
-    el.style.transform = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
-    await nextFrame();
-    const anim = el.animate([
-      { transform: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`, transformOrigin: 'top left' },
-      { transform: 'translate(0, 0) scale(1, 1)', transformOrigin: 'top left' }
-    ], { duration, easing, fill: 'forwards' });
-    anim.addEventListener?.('finish', () => {
-      el.style.transform = ''; el.style.willChange = ''; el.style.transition = '';
-    });
-  }
-}
-
+// Hardened FLIP animation with scale compensation for smooth responsive transitions
 async function flipFlowers(flowers) {
   const container = document.getElementById('flower-container');
   if (!container) return;
 
-  const categoryFlowers = flowers.filter(f => f.category === "Thought Entanglement");
+  const categoryFlowers = flowers.filter(f => f.category === "Loss of Agency");
   const byId = new Map(categoryFlowers.map(f => [f.id, f]));
   const existingFlowers = container.querySelectorAll('.flower');
 
@@ -183,12 +142,16 @@ async function flipFlowers(flowers) {
   await Promise.all(flipPromises);
 }
 
+// Fixed positioning system - no helper functions needed
+
+// Simple layout - no scaling, just percentages
+
 // Simple, universal layout calculation
-async function createThoughtEntanglementLayout(flowers, isResize = false) {
+async function createLossOfAgencyLayout(flowers, isResize = false) {
   const container = document.getElementById('flower-container');
   if (!container) return;
 
-  const categoryFlowers = flowers.filter(f => f.category === "Thought Entanglement");
+  const categoryFlowers = flowers.filter(f => f.category === "Loss of Agency");
 
   // Skip clearing and recreation if this is a resize operation
   if (isResize) {
@@ -224,7 +187,7 @@ async function createThoughtEntanglementLayout(flowers, isResize = false) {
         maxRadius: size * 0.45
       });
 
-      // Outer wrapper for FLIP animations (no centering transform)
+      // Outer wrapper for FLIP animations
       const el = document.createElement('div');
       el.classList.add('flower');
       el.setAttribute('data-id', flowerData.id);
@@ -234,7 +197,7 @@ async function createThoughtEntanglementLayout(flowers, isResize = false) {
       el.style.width = `${size}px`;
       el.style.height = `${size}px`;
 
-      // Inner element with centering transform (CSS handles this)
+      // Inner element with centering transform
       inner.classList.add('flower-inner');
       inner.style.width = '100%';
       inner.style.height = '100%';
@@ -246,13 +209,15 @@ async function createThoughtEntanglementLayout(flowers, isResize = false) {
         FlowerInteractions.addBehavior(el, flowerData);
       }
 
+      // Progressive rendering: append immediately and trigger dissolve animation
       container.appendChild(el);
-      triggerDissolveAnimation(el, index * 50);
+      triggerDissolveAnimation(el, index * 50); // 50ms stagger between flowers
     });
     return;
   }
 
   // Fixed positioning - no complex calculations needed
+
   const placedFlowers = [];
   const resultsForPersist = [];
 
@@ -321,8 +286,9 @@ async function createThoughtEntanglementLayout(flowers, isResize = false) {
       FlowerInteractions.addBehavior(el, flowerData);
     }
 
+    // Progressive rendering: append immediately and trigger dissolve animation
     container.appendChild(el);
-    triggerDissolveAnimation(el, index * 50);
+    triggerDissolveAnimation(el, index * 50); // 50ms stagger between flowers
   });
 
   // Save layout for future use with device type
@@ -330,7 +296,7 @@ async function createThoughtEntanglementLayout(flowers, isResize = false) {
 }
 
 // Load data and initialize page
-fetch('../data.json')
+fetch('metaphordata/data.json')
   .then(r => r.json())
   .then(rawData => {
     const flowers = parseFlowerData(rawData);
@@ -344,7 +310,7 @@ fetch('../data.json')
 
     // Ensure layout runs after page is fully rendered and settled
     const initializeLayout = () => {
-      createThoughtEntanglementLayout(flowers);
+      createLossOfAgencyLayout(flowers);
     };
 
     // Use requestAnimationFrame to ensure DOM is fully rendered
@@ -363,9 +329,9 @@ fetch('../data.json')
         console.log('Breakpoint crossed, animating flower transitions:', window.innerWidth);
 
         // Clear cache and trigger FLIP animation
-        sessionStorage.removeItem(TE_LAYOUT_KEY + '-desktop');
-        sessionStorage.removeItem(TE_LAYOUT_KEY + '-mobile');
-        await createThoughtEntanglementLayout(flowers, true); // isResize = true
+        sessionStorage.removeItem(LOA_LAYOUT_KEY + '-desktop');
+        sessionStorage.removeItem(LOA_LAYOUT_KEY + '-mobile');
+        await createLossOfAgencyLayout(flowers, true); // isResize = true
 
         lastIsDesktop = currentIsDesktop;
       }
@@ -385,4 +351,4 @@ fetch('../data.json')
       }, 150);
     });
   })
-  .catch(err => console.error("Error loading data for Thought Entanglement:", err));
+  .catch(err => console.error("Error loading data for Loss of Agency:", err));

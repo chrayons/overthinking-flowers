@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Metaphor Garden</title>
   <!-- Critical font preloading for immediate render -->
-  <link rel="preload" as="font" href="../Satoshi/WEB/fonts/Satoshi-Light.woff2" type="font/woff2" crossorigin>
-  <link rel="preload" href="../Junicode/junicode-regularcondensed-webfont.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" as="font" href="fonts/Satoshi/fonts/Satoshi-Light.woff2" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/Junicode/junicode-regularcondensed-webfont.woff2" as="font" type="font/woff2" crossorigin>
 
   <!-- Critical CSS for immediate LCP rendering -->
   <style>
@@ -34,12 +34,13 @@
       left: 50%;
       top: 50%;
       transform: translate(-50%, -50%);
-      font-family: "Satoshi-Light", system-ui;
+      font-family: "junicoderegularcondensed", "junicoderegular", Georgia, serif;
       font-size: 24px;
-      font-weight: 300;
+      font-weight: 400;
       text-align: center;
       line-height: 1.2;
       color: #101720;
+      letter-spacing: 0.1em;
       z-index: 2;
       cursor: pointer;
     }
@@ -105,10 +106,10 @@
     }
   </style>
 
-  <link rel="preload" as="style" href="../Satoshi/WEB/css/satoshi.css">
-  <link rel="stylesheet" href="../Satoshi/WEB/css/satoshi.css">
-  <link rel="stylesheet" href="../style.css">
-  <link rel="stylesheet" href="../information-tooltip.css">
+  <link rel="preload" as="style" href="fonts/Satoshi/css/satoshi.css">
+  <link rel="stylesheet" href="fonts/Satoshi/css/satoshi.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/information-tooltip.css">
 </head>
 <body>
   <!-- Loading spinner for immediate user feedback -->
@@ -182,13 +183,13 @@
     
     <div class="carousel-arrows">
       <button class="carousel-arrow carousel-prev" aria-label="Previous category">
-        <img src="../arrow-left.svg" alt="Previous" width="23" height="23">
+        <img src="svg/arrow-left.svg" alt="Previous" width="23" height="23">
       </button>
       <div class="carousel-dots" id="carousel-dots">
         <!-- Dots will be populated by JavaScript -->
       </div>
       <button class="carousel-arrow carousel-next" aria-label="Next category">
-        <img src="../arrow-right.svg" alt="Next" width="23" height="23">
+        <img src="svg/arrow-right.svg" alt="Next" width="23" height="23">
       </button>
     </div>
 
@@ -268,10 +269,10 @@
 
     // Load critical scripts immediately but track when they're ready
     const scripts = [
-      '../scripts/shared.js',
-      '../scripts/flower-renderer.js',
-      '../scripts/home.js',
-      '../scripts/shuffle.js'
+      'scripts/shared.js',
+      'scripts/flower-renderer.js',
+      'scripts/home.js',
+      'scripts/shuffle.js'
     ];
 
     let loadedScripts = 0;
@@ -302,12 +303,12 @@
   </script>
 
   <!-- Non-critical scripts (can load after page renders) -->
-  <script async src="../scripts/modal.js"></script>
-  <script async src="../scripts/mobile-header.js"></script>
+  <script async src="scripts/modal.js"></script>
+  <script async src="scripts/mobile-header.js"></script>
 
   <!-- Information tooltip system -->
   <script type="module">
-    import { InformationTooltip, createInfoTipSVG } from '../scripts/information-tooltip.js';
+    import { InformationTooltip, createInfoTipSVG } from 'scripts/information-tooltip.js';
 
     // Expose globally for use anywhere
     window.InformationTooltip = InformationTooltip;

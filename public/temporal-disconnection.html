@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Emotional Dysregulation - Metaphor Garden</title>
-  <link rel="preload" href="../Junicode/junicode-regularcondensed-webfont.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="../Satoshi/WEB/fonts/Satoshi-Medium.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="../Satoshi/WEB/fonts/Satoshi-Light.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" as="style" href="../Satoshi/WEB/css/satoshi.css">
-  <link rel="stylesheet" href="../Satoshi/WEB/css/satoshi.css">
-  <link rel="stylesheet" href="../style.css">
-  <link rel="stylesheet" href="../information-tooltip.css">
+  <title>Temporal Disconnection - Metaphor Garden</title>
+  <link rel="preload" href="fonts/Junicode/junicode-regularcondensed-webfont.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/Satoshi/fonts/Satoshi-Medium.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/Satoshi/fonts/Satoshi-Light.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" as="style" href="fonts/Satoshi/css/satoshi.css">
+  <link rel="stylesheet" href="fonts/Satoshi/css/satoshi.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/information-tooltip.css">
 </head>
 <body class="category-page">
   <div class="wrapper">
@@ -34,31 +34,31 @@
     <div class="category-page-content">
       <div id="flower-container"></div>
       <div class="category-title-container">
-        <h2 class="category-title">Emotional<br>Dysregulation</h2>
+        <h2 class="category-title">Temporal<br>Disconnection</h2>
       </div>
     </div>
 
     <!-- Category overlay with navigation -->
     <div class="category-overlay">
       <div class="category-title-section">
-        <h2 class="category-name">Emotional<br>Dysregulation</h2>
+        <h2 class="category-name">Temporal<br>Disconnection</h2>
       </div>
 
       <div class="category-nav-section">
         <button class="category-nav-arrow category-prev" aria-label="Previous category">
-          <img src="../arrow-left.svg" alt="Previous" width="23" height="23">
+          <img src="svg/arrow-left.svg" alt="Previous" width="23" height="23">
         </button>
         <div class="category-nav-dots">
           <div class="category-nav-dot" data-category="0" aria-label="Perpetual Looping"></div>
           <div class="category-nav-dot" data-category="1" aria-label="Loss of Agency"></div>
           <div class="category-nav-dot" data-category="2" aria-label="Sensory Overwhelm"></div>
-          <div class="category-nav-dot active" data-category="3" aria-label="Emotional Dysregulation"></div>
+          <div class="category-nav-dot" data-category="3" aria-label="Emotional Dysregulation"></div>
           <div class="category-nav-dot" data-category="4" aria-label="Perceptual Barriers"></div>
           <div class="category-nav-dot" data-category="5" aria-label="Thought Entanglement"></div>
-          <div class="category-nav-dot" data-category="6" aria-label="Temporal Disconnection"></div>
+          <div class="category-nav-dot active" data-category="6" aria-label="Temporal Disconnection"></div>
         </div>
         <button class="category-nav-arrow category-next" aria-label="Next category">
-          <img src="../arrow-right.svg" alt="Next" width="23" height="23">
+          <img src="svg/arrow-right.svg" alt="Next" width="23" height="23">
         </button>
       </div>
 
@@ -72,22 +72,22 @@
     </section>
 
     <!-- Critical scripts (needed for initial render) -->
-    <script defer src="../scripts/shared.js"></script>
-    <script defer src="../scripts/flower-renderer.js"></script>
-    <script defer src="../scripts/flower-interactions.js"></script>
-    <script defer src="../scripts/category-navigation.js"></script>
-    <script defer src="../scripts/emotional-dysregulation.js"></script>
+    <script defer src="scripts/shared.js"></script>
+    <script defer src="scripts/flower-renderer.js"></script>
+    <script defer src="scripts/flower-interactions.js"></script>
+    <script defer src="scripts/category-navigation.js"></script>
+    <script defer src="scripts/temporal-disconnection.js"></script>
 
     <!-- Information tooltip system -->
     <script type="module">
-      import { InformationTooltip, createInfoTipSVG } from '../scripts/information-tooltip.js';
+      import { InformationTooltip, createInfoTipSVG } from 'scripts/information-tooltip.js';
       window.InformationTooltip = InformationTooltip;
       window.InformationTooltip.createInfoTipSVG = createInfoTipSVG;
     </script>
 
     <!-- Non-critical scripts (can load after page renders) -->
-    <script async src="../scripts/modal.js"></script>
-    <script async src="../scripts/mobile-header.js"></script>
+    <script async src="scripts/modal.js"></script>
+    <script async src="scripts/mobile-header.js"></script>
   </div>
 </body>
 </html>

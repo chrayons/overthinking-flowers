@@ -1,62 +1,72 @@
-// perpetual-looping.js
-// Displays flowers for the "Perpetual Looping" category with fixed positioning
+// perceptual-barriers.js
+// Displays flowers for the "Perceptual Barriers" category with fixed positioning
 
-console.log("Perpetual Looping page loading...");
+console.log("Perceptual Barriers page loading...");
 
 // Fixed flower positions - captured from working layout
 const FLOWER_POSITIONS = {
   desktop: {
-    'ID2': { x: 15, y: 20 },   // like a computer caught in an infinite loop
-    'ID4': { x: 92, y: 30 },   // like i'm running to a place where there's no end to
-    'ID6': { x: 39, y: 8 },   // kind of like being lost at sea - difficult to navigate through the waves...
-    'ID9': { x: 17, y: 40 },   // A toy train track where the train goes in circles constantly without ever getting anywhere.
-    'ID17': { x: 75, y: 40 },  // Like a hamster on a wheel? Or like I'm standing still but everyone around me...
-    'ID26': { x: 2, y: 58 },  // A circular amusement park ride that spins in a circle over and over
-    'ID37': { x: 60, y: 20 },  // Thoughts chasing each other, mouth to body mouth to body...
-    'ID41': { x: 75, y: 65 },  // Chains of predictions of events and possible solutions (flowchart-like)
-    'ID42': { x: 92, y: 70 },  // surges of negative overlooping energy
-    'ID54': { x: 29, y: 92 },  // I tend to replay different scenarios that could have happened...
-    'ID58': { x: 12, y: 81 },  // everytime i pick up something something else drops and i have my arms full of thoughts
-    'ID64': { x: 80, y: 85 },  // Hamster 🐹 Wheel
-    'ID68': { x: 26, y: 67 }   // cycle – never ending, going round and round
+    'ID11': { x: 10, y: 56 },  // a big grey cloud or fog
+    'ID19': { x: 68, y: 85 },  // Impending doom or like a black cloud
+    'ID34': { x: 25, y: 15 },  // It feels like being in a smoky space, with many voices coming from my heart, but I can’t see my true desires and needs clearly.I will try to sort it all out until my vision becomes clear and I understand my guiding ideology. This is usually very energy consuming.
+    'ID39': { x: 87, y: 70 },  // Me surrounded by mist, with trains of thoughts whisking by and turning me around and around.
+    'ID44': { x: 80, y: 30 },  // a cloud
+    'ID45': { x: 95, y: 52 },  // thick fog but still kinda knowing your way?
+    'ID52': { x: 65, y: 62 },  // fog
+    'ID66': { x: 24, y: 80 }   // Being lost in a big dark cloud or stuck in a maze that has no clear ending
   },
   mobile: {
-    'ID2': { x: 30, y: 20 },   // like a computer caught in an infinite loop
-    'ID4': { x: 55, y: 30 },   // like i'm running to a place where there's no end to
-    'ID6': { x: 39, y: 15 },   // kind of like being lost at sea - difficult to navigate through the waves...
-    'ID9': { x: 15, y: 45 },   // A toy train track where the train goes in circles constantly without ever getting anywhere.
-    'ID17': { x: 75, y: 40 },  // Like a hamster on a wheel? Or like I'm standing still but everyone around me...
-    'ID26': { x: 10, y: 40 },  // A circular amusement park ride that spins in a circle over and over
-    'ID37': { x: 60, y: 20 },  // Thoughts chasing each other, mouth to body mouth to body...
-    'ID41': { x: 65, y: 65 },  // Chains of predictions of events and possible solutions (flowchart-like)
-    'ID42': { x: 80, y: 70 },  // surges of negative overlooping energy
-    'ID54': { x: 45, y: 75 },  // I tend to replay different scenarios that could have happened...
-    'ID58': { x: 14, y: 80 },  // everytime i pick up something something else drops and i have my arms full of thoughts
-    'ID64': { x: 80, y: 75 },  // Hamster 🐹 Wheel
-    'ID68': { x: 27, y: 65 }   // cycle – never ending, going round and round
+    'ID11': { x: 20, y: 45 },  // a big grey cloud or fog
+    'ID19': { x: 17, y: 66 },  // Impending doom or like a black cloud
+    'ID34': { x: 27, y: 28 },  // It feels like being in a smoky space, with many voices coming from my heart, but I can’t see my true desires and needs clearly.I will try to sort it all out until my vision becomes clear and I understand my guiding ideology. This is usually very energy consuming.
+    'ID39': { x: 79, y: 64 },  // Me surrounded by mist, with trains of thoughts whisking by and turning me around and around.
+    'ID44': { x: 74, y: 30 },  // a cloud
+    'ID45': { x: 80, y: 42 },  // thick fog but still kinda knowing your way?
+    'ID52': { x: 44, y: 24 },  // fog
+    'ID66': { x: 46, y: 76 }   // Being lost in a big dark cloud or stuck in a maze that has no clear ending
   }
 };
 
 // Simple layout storage - one layout for all devices
-const PL_LAYOUT_KEY = 'pl-simple-layout-v3';
+const PB_LAYOUT_KEY = 'pb-simple-layout-v4';
 
 // Set to true to ignore cache and always use fresh positions (for experimentation)
 const IGNORE_CACHE = false;
 
 function saveLayout(placed, isMobile) {
   try {
-    const deviceKey = isMobile ? PL_LAYOUT_KEY + '-mobile' : PL_LAYOUT_KEY + '-desktop';
+    const deviceKey = isMobile ? PB_LAYOUT_KEY + '-mobile' : PB_LAYOUT_KEY + '-desktop';
     sessionStorage.setItem(deviceKey, JSON.stringify(placed));
   } catch {}
 }
 
 function restoreLayout(isMobile) {
   try {
-    const deviceKey = isMobile ? PL_LAYOUT_KEY + '-mobile' : PL_LAYOUT_KEY + '-desktop';
+    const deviceKey = isMobile ? PB_LAYOUT_KEY + '-mobile' : PB_LAYOUT_KEY + '-desktop';
     return JSON.parse(sessionStorage.getItem(deviceKey) || 'null');
   } catch {
     return null;
   }
+}
+
+// Hardened FLIP utilities for clean measurements and asset settling
+const nextFrame = () => new Promise(r => requestAnimationFrame(() => r()));
+
+// Progressive dissolve animation helper
+function triggerDissolveAnimation(flowerElement, delay = 0) {
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      flowerElement.classList.add('flower-dissolve-in');
+    }, delay);
+  });
+}
+
+async function settleLayout(el) {
+  if (document.fonts?.ready) await document.fonts.ready;
+  const imgs = el?.querySelectorAll?.('img') || [];
+  await Promise.all([...imgs].map(img => (img.decode?.() ?? Promise.resolve()).catch(() => {})));
+  await nextFrame();
+  await nextFrame();
 }
 
 // FLIP guard utility to prevent CSS transition conflicts
@@ -97,27 +107,6 @@ function normalizeFlowerGraphic(el) {
   }
 }
 
-// Hardened FLIP utilities for clean measurements and asset settling
-const nextFrame = () => new Promise(r => requestAnimationFrame(() => r()));
-
-// Progressive dissolve animation helper
-function triggerDissolveAnimation(flowerElement, delay = 0) {
-  // Use requestAnimationFrame to ensure DOM is ready
-  requestAnimationFrame(() => {
-    setTimeout(() => {
-      flowerElement.classList.add('flower-dissolve-in');
-    }, delay);
-  });
-}
-
-async function settleLayout(el) {
-  if (document.fonts?.ready) await document.fonts.ready;
-  const imgs = el?.querySelectorAll?.('img') || [];
-  await Promise.all([...imgs].map(img => (img.decode?.() ?? Promise.resolve()).catch(() => {})));
-  await nextFrame();
-  await nextFrame();
-}
-
 function measurePureBox(el) {
   const prevTransition = el.style.transition;
   const prevTransform = el.style.transform;
@@ -136,6 +125,7 @@ async function flipWithScale(el, flowerData, {
   if (!el) return;
 
   el.getAnimations?.().forEach(a => a.cancel());
+
   const first = measurePureBox(el);
 
   const isMobile = window.innerWidth <= 1160;
@@ -168,6 +158,7 @@ async function flipWithScale(el, flowerData, {
   normalizeFlowerGraphic(el);
 
   await settleLayout(el);
+
   const last = measurePureBox(el);
 
   const dx = first.left - last.left;
@@ -184,9 +175,19 @@ async function flipWithScale(el, flowerData, {
     await nextFrame();
 
     const anim = el.animate([
-      { transform: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`, transformOrigin: 'top left' },
-      { transform: 'translate(0, 0) scale(1, 1)', transformOrigin: 'top left' }
-    ], { duration, easing, fill: 'forwards' });
+      {
+        transform: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`,
+        transformOrigin: 'top left'
+      },
+      {
+        transform: 'translate(0, 0) scale(1, 1)',
+        transformOrigin: 'top left'
+      }
+    ], {
+      duration,
+      easing,
+      fill: 'forwards'
+    });
 
     anim.addEventListener?.('finish', () => {
       el.style.transform = '';
@@ -200,7 +201,7 @@ async function flipFlowers(flowers) {
   const container = document.getElementById('flower-container');
   if (!container) return;
 
-  const categoryFlowers = flowers.filter(f => f.category === "Perpetual Looping");
+  const categoryFlowers = flowers.filter(f => f.category === "Perceptual Barriers");
   const byId = new Map(categoryFlowers.map(f => [f.id, f]));
   const existingFlowers = container.querySelectorAll('.flower');
 
@@ -215,11 +216,11 @@ async function flipFlowers(flowers) {
 }
 
 // Simple, universal layout calculation
-async function createPerpetualLoopingLayout(flowers, isResize = false) {
+async function createPerceptualBarriersLayout(flowers, isResize = false) {
   const container = document.getElementById('flower-container');
   if (!container) return;
 
-  const categoryFlowers = flowers.filter(f => f.category === "Perpetual Looping");
+  const categoryFlowers = flowers.filter(f => f.category === "Perceptual Barriers");
 
   // Skip clearing and recreation if this is a resize operation
   if (isResize) {
@@ -255,7 +256,7 @@ async function createPerpetualLoopingLayout(flowers, isResize = false) {
         maxRadius: size * 0.45
       });
 
-      // Outer wrapper for FLIP animations (no centering transform)
+      // Outer wrapper for FLIP animations
       const el = document.createElement('div');
       el.classList.add('flower');
       el.setAttribute('data-id', flowerData.id);
@@ -265,7 +266,7 @@ async function createPerpetualLoopingLayout(flowers, isResize = false) {
       el.style.width = `${size}px`;
       el.style.height = `${size}px`;
 
-      // Inner element with centering transform (CSS handles this)
+      // Inner element with centering transform
       inner.classList.add('flower-inner');
       inner.style.width = '100%';
       inner.style.height = '100%';
@@ -277,9 +278,8 @@ async function createPerpetualLoopingLayout(flowers, isResize = false) {
         FlowerInteractions.addBehavior(el, flowerData);
       }
 
-      // Progressive rendering: append immediately and trigger dissolve animation
       container.appendChild(el);
-      triggerDissolveAnimation(el, index * 50); // 50ms stagger between flowers
+      triggerDissolveAnimation(el, index * 50);
     });
     return;
   }
@@ -353,9 +353,8 @@ async function createPerpetualLoopingLayout(flowers, isResize = false) {
       FlowerInteractions.addBehavior(el, flowerData);
     }
 
-    // Progressive rendering: append immediately and trigger dissolve animation
     container.appendChild(el);
-    triggerDissolveAnimation(el, index * 50); // 50ms stagger between flowers
+    triggerDissolveAnimation(el, index * 50);
   });
 
   // Save layout for future use with device type
@@ -363,7 +362,7 @@ async function createPerpetualLoopingLayout(flowers, isResize = false) {
 }
 
 // Load data and initialize page
-fetch('../data.json')
+fetch('metaphordata/data.json')
   .then(r => r.json())
   .then(rawData => {
     const flowers = parseFlowerData(rawData);
@@ -377,7 +376,7 @@ fetch('../data.json')
 
     // Ensure layout runs after page is fully rendered and settled
     const initializeLayout = () => {
-      createPerpetualLoopingLayout(flowers);
+      createPerceptualBarriersLayout(flowers);
     };
 
     // Use requestAnimationFrame to ensure DOM is fully rendered
@@ -396,9 +395,9 @@ fetch('../data.json')
         console.log('Breakpoint crossed, animating flower transitions:', window.innerWidth);
 
         // Clear cache and trigger hardened FLIP animation
-        sessionStorage.removeItem(PL_LAYOUT_KEY + '-desktop');
-        sessionStorage.removeItem(PL_LAYOUT_KEY + '-mobile');
-        await createPerpetualLoopingLayout(flowers, true); // isResize = true
+        sessionStorage.removeItem(PB_LAYOUT_KEY + '-desktop');
+        sessionStorage.removeItem(PB_LAYOUT_KEY + '-mobile');
+        await createPerceptualBarriersLayout(flowers, true); // isResize = true
 
         lastIsDesktop = currentIsDesktop;
       }
@@ -418,4 +417,4 @@ fetch('../data.json')
       }, 150);
     });
   })
-  .catch(err => console.error("Error loading data for Perpetual Looping:", err));
+  .catch(err => console.error("Error loading data for Perceptual Barriers:", err));

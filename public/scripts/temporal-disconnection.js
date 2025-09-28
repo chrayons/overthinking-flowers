@@ -1,87 +1,44 @@
-// loss-of-agency.js
-// Displays flowers for the "Loss of Agency" category with fixed positioning
+// temporal-disconnection.js
+// Displays flowers for the "Temporal Disconnection" category with fixed positioning
 
-console.log("Loss of Agency page loading...");
+console.log("Temporal Disconnection page loading...");
 
 // Fixed flower positions - captured from working layout
 const FLOWER_POSITIONS = {
   desktop: {
-    'ID7': { x: 77, y: 47 },  // sunshine and rainbows then sud...
-    'ID16': { x: 35, y: 70 }, // Having a lovely married life w...
-    'ID21': { x: 81, y: 29 }, // I cannaur...
-    'ID25': { x: 64, y: 17 }, // a whirlpool...
-    'ID33': { x: 33, y: 35 }, // walls closing in...
-    'ID35': { x: 76, y: 87 }, // Starts out like a sauna. And t...
-    'ID38': { x: 15, y: 37 }, // Drowning...
-    'ID53': { x: 90, y: 75 }, // That one pic of the cartoon do...
-    'ID67': { x: 6, y: 58 },  // the last bowling pin wobbling ...
-    'ID71': { x: 18, y: 10 }  // Being completely submerged in ...
+    'ID1': { x: 18, y: 69 },   // World is moving but I'm not moving along with it
+    'ID31': { x: 72, y: 42 },  // Trains, cars, moving objects moving past me in a blur
+    'ID60': { x: 28, y: 16 },  // Wouldn't say I'm much of an overthinker, rather I feel like a rusty tap...
+    'ID73': { x: 82, y: 45 }   // Moments of particular events that happened in the past
   },
   mobile: {
-    'ID7': { x: 90, y: 45 },  // sunshine and rainbows then sud...
-    'ID16': { x: 25, y: 68 }, // Having a lovely married life w...
-    'ID21': { x: 70, y: 29 }, // I cannaur...
-    'ID25': { x: 59, y: 35 }, // a whirlpool...
-    'ID33': { x: 33, y: 35 }, // walls closing in...
-    'ID35': { x: 75, y: 68 }, // Starts out like a sauna. And t...
-    'ID38': { x: 10, y: 37 }, // Drowning...
-    'ID53': { x: 55, y: 75 }, // That one pic of the cartoon do...
-    'ID67': { x: 16, y: 50 },  // the last bowling pin wobbling ...
-    'ID71': { x: 48, y: 20 }  // Being completely submerged in ...
+    'ID1': { x: 18, y: 64 },   // World is moving but I'm not moving along with it
+    'ID31': { x: 70, y: 35 },  // Trains, cars, moving objects moving past me in a blur
+    'ID60': { x: 28, y: 26 },  // Wouldn't say I'm much of an overthinker, rather I feel like a rusty tap...
+    'ID73': { x: 78, y: 70 }   // Moments of particular events that happened in the past
   }
 };
 
 // Simple layout storage - one layout for all devices
-const LOA_LAYOUT_KEY = 'loa-simple-layout-v17';
+const TD_LAYOUT_KEY = 'td-simple-layout-v4';
 
 // Set to true to ignore cache and always use fresh positions (for experimentation)
 const IGNORE_CACHE = false;
 
 function saveLayout(placed, isMobile) {
   try {
-    const deviceKey = isMobile ? LOA_LAYOUT_KEY + '-mobile' : LOA_LAYOUT_KEY + '-desktop';
+    const deviceKey = isMobile ? TD_LAYOUT_KEY + '-mobile' : TD_LAYOUT_KEY + '-desktop';
     sessionStorage.setItem(deviceKey, JSON.stringify(placed));
   } catch {}
 }
 
 function restoreLayout(isMobile) {
   try {
-    const deviceKey = isMobile ? LOA_LAYOUT_KEY + '-mobile' : LOA_LAYOUT_KEY + '-desktop';
+    const deviceKey = isMobile ? TD_LAYOUT_KEY + '-mobile' : TD_LAYOUT_KEY + '-desktop';
     return JSON.parse(sessionStorage.getItem(deviceKey) || 'null');
   } catch {
     return null;
   }
-}
-
-// Hardened FLIP utilities
-const nextFrame = () => new Promise(r => requestAnimationFrame(() => r()));
-
-// Progressive dissolve animation helper
-function triggerDissolveAnimation(flowerElement, delay = 0) {
-  // Use requestAnimationFrame to ensure DOM is ready
-  requestAnimationFrame(() => {
-    setTimeout(() => {
-      flowerElement.classList.add('flower-dissolve-in');
-    }, delay);
-  });
-}
-
-async function settleLayout(el) {
-  if (document.fonts?.ready) await document.fonts.ready;
-  const imgs = el?.querySelectorAll?.('img') || [];
-  await Promise.all([...imgs].map(img => (img.decode?.() ?? Promise.resolve()).catch(() => {})));
-  await nextFrame();
-  await nextFrame();
-}
-
-function measurePureBox(el) {
-  const prevTransition = el.style.transition, prevTransform = el.style.transform;
-  el.style.transition = 'none';
-  el.style.transform = 'none';
-  const rect = el.getBoundingClientRect();
-  el.style.transform = prevTransform;
-  el.style.transition = prevTransition;
-  return rect;
 }
 
 // FLIP guard utility to prevent CSS transition conflicts
@@ -121,14 +78,140 @@ function normalizeFlowerGraphic(el) {
     svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
   }
 }
-async function flipWithScale(el, flowerData, { duration = 420, easing = 'cubic-bezier(.22, .61, .36, 1)' } = {}) { if (!el) return; el.getAnimations?.().forEach(a => a.cancel()); const first = measurePureBox(el); const isMobile = window.innerWidth <= 1160; const positions = isMobile ? FLOWER_POSITIONS.mobile : FLOWER_POSITIONS.desktop; let position = positions[flowerData.id] || { x: 50, y: 50 }; const intensity = (flowerData.emotionalIntensity || 35) / 100; const tSize = Math.max(0.35, Math.min(1, intensity)); let flowerSize = Math.round(100 + (300 - 100) * tSize); if (!isMobile) flowerSize = Math.round(flowerSize * Math.min(2.0, window.innerWidth / 720)); el.style.transition = 'none'; el.style.left = `${position.x}%`; el.style.top = `${position.y}%`; el.style.width = `${flowerSize}px`; el.style.height = `${flowerSize}px`; normalizeFlowerGraphic(el); await settleLayout(el); const last = measurePureBox(el); const dx = first.left - last.left, dy = first.top - last.top; const sx = first.width / (last.width || 1), sy = first.height / (last.height || 1); if (Math.abs(dx) > 0.1 || Math.abs(dy) > 0.1 || Math.abs(sx - 1) > 0.01 || Math.abs(sy - 1) > 0.01) { el.style.willChange = 'transform'; el.style.transformOrigin = 'top left'; el.style.transition = 'none'; el.style.transform = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`; await nextFrame(); const anim = el.animate([{ transform: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`, transformOrigin: 'top left' }, { transform: 'translate(0, 0) scale(1, 1)', transformOrigin: 'top left' }], { duration, easing, fill: 'forwards' }); anim.addEventListener?.('finish', () => { el.style.transform = ''; el.style.willChange = ''; el.style.transition = ''; }); } }
 
-// Hardened FLIP animation with scale compensation for smooth responsive transitions
+// Progressive dissolve animation helper
+function triggerDissolveAnimation(flowerElement, delay = 0) {
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      flowerElement.classList.add('flower-dissolve-in');
+    }, delay);
+  });
+}
+
+// Hardened FLIP utilities for clean measurements and asset settling
+const nextFrame = () => new Promise(r => requestAnimationFrame(() => r()));
+
+async function settleLayout(el) {
+  // Wait for fonts that affect flower sizing
+  if (document.fonts?.ready) await document.fonts.ready;
+
+  // Decode any images that might affect layout
+  const imgs = el?.querySelectorAll?.('img') || [];
+  await Promise.all([...imgs].map(img => (img.decode?.() ?? Promise.resolve()).catch(() => {})));
+
+  // Double-RAF to let style & layout fully commit
+  await nextFrame();
+  await nextFrame();
+}
+
+// Measure layout box without any transforms currently applied
+function measurePureBox(el) {
+  const prevTransition = el.style.transition;
+  const prevTransform = el.style.transform;
+  el.style.transition = 'none';
+  el.style.transform = 'none';
+  const rect = el.getBoundingClientRect();
+  el.style.transform = prevTransform;
+  el.style.transition = prevTransition;
+  return rect;
+}
+
+// Hardened FLIP with scale compensation and clean measurements
+async function flipWithScale(el, flowerData, {
+  duration = 420,
+  easing = 'cubic-bezier(.22, .61, .36, 1)'
+} = {}) {
+  if (!el) return;
+
+  // Kill any in-flight animations
+  el.getAnimations?.().forEach(a => a.cancel());
+
+  // FIRST - measure pure layout box without transform pollution
+  const first = measurePureBox(el);
+
+  // Apply new layout without transitions
+  const isMobile = window.innerWidth <= 1160;
+  const positions = isMobile ? FLOWER_POSITIONS.mobile : FLOWER_POSITIONS.desktop;
+  let position = positions[flowerData.id];
+
+  if (!position) {
+    console.warn(`No position found for flower ${flowerData.id}, using fallback`);
+    position = { x: 50, y: 50 };
+  }
+
+  // Calculate new size using same logic as createTemporalDisconnectionLayout
+  const intensity = (flowerData.emotionalIntensity || 35) / 100;
+  const tSize = Math.max(0.35, Math.min(1, intensity));
+  const baseMin = 100;
+  const baseMax = 300;
+  let flowerSize = Math.round(baseMin + (baseMax - baseMin) * tSize);
+
+  if (!isMobile) {
+    const scaleFactor = Math.min(2.0, window.innerWidth / 720);
+    flowerSize = Math.round(flowerSize * scaleFactor);
+  }
+
+  // Apply final position and size
+  el.style.transition = 'none';
+  el.style.left = `${position.x}%`;
+  el.style.top = `${position.y}%`;
+  el.style.width = `${flowerSize}px`;
+  el.style.height = `${flowerSize}px`;
+
+  // Normalize inner SVG to scale with wrapper
+  normalizeFlowerGraphic(el);
+
+  // Let layout and assets settle completely
+  await settleLayout(el);
+
+  // LAST - measure settled layout
+  const last = measurePureBox(el);
+
+  // Calculate INVERT deltas
+  const dx = first.left - last.left;
+  const dy = first.top - last.top;
+  const sx = first.width / (last.width || 1);
+  const sy = first.height / (last.height || 1);
+
+  // Only animate if there's meaningful change
+  if (Math.abs(dx) > 0.1 || Math.abs(dy) > 0.1 || Math.abs(sx - 1) > 0.01 || Math.abs(sy - 1) > 0.01) {
+    // Set inverted state instantly
+    el.style.willChange = 'transform';
+    el.style.transformOrigin = 'top left';
+    el.style.transition = 'none';
+    el.style.transform = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
+
+    await nextFrame(); // ensure inverted state paints
+
+    // PLAY to identity with correct translate-then-scale order
+    const anim = el.animate([
+      {
+        transform: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`,
+        transformOrigin: 'top left'
+      },
+      {
+        transform: 'translate(0, 0) scale(1, 1)',
+        transformOrigin: 'top left'
+      }
+    ], {
+      duration,
+      easing,
+      fill: 'forwards'
+    });
+
+    anim.addEventListener?.('finish', () => {
+      el.style.transform = '';
+      el.style.willChange = '';
+      el.style.transition = ''; // restore CSS transitions
+    });
+  }
+}
+
 async function flipFlowers(flowers) {
   const container = document.getElementById('flower-container');
   if (!container) return;
 
-  const categoryFlowers = flowers.filter(f => f.category === "Loss of Agency");
+  const categoryFlowers = flowers.filter(f => f.category === "Temporal Disconnection");
   const byId = new Map(categoryFlowers.map(f => [f.id, f]));
   const existingFlowers = container.querySelectorAll('.flower');
 
@@ -142,16 +225,12 @@ async function flipFlowers(flowers) {
   await Promise.all(flipPromises);
 }
 
-// Fixed positioning system - no helper functions needed
-
-// Simple layout - no scaling, just percentages
-
 // Simple, universal layout calculation
-async function createLossOfAgencyLayout(flowers, isResize = false) {
+async function createTemporalDisconnectionLayout(flowers, isResize = false) {
   const container = document.getElementById('flower-container');
   if (!container) return;
 
-  const categoryFlowers = flowers.filter(f => f.category === "Loss of Agency");
+  const categoryFlowers = flowers.filter(f => f.category === "Temporal Disconnection");
 
   // Skip clearing and recreation if this is a resize operation
   if (isResize) {
@@ -187,7 +266,7 @@ async function createLossOfAgencyLayout(flowers, isResize = false) {
         maxRadius: size * 0.45
       });
 
-      // Outer wrapper for FLIP animations
+      // Outer wrapper for FLIP animations (no centering transform)
       const el = document.createElement('div');
       el.classList.add('flower');
       el.setAttribute('data-id', flowerData.id);
@@ -197,7 +276,7 @@ async function createLossOfAgencyLayout(flowers, isResize = false) {
       el.style.width = `${size}px`;
       el.style.height = `${size}px`;
 
-      // Inner element with centering transform
+      // Inner element with centering transform (CSS handles this)
       inner.classList.add('flower-inner');
       inner.style.width = '100%';
       inner.style.height = '100%';
@@ -209,15 +288,13 @@ async function createLossOfAgencyLayout(flowers, isResize = false) {
         FlowerInteractions.addBehavior(el, flowerData);
       }
 
-      // Progressive rendering: append immediately and trigger dissolve animation
       container.appendChild(el);
-      triggerDissolveAnimation(el, index * 50); // 50ms stagger between flowers
+      triggerDissolveAnimation(el, index * 50);
     });
     return;
   }
 
   // Fixed positioning - no complex calculations needed
-
   const placedFlowers = [];
   const resultsForPersist = [];
 
@@ -286,9 +363,8 @@ async function createLossOfAgencyLayout(flowers, isResize = false) {
       FlowerInteractions.addBehavior(el, flowerData);
     }
 
-    // Progressive rendering: append immediately and trigger dissolve animation
     container.appendChild(el);
-    triggerDissolveAnimation(el, index * 50); // 50ms stagger between flowers
+    triggerDissolveAnimation(el, index * 50);
   });
 
   // Save layout for future use with device type
@@ -296,7 +372,7 @@ async function createLossOfAgencyLayout(flowers, isResize = false) {
 }
 
 // Load data and initialize page
-fetch('../data.json')
+fetch('metaphordata/data.json')
   .then(r => r.json())
   .then(rawData => {
     const flowers = parseFlowerData(rawData);
@@ -310,7 +386,7 @@ fetch('../data.json')
 
     // Ensure layout runs after page is fully rendered and settled
     const initializeLayout = () => {
-      createLossOfAgencyLayout(flowers);
+      createTemporalDisconnectionLayout(flowers);
     };
 
     // Use requestAnimationFrame to ensure DOM is fully rendered
@@ -328,10 +404,10 @@ fetch('../data.json')
       if (currentIsDesktop !== lastIsDesktop) {
         console.log('Breakpoint crossed, animating flower transitions:', window.innerWidth);
 
-        // Clear cache and trigger FLIP animation
-        sessionStorage.removeItem(LOA_LAYOUT_KEY + '-desktop');
-        sessionStorage.removeItem(LOA_LAYOUT_KEY + '-mobile');
-        await createLossOfAgencyLayout(flowers, true); // isResize = true
+        // Clear cache and trigger hardened FLIP animation
+        sessionStorage.removeItem(TD_LAYOUT_KEY + '-desktop');
+        sessionStorage.removeItem(TD_LAYOUT_KEY + '-mobile');
+        await createTemporalDisconnectionLayout(flowers, true); // isResize = true
 
         lastIsDesktop = currentIsDesktop;
       }
@@ -351,4 +427,4 @@ fetch('../data.json')
       }, 150);
     });
   })
-  .catch(err => console.error("Error loading data for Loss of Agency:", err));
+  .catch(err => console.error("Error loading data for Temporal Disconnection:", err));

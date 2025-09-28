@@ -1,7 +1,7 @@
 /* ===== FONT DECLARATIONS ===== */
 @font-face {
   font-family: "junicoderegular";
-  src: url("./Junicode/junicode-regular-webfont.woff2") format("woff2");
+  src: url("../fonts/Junicode/junicode-regular-webfont.woff2") format("woff2");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -9,7 +9,7 @@
 
 @font-face {
   font-family: "junicoderegularcondensed";
-  src: url("./Junicode/junicode-regularcondensed-webfont.woff2") format("woff2");
+  src: url("../fonts/Junicode/junicode-regularcondensed-webfont.woff2") format("woff2");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -17,7 +17,7 @@
 
 @font-face {
   font-family: "junicodeitalic";
-  src: url("./Junicode/junicode-italic-webfont.woff2") format("woff2");
+  src: url("../fonts/Junicode/junicode-italic-webfont.woff2") format("woff2");
   font-weight: 400;
   font-style: italic;
   font-display: swap;
@@ -25,7 +25,7 @@
 
 @font-face {
   font-family: "Satoshi-Black";
-  src: url("./Satoshi/WEB/fonts/Satoshi-Black.woff2") format("woff2");
+  src: url("../fonts/Satoshi/fonts/Satoshi-Black.woff2") format("woff2");
   font-weight: 900;
   font-style: normal;
   font-display: swap;
@@ -33,7 +33,7 @@
 
 @font-face {
   font-family: "Satoshi-Medium";
-  src: url("./Satoshi/WEB/fonts/Satoshi-Medium.woff2") format("woff2");
+  src: url("../fonts/Satoshi/fonts/Satoshi-Medium.woff2") format("woff2");
   font-weight: 500;
   font-style: normal;
   font-display: swap;

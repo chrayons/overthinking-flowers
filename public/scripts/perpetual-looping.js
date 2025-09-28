@@ -1,63 +1,62 @@
-// sensory-overwhelm.js
-// Displays flowers for the "Sensory Overwhelm" category with fixed positioning
+// perpetual-looping.js
+// Displays flowers for the "Perpetual Looping" category with fixed positioning
 
-console.log("Sensory Overwhelm page loading...");
+console.log("Perpetual Looping page loading...");
 
 // Fixed flower positions - captured from working layout
 const FLOWER_POSITIONS = {
   desktop: {
-    'ID24': { x: 70, y: 85 },  // Maybe it's bc I have ADHD. I think of flashes of images in my head rapidly appearing...
-    'ID47': { x: 85, y: 20 },  // A heavy, buzzing cloud over my head throughout the day.
-    'ID49': { x: 10, y: 40 },  // The movie: anything everywhere all at once
-    'ID50': { x: 15, y: 80 },  // Racing ants
-    'ID61': { x: 80, y: 50 },  // network/electric movements, overlapping people talking
-    'ID62': { x: 22, y: 69 },  // Dark cloud, lots of tornados in my head
-    'ID63': { x: 41, y: 7 },  // a band with 100 instruments playing
-    'ID65': { x: 60, y: 27 },  // a swarm of bees that won't stop buzzing
-    'ID72': { x: 90, y: 64 }   // Like that scene in Harry Potter when he has to grab the right key...
+    'ID2': { x: 15, y: 20 },   // like a computer caught in an infinite loop
+    'ID4': { x: 92, y: 30 },   // like i'm running to a place where there's no end to
+    'ID6': { x: 39, y: 8 },   // kind of like being lost at sea - difficult to navigate through the waves...
+    'ID9': { x: 17, y: 40 },   // A toy train track where the train goes in circles constantly without ever getting anywhere.
+    'ID17': { x: 75, y: 40 },  // Like a hamster on a wheel? Or like I'm standing still but everyone around me...
+    'ID26': { x: 2, y: 58 },  // A circular amusement park ride that spins in a circle over and over
+    'ID37': { x: 60, y: 20 },  // Thoughts chasing each other, mouth to body mouth to body...
+    'ID41': { x: 75, y: 65 },  // Chains of predictions of events and possible solutions (flowchart-like)
+    'ID42': { x: 92, y: 70 },  // surges of negative overlooping energy
+    'ID54': { x: 29, y: 92 },  // I tend to replay different scenarios that could have happened...
+    'ID58': { x: 12, y: 81 },  // everytime i pick up something something else drops and i have my arms full of thoughts
+    'ID64': { x: 80, y: 85 },  // Hamster 🐹 Wheel
+    'ID68': { x: 26, y: 67 }   // cycle – never ending, going round and round
   },
   mobile: {
-    'ID24': { x: 47, y: 72 },  // Maybe it's bc I have ADHD. I think of flashes of images in my head rapidly appearing...
-    'ID47': { x: 75, y: 20 },  // A heavy, buzzing cloud over my head throughout the day.
-    'ID49': { x: 15, y: 40 },  // The movie: anything everywhere all at once
-    'ID50': { x: 25, y: 70 },  // Racing ants
-    'ID61': { x: 80, y: 44 },  // network/electric movements, overlapping people talking
-    'ID62': { x: 10, y: 70 },  // Dark cloud, lots of tornados in my head
-    'ID63': { x: 37, y: 27 },  // a band with 100 instruments playing
-    'ID65': { x: 60, y: 35 },  // a swarm of bees that won't stop buzzing
-    'ID72': { x: 85, y: 68 }   // Like that scene in Harry Potter when he has to grab the right key...
+    'ID2': { x: 30, y: 20 },   // like a computer caught in an infinite loop
+    'ID4': { x: 55, y: 30 },   // like i'm running to a place where there's no end to
+    'ID6': { x: 39, y: 15 },   // kind of like being lost at sea - difficult to navigate through the waves...
+    'ID9': { x: 15, y: 45 },   // A toy train track where the train goes in circles constantly without ever getting anywhere.
+    'ID17': { x: 75, y: 40 },  // Like a hamster on a wheel? Or like I'm standing still but everyone around me...
+    'ID26': { x: 10, y: 40 },  // A circular amusement park ride that spins in a circle over and over
+    'ID37': { x: 60, y: 20 },  // Thoughts chasing each other, mouth to body mouth to body...
+    'ID41': { x: 65, y: 65 },  // Chains of predictions of events and possible solutions (flowchart-like)
+    'ID42': { x: 80, y: 70 },  // surges of negative overlooping energy
+    'ID54': { x: 45, y: 75 },  // I tend to replay different scenarios that could have happened...
+    'ID58': { x: 14, y: 80 },  // everytime i pick up something something else drops and i have my arms full of thoughts
+    'ID64': { x: 80, y: 75 },  // Hamster 🐹 Wheel
+    'ID68': { x: 27, y: 65 }   // cycle – never ending, going round and round
   }
 };
 
 // Simple layout storage - one layout for all devices
-const SO_LAYOUT_KEY = 'so-simple-layout-v4';
+const PL_LAYOUT_KEY = 'pl-simple-layout-v3';
 
 // Set to true to ignore cache and always use fresh positions (for experimentation)
 const IGNORE_CACHE = false;
 
 function saveLayout(placed, isMobile) {
   try {
-    const deviceKey = isMobile ? SO_LAYOUT_KEY + '-mobile' : SO_LAYOUT_KEY + '-desktop';
+    const deviceKey = isMobile ? PL_LAYOUT_KEY + '-mobile' : PL_LAYOUT_KEY + '-desktop';
     sessionStorage.setItem(deviceKey, JSON.stringify(placed));
   } catch {}
 }
 
 function restoreLayout(isMobile) {
   try {
-    const deviceKey = isMobile ? SO_LAYOUT_KEY + '-mobile' : SO_LAYOUT_KEY + '-desktop';
+    const deviceKey = isMobile ? PL_LAYOUT_KEY + '-mobile' : PL_LAYOUT_KEY + '-desktop';
     return JSON.parse(sessionStorage.getItem(deviceKey) || 'null');
   } catch {
     return null;
   }
-}
-
-// Progressive dissolve animation helper
-function triggerDissolveAnimation(flowerElement, delay = 0) {
-  requestAnimationFrame(() => {
-    setTimeout(() => {
-      flowerElement.classList.add('flower-dissolve-in');
-    }, delay);
-  });
 }
 
 // FLIP guard utility to prevent CSS transition conflicts
@@ -98,14 +97,25 @@ function normalizeFlowerGraphic(el) {
   }
 }
 
-// Hardened FLIP utilities
+// Hardened FLIP utilities for clean measurements and asset settling
 const nextFrame = () => new Promise(r => requestAnimationFrame(() => r()));
+
+// Progressive dissolve animation helper
+function triggerDissolveAnimation(flowerElement, delay = 0) {
+  // Use requestAnimationFrame to ensure DOM is ready
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      flowerElement.classList.add('flower-dissolve-in');
+    }, delay);
+  });
+}
 
 async function settleLayout(el) {
   if (document.fonts?.ready) await document.fonts.ready;
   const imgs = el?.querySelectorAll?.('img') || [];
   await Promise.all([...imgs].map(img => (img.decode?.() ?? Promise.resolve()).catch(() => {})));
-  await nextFrame(); await nextFrame();
+  await nextFrame();
+  await nextFrame();
 }
 
 function measurePureBox(el) {
@@ -119,19 +129,34 @@ function measurePureBox(el) {
   return rect;
 }
 
-async function flipWithScale(el, flowerData, { duration = 420, easing = 'cubic-bezier(.22, .61, .36, 1)' } = {}) {
+async function flipWithScale(el, flowerData, {
+  duration = 420,
+  easing = 'cubic-bezier(.22, .61, .36, 1)'
+} = {}) {
   if (!el) return;
+
   el.getAnimations?.().forEach(a => a.cancel());
   const first = measurePureBox(el);
 
   const isMobile = window.innerWidth <= 1160;
   const positions = isMobile ? FLOWER_POSITIONS.mobile : FLOWER_POSITIONS.desktop;
-  let position = positions[flowerData.id] || { x: 50, y: 50 };
+  let position = positions[flowerData.id];
+
+  if (!position) {
+    console.warn(`No position found for flower ${flowerData.id}, using fallback`);
+    position = { x: 50, y: 50 };
+  }
 
   const intensity = (flowerData.emotionalIntensity || 35) / 100;
   const tSize = Math.max(0.35, Math.min(1, intensity));
-  let flowerSize = Math.round(100 + (300 - 100) * tSize);
-  if (!isMobile) flowerSize = Math.round(flowerSize * Math.min(2.0, window.innerWidth / 720));
+  const baseMin = 100;
+  const baseMax = 300;
+  let flowerSize = Math.round(baseMin + (baseMax - baseMin) * tSize);
+
+  if (!isMobile) {
+    const scaleFactor = Math.min(2.0, window.innerWidth / 720);
+    flowerSize = Math.round(flowerSize * scaleFactor);
+  }
 
   el.style.transition = 'none';
   el.style.left = `${position.x}%`;
@@ -145,14 +170,17 @@ async function flipWithScale(el, flowerData, { duration = 420, easing = 'cubic-b
   await settleLayout(el);
   const last = measurePureBox(el);
 
-  const dx = first.left - last.left, dy = first.top - last.top;
-  const sx = first.width / (last.width || 1), sy = first.height / (last.height || 1);
+  const dx = first.left - last.left;
+  const dy = first.top - last.top;
+  const sx = first.width / (last.width || 1);
+  const sy = first.height / (last.height || 1);
 
   if (Math.abs(dx) > 0.1 || Math.abs(dy) > 0.1 || Math.abs(sx - 1) > 0.01 || Math.abs(sy - 1) > 0.01) {
     el.style.willChange = 'transform';
     el.style.transformOrigin = 'top left';
     el.style.transition = 'none';
     el.style.transform = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
+
     await nextFrame();
 
     const anim = el.animate([
@@ -161,7 +189,9 @@ async function flipWithScale(el, flowerData, { duration = 420, easing = 'cubic-b
     ], { duration, easing, fill: 'forwards' });
 
     anim.addEventListener?.('finish', () => {
-      el.style.transform = ''; el.style.willChange = ''; el.style.transition = '';
+      el.style.transform = '';
+      el.style.willChange = '';
+      el.style.transition = '';
     });
   }
 }
@@ -170,7 +200,7 @@ async function flipFlowers(flowers) {
   const container = document.getElementById('flower-container');
   if (!container) return;
 
-  const categoryFlowers = flowers.filter(f => f.category === "Sensory Overwhelm");
+  const categoryFlowers = flowers.filter(f => f.category === "Perpetual Looping");
   const byId = new Map(categoryFlowers.map(f => [f.id, f]));
   const existingFlowers = container.querySelectorAll('.flower');
 
@@ -185,11 +215,11 @@ async function flipFlowers(flowers) {
 }
 
 // Simple, universal layout calculation
-async function createSensoryOverwhelmLayout(flowers, isResize = false) {
+async function createPerpetualLoopingLayout(flowers, isResize = false) {
   const container = document.getElementById('flower-container');
   if (!container) return;
 
-  const categoryFlowers = flowers.filter(f => f.category === "Sensory Overwhelm");
+  const categoryFlowers = flowers.filter(f => f.category === "Perpetual Looping");
 
   // Skip clearing and recreation if this is a resize operation
   if (isResize) {
@@ -247,8 +277,9 @@ async function createSensoryOverwhelmLayout(flowers, isResize = false) {
         FlowerInteractions.addBehavior(el, flowerData);
       }
 
+      // Progressive rendering: append immediately and trigger dissolve animation
       container.appendChild(el);
-      triggerDissolveAnimation(el, index * 50);
+      triggerDissolveAnimation(el, index * 50); // 50ms stagger between flowers
     });
     return;
   }
@@ -322,8 +353,9 @@ async function createSensoryOverwhelmLayout(flowers, isResize = false) {
       FlowerInteractions.addBehavior(el, flowerData);
     }
 
+    // Progressive rendering: append immediately and trigger dissolve animation
     container.appendChild(el);
-    triggerDissolveAnimation(el, index * 50);
+    triggerDissolveAnimation(el, index * 50); // 50ms stagger between flowers
   });
 
   // Save layout for future use with device type
@@ -331,7 +363,7 @@ async function createSensoryOverwhelmLayout(flowers, isResize = false) {
 }
 
 // Load data and initialize page
-fetch('../data.json')
+fetch('metaphordata/data.json')
   .then(r => r.json())
   .then(rawData => {
     const flowers = parseFlowerData(rawData);
@@ -345,7 +377,7 @@ fetch('../data.json')
 
     // Ensure layout runs after page is fully rendered and settled
     const initializeLayout = () => {
-      createSensoryOverwhelmLayout(flowers);
+      createPerpetualLoopingLayout(flowers);
     };
 
     // Use requestAnimationFrame to ensure DOM is fully rendered
@@ -364,9 +396,9 @@ fetch('../data.json')
         console.log('Breakpoint crossed, animating flower transitions:', window.innerWidth);
 
         // Clear cache and trigger hardened FLIP animation
-        sessionStorage.removeItem(SO_LAYOUT_KEY + '-desktop');
-        sessionStorage.removeItem(SO_LAYOUT_KEY + '-mobile');
-        await createSensoryOverwhelmLayout(flowers, true); // isResize = true
+        sessionStorage.removeItem(PL_LAYOUT_KEY + '-desktop');
+        sessionStorage.removeItem(PL_LAYOUT_KEY + '-mobile');
+        await createPerpetualLoopingLayout(flowers, true); // isResize = true
 
         lastIsDesktop = currentIsDesktop;
       }
@@ -386,4 +418,4 @@ fetch('../data.json')
       }, 150);
     });
   })
-  .catch(err => console.error("Error loading data for Sensory Overwhelm:", err));
+  .catch(err => console.error("Error loading data for Perpetual Looping:", err));
