@@ -98,7 +98,7 @@ function addFlowersToExistingCell(cell, categoryName, flowers) {
     // Position flowers for transform-only animation (better performance)
     el.style.left = `${centerX}px`; // Base position at label center
     el.style.top = `${centerY}px`;   // Base position at label center
-    el.style.transform = `translate3d(-50%, -50%, 0) rotate(${rot}deg) scale(0.05)`; // Start tiny (5% scale)
+    el.style.transform = `translate3d(-50%, -50%, 0) rotate(${rot}deg) scale(0.1)`; // Start small (10% scale) for smoother animation
     el.style.opacity = '1'; // Visible but tiny
     el.style.willChange = 'transform'; // Optimize for animation
     el.classList.add('flower-ready'); // Mark as ready for animation
@@ -379,36 +379,41 @@ window.triggerFlowerAnimations = function() {
 
   // Use requestAnimationFrame for smoother performance
   requestAnimationFrame(() => {
-    // Animate ALL flowers simultaneously using transform-only (GPU accelerated)
-    allFlowers.forEach((flower) => {
+    // Animate ALL flowers with very subtle timing variation for organic feel
+    allFlowers.forEach((flower, index) => {
       const offsetX = parseFloat(flower.dataset.offsetX);
       const offsetY = parseFloat(flower.dataset.offsetY);
       const finalScale = flower.dataset.finalScale;
       const finalRotation = flower.dataset.finalRotation;
 
-      if (useReducedAnimations) {
-        // Instant positioning for low-end devices
-        const translateX = -50; // Keep centered
-        const translateY = -50; // Keep centered
-        flower.style.transform = `translate3d(${translateX}%, ${translateY}%, 0) translate3d(${offsetX}px, ${offsetY}px, 0) rotate(${finalRotation}deg) scale(${finalScale})`;
-        flower.classList.remove('flower-ready');
-        flower.style.willChange = 'auto';
-      } else {
-        // Full animation for capable devices
-        flower.style.transition = 'transform 0.6s cubic-bezier(0, 0, 0.3, 1)';
+      // Add very subtle timing variation (0-20ms) for organic feel
+      const subtleDelay = Math.random() * 20;
 
-        // Animate using translate3d for GPU acceleration (no calc() needed)
-        const translateX = -50; // Keep centered
-        const translateY = -50; // Keep centered
-        flower.style.transform = `translate3d(${translateX}%, ${translateY}%, 0) translate3d(${offsetX}px, ${offsetY}px, 0) rotate(${finalRotation}deg) scale(${finalScale})`;
-
-        // Clean up after animation
-        setTimeout(() => {
+      setTimeout(() => {
+        if (useReducedAnimations) {
+          // Instant positioning for low-end devices
+          const translateX = -50; // Keep centered
+          const translateY = -50; // Keep centered
+          flower.style.transform = `translate3d(${translateX}%, ${translateY}%, 0) translate3d(${offsetX}px, ${offsetY}px, 0) rotate(${finalRotation}deg) scale(${finalScale})`;
           flower.classList.remove('flower-ready');
-          flower.style.transition = '';
-          flower.style.willChange = 'auto'; // Reset will-change
-        }, 600);
-      }
+          flower.style.willChange = 'auto';
+        } else {
+          // Full animation for capable devices - smooth slow-to-fast easing
+          flower.style.transition = 'transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+
+          // Animate using translate3d for GPU acceleration (no calc() needed)
+          const translateX = -50; // Keep centered
+          const translateY = -50; // Keep centered
+          flower.style.transform = `translate3d(${translateX}%, ${translateY}%, 0) translate3d(${offsetX}px, ${offsetY}px, 0) rotate(${finalRotation}deg) scale(${finalScale})`;
+
+          // Clean up after animation (increased timeout to match new duration)
+          setTimeout(() => {
+            flower.classList.remove('flower-ready');
+            flower.style.transition = '';
+            flower.style.willChange = 'auto'; // Reset will-change
+          }, 800);
+        }
+      }, subtleDelay);
     });
   });
 };
