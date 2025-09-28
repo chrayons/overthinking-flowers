@@ -769,6 +769,25 @@ body {
   position: relative;
 }
 
+/* Mobile carousel positioning following rule of thirds */
+@media (max-width: 1160px) {
+  .mobile-carousel {
+    position: fixed;
+    top: 30vh; /* Consistent positioning with category pages */
+    left: 50%;
+    transform: translateX(-50%);
+    margin: 0;
+    gap: 16px; /* Tighter spacing for mobile */
+  }
+}
+
+@media (max-width: 775px) {
+  .mobile-carousel {
+    top: 30vh; /* Slightly higher on very small screens for better thumb zone */
+    gap: 12px; /* Even tighter spacing for mobile */
+  }
+}
+
 /* Category Page Overlay - Desktop and Mobile */
 .category-overlay {
   position: fixed;
@@ -945,10 +964,12 @@ body {
 }
 
 
-/* Responsive adjustments for very small screens */
+/* Responsive adjustments for smaller screens - rule of thirds positioning */
 @media (max-width: 1160px) {
   .category-overlay {
     gap: 32px; /* Tighter spacing on small screens */
+    justify-content: flex-start; /* Move away from center for rule of thirds */
+    padding-top: 30vh; /* Consistent positioning with mobile for better visual alignment */
   }
 
   .category-overlay .category-name {
@@ -962,6 +983,22 @@ body {
 
   .category-overlay .btn-return-home {
     width: 155px; /* Match mobile button width */
+  }
+}
+
+/* Enhanced mobile positioning for very small screens */
+@media (max-width: 775px) {
+  .category-overlay {
+    padding-top: 30vh; /* Slightly higher positioning on mobile for better thumb zone */
+    gap: 24px; /* Even tighter spacing for mobile */
+  }
+
+  .category-overlay .category-name {
+    font-size: 36px; /* Smaller font for mobile screens */
+  }
+
+  .category-nav-section {
+    gap: 12px; /* More compact navigation on mobile */
   }
 }
 

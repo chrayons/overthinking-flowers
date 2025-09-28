@@ -12,15 +12,15 @@ const FLOWER_POSITIONS = {
     'ID73': { x: 82, y: 45 }   // Moments of particular events that happened in the past
   },
   mobile: {
-    'ID1': { x: 18, y: 64 },   // World is moving but I'm not moving along with it
-    'ID31': { x: 70, y: 35 },  // Trains, cars, moving objects moving past me in a blur
-    'ID60': { x: 28, y: 26 },  // Wouldn't say I'm much of an overthinker, rather I feel like a rusty tap...
-    'ID73': { x: 78, y: 70 }   // Moments of particular events that happened in the past
+    'ID1': { x: 18, y: 54 },   // World is moving but I'm not moving along with it
+    'ID31': { x: 70, y: 25 },  // Trains, cars, moving objects moving past me in a blur
+    'ID60': { x: 28, y: 16 },  // Wouldn't say I'm much of an overthinker, rather I feel like a rusty tap...
+    'ID73': { x: 78, y: 60 }   // Moments of particular events that happened in the past
   }
 };
 
 // Simple layout storage - one layout for all devices
-const TD_LAYOUT_KEY = 'td-simple-layout-v4';
+const TD_LAYOUT_KEY = 'td-simple-layout-v5';
 
 // Mobile detection and performance optimization
 function isMobileDevice() {

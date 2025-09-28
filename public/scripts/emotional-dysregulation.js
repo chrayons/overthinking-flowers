@@ -19,22 +19,22 @@ const FLOWER_POSITIONS = {
     'ID70': { x: 94, y: 92 }   // nail biting
   },
   mobile: {
-    'ID3': { x: 20, y: 30 },   // Elmo screaming with fire meme
-    'ID10': { x: 22, y: 20 },  // darkness, spring under tension
-    'ID12': { x: 71, y: 40 },  // A beating chest 
-    'ID13': { x: 18, y: 38 },  // being locked in a sound proof box periodically screaming and lashing out only to calm down and pretend everything is normal
-    'ID14': { x: 12, y: 70 },  // head pounding, dizzying, heat flash/fever
-    'ID20': { x: 50, y: 80 },  // U know when squidward left the krusty krab for spongebob to run alone and he couldn’t relax
-    'ID28': { x: 70, y: 67 },  // A hyperventilating stuffed animal (hehehe)
-    'ID30': { x: 77, y: 25 },  // loads of trains going in the same direction at the same time (bound to crash), a lift where people keep getting on even though it’s uncomfortably full and hard to breathe 
-    'ID36': { x: 56, y: 26 },  // the “this is fine” dog meme
-    'ID40': { x: 35, y: 75 },  // Chicken running around with its head cut off
-    'ID70': { x: 80, y: 72 }   // nail biting
+    'ID3': { x: 20, y: 25 },   // Elmo screaming with fire meme
+    'ID10': { x: 22, y: 15 },  // darkness, spring under tension
+    'ID12': { x: 71, y: 30 },  // A beating chest 
+    'ID13': { x: 15, y: 35 },  // being locked in a sound proof box periodically screaming and lashing out only to calm down and pretend everything is normal
+    'ID14': { x: 12, y: 60 },  // head pounding, dizzying, heat flash/fever
+    'ID20': { x: 50, y: 70 },  // U know when squidward left the krusty krab for spongebob to run alone and he couldn’t relax
+    'ID28': { x: 70, y: 57 },  // A hyperventilating stuffed animal (hehehe)
+    'ID30': { x: 77, y: 15 },  // loads of trains going in the same direction at the same time (bound to crash), a lift where people keep getting on even though it’s uncomfortably full and hard to breathe 
+    'ID36': { x: 56, y: 16 },  // the “this is fine” dog meme
+    'ID40': { x: 35, y: 65 },  // Chicken running around with its head cut off
+    'ID70': { x: 80, y: 62 }   // nail biting
   }
 };
 
 // Simple layout storage - one layout for all devices
-const ED_LAYOUT_KEY = 'ed-simple-layout-v3';
+const ED_LAYOUT_KEY = 'ed-simple-layout-v4';
 
 // Mobile detection and performance optimization
 function isMobileDevice() {
