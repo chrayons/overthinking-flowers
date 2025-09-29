@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="fonts/Satoshi/css/satoshi.css">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/information-tooltip.css">
+  <link rel="stylesheet" href="css/instructional-banner.css">
 </head>
 <body class="category-page">
   <div class="wrapper">
@@ -62,6 +63,17 @@
         </button>
       </div>
 
+      <!-- Mobile/Tablet Instructional Banner -->
+      <div id="instructional-banner"
+           role="region"
+           aria-live="polite"
+           aria-label="Instruction for interacting with flowers"
+           style="display: none;">
+        <div class="banner-content">
+          CLICK ON THE FLOWERS TO EXPLORE
+        </div>
+      </div>
+
       <a href="index.html" class="btn-return-home">Return to Home</a>
     </div>
 
@@ -77,6 +89,8 @@
     <script defer src="scripts/flower-interactions.js"></script>
     <script defer src="scripts/category-navigation.js"></script>
     <script defer src="scripts/emotional-dysregulation.js"></script>
+
+    <script defer src="scripts/instructional-banner.js"></script>
 
     <!-- Information tooltip system -->
     <script type="module">
