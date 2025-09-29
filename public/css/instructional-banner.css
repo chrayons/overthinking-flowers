@@ -15,7 +15,7 @@
     will-change: backdrop-filter;
     isolation: isolate;
     border: 0.5px solid #F8F8FF;
-    border-radius: 25px; /* Pill-shaped for banner */
+    border-radius: 5px; /* Match flower tooltip corners */
     padding: 8px 16px;
 
     /* Exact typography from .mg-tooltip */
