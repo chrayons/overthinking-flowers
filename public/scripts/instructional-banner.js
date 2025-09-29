@@ -2,7 +2,7 @@
     'use strict';
 
     const STORAGE_KEY = 'instructional_banner_shown';
-    const SWIPE_THRESHOLD = 40; // pixels
+    const SWIPE_THRESHOLD = 20; // pixels - reduced for better responsiveness
 
     // Device and session detection
     function shouldShowBanner() {
@@ -66,15 +66,31 @@
                 const touchY = e.touches[0].clientY;
                 const deltaY = touchY - this.touchStartY;
 
+                console.log('Touch move - deltaY:', deltaY, 'threshold:', SWIPE_THRESHOLD);
+
                 // Swipe down detection
                 if (deltaY > SWIPE_THRESHOLD) {
+                    console.log('Swipe threshold reached, dismissing');
                     e.preventDefault();
                     this.dismiss();
                 }
             }, { passive: false });
 
             this.banner.addEventListener('touchend', (e) => {
+                if (this.isDismissing) return;
+
                 e.stopPropagation();
+                const touchY = e.changedTouches[0].clientY;
+                const deltaY = touchY - this.touchStartY;
+
+                console.log('Touch end - deltaY:', deltaY, 'threshold:', SWIPE_THRESHOLD);
+
+                // Check for swipe down on touchend as well (for quick swipes)
+                if (deltaY > SWIPE_THRESHOLD) {
+                    console.log('Swipe detected on touchend, dismissing');
+                    e.preventDefault();
+                    this.dismiss();
+                }
             }, { passive: false });
 
             // Keyboard accessibility (ESC to dismiss)
