@@ -339,6 +339,7 @@ body {
   visibility: visible;
   font-display: swap;
   will-change: auto;
+  text-decoration: none;
 }
 
 .header-label:hover {
