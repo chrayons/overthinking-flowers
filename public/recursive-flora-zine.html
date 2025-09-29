@@ -14,7 +14,7 @@
   <style>
     /* PDF Reader Styles */
     .zine-container {
-      max-width: 1200px;
+      max-width: 900px; /* Narrower for better page visibility */
       margin: 0 auto;
       padding: 2rem;
     }
@@ -39,10 +39,6 @@
 
     .pdf-reader {
       position: relative;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-      overflow: hidden;
       margin-bottom: 2rem;
     }
 
@@ -52,13 +48,14 @@
       justify-content: center;
       align-items: center;
       min-height: 600px;
-      background: #f8f9fa;
+      background: transparent; /* Clean, no background */
     }
 
     #pdf-canvas {
       max-width: 100%;
       height: auto;
       display: block;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15); /* Subtle document shadow */
     }
 
     .pdf-loading {
@@ -75,9 +72,10 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 1rem 2rem;
-      background: white;
+      padding: 1rem 0;
+      background: transparent;
       border-top: 1px solid #e1e5e9;
+      margin-top: 1rem;
     }
 
     .pdf-nav-button {
@@ -181,6 +179,42 @@
       font: 500 14px/1.4 "Satoshi-Medium", sans-serif;
     }
 
+    /* Fullscreen Mode */
+    .pdf-reader.fullscreen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: var(--page-bg);
+      z-index: 999999;
+      display: flex;
+      flex-direction: column;
+      margin: 0;
+    }
+
+    .pdf-reader.fullscreen .pdf-canvas-container {
+      flex: 1;
+      min-height: auto;
+      padding: 1rem;
+    }
+
+    .pdf-reader.fullscreen #pdf-canvas {
+      max-height: calc(100vh - 120px); /* Account for controls */
+      max-width: 100%;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+    }
+
+    .pdf-reader.fullscreen .pdf-controls {
+      background: var(--page-bg);
+      border-top: 1px solid #e1e5e9;
+      padding: 1rem 2rem;
+      margin-top: 0;
+      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    }
+
     /* Keyboard shortcuts hint */
     .keyboard-hints {
       text-align: center;
@@ -212,8 +246,8 @@
 
     <div class="zine-container">
       <div class="zine-header">
-        <h1 class="zine-title">RECURSIVE FLORA ZINE</h1>
-        <p class="zine-subtitle">An interactive exploration of overthinking patterns through botanical metaphors</p>
+        <h1 class="zine-title">Recursive Flora Zine</h1>
+        <p class="zine-subtitle">Placeholder</p>
         <div class="file-size-warning">
           <small style="color: #666; font-style: italic;">PDF size: [NEW_SIZE]MB - Optimized for web viewing</small>
         </div>
@@ -244,6 +278,7 @@
             <button class="pdf-zoom-button" id="zoom-out">−</button>
             <span class="pdf-zoom-level" id="zoom-level">100%</span>
             <button class="pdf-zoom-button" id="zoom-in">+</button>
+            <button class="pdf-zoom-button" id="fullscreen-btn" title="Fullscreen">⛶</button>
           </div>
 
           <button class="pdf-nav-button" id="next-page" disabled>Next →</button>
@@ -289,6 +324,8 @@
         this.zoomInBtn = document.getElementById('zoom-in');
         this.zoomOutBtn = document.getElementById('zoom-out');
         this.zoomLevelEl = document.getElementById('zoom-level');
+        this.fullscreenBtn = document.getElementById('fullscreen-btn');
+        this.pdfReader = document.querySelector('.pdf-reader');
       }
 
       setupEventListeners() {
@@ -316,6 +353,9 @@
         this.zoomInBtn.addEventListener('click', () => this.zoomIn());
         this.zoomOutBtn.addEventListener('click', () => this.zoomOut());
 
+        // Fullscreen control
+        this.fullscreenBtn.addEventListener('click', () => this.toggleFullscreen());
+
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
           if (e.target.tagName === 'INPUT') return;
@@ -337,6 +377,15 @@
             case '-':
               e.preventDefault();
               this.zoomOut();
+              break;
+            case 'f':
+            case 'F':
+              e.preventDefault();
+              this.toggleFullscreen();
+              break;
+            case 'Escape':
+              e.preventDefault();
+              this.exitFullscreen();
               break;
           }
         });
