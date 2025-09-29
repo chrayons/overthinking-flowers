@@ -371,6 +371,13 @@ try {
           clearTimeout(tipHideTimer);
           tipHideTimer = null;
         }
+
+        // Clear emotion tooltips when valence tooltip is shown
+        const emotionTooltip = stage.querySelector('.mg-tooltip');
+        if (emotionTooltip) {
+          emotionTooltip.style.display = 'none';
+        }
+
         const pct = summary[zone] ?? 0;
         tip.innerHTML = `${zoneLabel(zone)}: ${pct}% of<br>Emotional Intensity`;
         tip.hidden = false;
@@ -1265,6 +1272,12 @@ try {
               sector.setAttribute("fill", "transparent");
               sector.setAttribute("opacity", "0");
             });
+          }
+
+          // Clear valence tooltips when emotion tooltip is shown
+          const valenceTooltip = stage.querySelector('.valence-center-tip');
+          if (valenceTooltip) {
+            valenceTooltip.hidden = true;
           }
 
           currentHover = emotion;

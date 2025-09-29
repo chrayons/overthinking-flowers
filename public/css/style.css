@@ -1767,7 +1767,11 @@ body {
   position: absolute;
   z-index: 15;
   pointer-events: none;
-  background: rgba(255, 255, 255, 0.85); /* White with 85% opacity - better readability */
+  background: rgba(255, 255, 255, 0.6); /* Even whiter background */
+  backdrop-filter: blur(20px); /* Stronger frosted glass blur effect */
+  -webkit-backdrop-filter: blur(20px); /* Safari support */
+  will-change: backdrop-filter; /* GPU acceleration */
+  isolation: isolate; /* Create stacking context for backdrop-filter */
   border: 0.5px solid #F8F8FF; /* Border matching SVG */
   border-radius: 5px; /* Rounded corners */
   padding: 8px 16px; /* 8px top/bottom, 16px left/right */
@@ -1907,7 +1911,11 @@ body {
   position: absolute;
   z-index: 50; /* Above valence overlay (zIndex 20) */
   pointer-events: none;
-  background: rgba(255, 255, 255, 0.85); /* Match mg-tooltip transparency */
+  background: rgba(255, 255, 255, 0.6); /* Even whiter background */
+  backdrop-filter: blur(20px); /* Stronger frosted glass blur effect */
+  -webkit-backdrop-filter: blur(20px); /* Safari support */
+  will-change: backdrop-filter; /* GPU acceleration */
+  isolation: isolate; /* Create stacking context for backdrop-filter */
   border: 0.5px solid #F8F8FF; /* Match mg-tooltip border */
   border-radius: 5px; /* Match mg-tooltip radius */
   padding: 8px 16px; /* Match mg-tooltip padding */
