@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recursive Flora Zine - Metaphor Garden</title>
+  <link rel="preload" href="fonts/Junicode/junicode-regularcondensed-webfont.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/Satoshi/fonts/Satoshi-Medium.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/Satoshi/fonts/Satoshi-Light.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" as="style" href="fonts/Satoshi/css/satoshi.css">
+  <link rel="stylesheet" href="fonts/Satoshi/css/satoshi.css">
+  <link rel="stylesheet" href="css/style.css">
+
+  <style>
+    /* PDF Reader Styles */
+    .zine-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .zine-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .zine-title {
+      font: 400 36px/1.2 "junicoderegularcondensed", serif;
+      letter-spacing: 2.4px;
+      color: var(--text-primary);
+      margin-bottom: 1rem;
+    }
+
+    .zine-subtitle {
+      font: 400 16px/1.4 "Satoshi-Light", system-ui;
+      color: var(--text-primary);
+      opacity: 0.8;
+    }
+
+    .pdf-reader {
+      position: relative;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      margin-bottom: 2rem;
+    }
+
+    .pdf-canvas-container {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 600px;
+      background: #f8f9fa;
+    }
+
+    #pdf-canvas {
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .pdf-loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font: 500 14px/1.4 "Satoshi-Medium", sans-serif;
+      color: var(--text-primary);
+      opacity: 0.7;
+    }
+
+    .pdf-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      background: white;
+      border-top: 1px solid #e1e5e9;
+    }
+
+    .pdf-nav-button {
+      background: none;
+      border: 1px solid var(--text-primary);
+      color: var(--text-primary);
+      padding: 8px 16px;
+      border-radius: 4px;
+      font: 500 14px/1.4 "Satoshi-Medium", sans-serif;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      min-width: 80px;
+    }
+
+    .pdf-nav-button:hover:not(:disabled) {
+      background: var(--text-primary);
+      color: white;
+    }
+
+    .pdf-nav-button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .pdf-page-info {
+      font: 500 14px/1.4 "Satoshi-Medium", sans-serif;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .pdf-page-input {
+      border: 1px solid #e1e5e9;
+      padding: 4px 8px;
+      border-radius: 4px;
+      width: 60px;
+      text-align: center;
+      font: 500 14px/1.4 "Satoshi-Medium", sans-serif;
+    }
+
+    .pdf-zoom-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .pdf-zoom-button {
+      background: none;
+      border: 1px solid var(--text-primary);
+      color: var(--text-primary);
+      width: 32px;
+      height: 32px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .pdf-zoom-button:hover {
+      background: var(--text-primary);
+      color: white;
+    }
+
+    .pdf-zoom-level {
+      font: 500 12px/1.4 "Satoshi-Medium", sans-serif;
+      color: var(--text-primary);
+      min-width: 50px;
+      text-align: center;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .zine-container {
+        padding: 1rem;
+      }
+
+      .pdf-controls {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+      }
+
+      .pdf-page-info {
+        order: -1;
+      }
+
+      .pdf-zoom-controls {
+        order: 1;
+      }
+    }
+
+    /* Error State */
+    .pdf-error {
+      text-align: center;
+      padding: 2rem;
+      color: #dc3545;
+      font: 500 14px/1.4 "Satoshi-Medium", sans-serif;
+    }
+
+    /* Keyboard shortcuts hint */
+    .keyboard-hints {
+      text-align: center;
+      margin-top: 1rem;
+      font: 400 12px/1.4 "Satoshi-Light", system-ui;
+      color: var(--text-primary);
+      opacity: 0.6;
+    }
+  </style>
+</head>
+<body class="zine-page">
+  <div class="wrapper">
+    <a href="index.html" class="header-link">METAPHOR GARDEN</a>
+    <div class="header-label">RECURSIVE FLORA ZINE</div>
+
+    <!-- Mobile Header Dropdown -->
+    <div class="mobile-header-dropdown">
+      <button class="mobile-header-toggle" aria-label="Menu" aria-expanded="false">
+        <div class="menu-icon-inner">
+          <span></span>
+          <span></span>
+        </div>
+      </button>
+      <nav class="mobile-header-menu">
+        <a href="index.html" class="mobile-header-menu-item">METAPHOR GARDEN</a>
+        <span class="mobile-header-menu-item secondary">RECURSIVE FLORA ZINE</span>
+      </nav>
+    </div>
+
+    <div class="zine-container">
+      <div class="zine-header">
+        <h1 class="zine-title">RECURSIVE FLORA ZINE</h1>
+        <p class="zine-subtitle">An interactive exploration of overthinking patterns through botanical metaphors</p>
+        <div class="file-size-warning">
+          <small style="color: #666; font-style: italic;">PDF size: [NEW_SIZE]MB - Optimized for web viewing</small>
+        </div>
+      </div>
+
+      <div class="pdf-reader">
+        <div class="pdf-canvas-container">
+          <canvas id="pdf-canvas"></canvas>
+          <div class="pdf-loading" id="pdf-loading">
+            <div>Loading zine...</div>
+            <div id="loading-progress" style="margin-top: 8px; font-size: 12px; opacity: 0.7;"></div>
+          </div>
+          <div class="pdf-error" id="pdf-error" style="display: none;">
+            Error loading PDF. Please check that the file exists and try again.
+          </div>
+        </div>
+
+        <div class="pdf-controls">
+          <button class="pdf-nav-button" id="prev-page" disabled>← Previous</button>
+
+          <div class="pdf-page-info">
+            <span>Page</span>
+            <input type="number" id="page-input" class="pdf-page-input" min="1" value="1">
+            <span>of <span id="page-count">-</span></span>
+          </div>
+
+          <div class="pdf-zoom-controls">
+            <button class="pdf-zoom-button" id="zoom-out">−</button>
+            <span class="pdf-zoom-level" id="zoom-level">100%</span>
+            <button class="pdf-zoom-button" id="zoom-in">+</button>
+          </div>
+
+          <button class="pdf-nav-button" id="next-page" disabled>Next →</button>
+        </div>
+      </div>
+
+      <div class="keyboard-hints">
+        Use ← → arrow keys to navigate pages • + - keys to zoom • Enter to go to specific page
+      </div>
+    </div>
+  </div>
+
+  <!-- PDF.js Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+  <script>
+    // PDF Reader Implementation
+    class PDFReader {
+      constructor() {
+        this.pdfDoc = null;
+        this.pageNum = 1;
+        this.pageCount = 0;
+        this.scale = 1.2;
+        this.canvas = document.getElementById('pdf-canvas');
+        this.ctx = this.canvas.getContext('2d');
+        this.isRendering = false;
+
+        // PDF path - update this to your actual PDF file
+        this.pdfPath = 'pdf/recursive-flora-zine.pdf';
+
+        this.initializeElements();
+        this.setupEventListeners();
+        this.loadPDF();
+      }
+
+      initializeElements() {
+        this.loadingEl = document.getElementById('pdf-loading');
+        this.errorEl = document.getElementById('pdf-error');
+        this.prevBtn = document.getElementById('prev-page');
+        this.nextBtn = document.getElementById('next-page');
+        this.pageInput = document.getElementById('page-input');
+        this.pageCountEl = document.getElementById('page-count');
+        this.zoomInBtn = document.getElementById('zoom-in');
+        this.zoomOutBtn = document.getElementById('zoom-out');
+        this.zoomLevelEl = document.getElementById('zoom-level');
+      }
+
+      setupEventListeners() {
+        // Navigation buttons
+        this.prevBtn.addEventListener('click', () => this.goToPrevPage());
+        this.nextBtn.addEventListener('click', () => this.goToNextPage());
+
+        // Page input
+        this.pageInput.addEventListener('change', (e) => {
+          const pageNum = parseInt(e.target.value);
+          if (pageNum >= 1 && pageNum <= this.pageCount) {
+            this.goToPage(pageNum);
+          } else {
+            e.target.value = this.pageNum;
+          }
+        });
+
+        this.pageInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.target.blur();
+          }
+        });
+
+        // Zoom controls
+        this.zoomInBtn.addEventListener('click', () => this.zoomIn());
+        this.zoomOutBtn.addEventListener('click', () => this.zoomOut());
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+          if (e.target.tagName === 'INPUT') return;
+
+          switch(e.key) {
+            case 'ArrowLeft':
+              e.preventDefault();
+              this.goToPrevPage();
+              break;
+            case 'ArrowRight':
+              e.preventDefault();
+              this.goToNextPage();
+              break;
+            case '+':
+            case '=':
+              e.preventDefault();
+              this.zoomIn();
+              break;
+            case '-':
+              e.preventDefault();
+              this.zoomOut();
+              break;
+          }
+        });
+      }
+
+      async loadPDF() {
+        try {
+          this.showLoading(true);
+
+          // Configure PDF.js worker
+          pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+          const loadingTask = pdfjsLib.getDocument(this.pdfPath);
+
+          // Show download progress
+          loadingTask.onProgress = (progress) => {
+            if (progress.total) {
+              const percent = Math.round((progress.loaded / progress.total) * 100);
+              const progressEl = document.getElementById('loading-progress');
+              if (progressEl) {
+                progressEl.textContent = `Downloaded: ${percent}% (${(progress.loaded / 1024 / 1024).toFixed(1)}MB / ${(progress.total / 1024 / 1024).toFixed(1)}MB)`;
+              }
+            }
+          };
+
+          this.pdfDoc = await loadingTask.promise;
+          this.pageCount = this.pdfDoc.numPages;
+          this.pageCountEl.textContent = this.pageCount;
+
+          this.showLoading(false);
+          this.renderPage(1);
+          this.updateControls();
+
+        } catch (error) {
+          console.error('Error loading PDF:', error);
+          this.showError('Failed to load PDF. Please check the file path.');
+        }
+      }
+
+      async renderPage(pageNum) {
+        if (this.isRendering) return;
+
+        this.isRendering = true;
+
+        try {
+          const page = await this.pdfDoc.getPage(pageNum);
+          const viewport = page.getViewport({ scale: this.scale });
+
+          this.canvas.height = viewport.height;
+          this.canvas.width = viewport.width;
+
+          const renderContext = {
+            canvasContext: this.ctx,
+            viewport: viewport
+          };
+
+          await page.render(renderContext).promise;
+          this.pageNum = pageNum;
+          this.updateControls();
+
+        } catch (error) {
+          console.error('Error rendering page:', error);
+          this.showError('Error rendering page ' + pageNum);
+        }
+
+        this.isRendering = false;
+      }
+
+      goToPage(pageNum) {
+        if (pageNum >= 1 && pageNum <= this.pageCount && pageNum !== this.pageNum) {
+          this.renderPage(pageNum);
+        }
+      }
+
+      goToPrevPage() {
+        if (this.pageNum > 1) {
+          this.goToPage(this.pageNum - 1);
+        }
+      }
+
+      goToNextPage() {
+        if (this.pageNum < this.pageCount) {
+          this.goToPage(this.pageNum + 1);
+        }
+      }
+
+      zoomIn() {
+        if (this.scale < 3) {
+          this.scale += 0.2;
+          this.renderPage(this.pageNum);
+          this.updateZoomLevel();
+        }
+      }
+
+      zoomOut() {
+        if (this.scale > 0.4) {
+          this.scale -= 0.2;
+          this.renderPage(this.pageNum);
+          this.updateZoomLevel();
+        }
+      }
+
+      updateControls() {
+        this.prevBtn.disabled = this.pageNum <= 1;
+        this.nextBtn.disabled = this.pageNum >= this.pageCount;
+        this.pageInput.value = this.pageNum;
+        this.pageInput.max = this.pageCount;
+      }
+
+      updateZoomLevel() {
+        this.zoomLevelEl.textContent = Math.round(this.scale * 100) + '%';
+      }
+
+      showLoading(show) {
+        this.loadingEl.style.display = show ? 'block' : 'none';
+        this.canvas.style.display = show ? 'none' : 'block';
+      }
+
+      showError(message) {
+        this.loadingEl.style.display = 'none';
+        this.canvas.style.display = 'none';
+        this.errorEl.style.display = 'block';
+        this.errorEl.textContent = message;
+      }
+    }
+
+    // Initialize PDF Reader when page loads
+    document.addEventListener('DOMContentLoaded', () => {
+      new PDFReader();
+    });
+  </script>
+</body>
+</html>
