@@ -48,7 +48,6 @@
         setupEventListeners() {
             // Click to dismiss
             this.banner.addEventListener('click', (e) => {
-                console.log('Banner clicked');
                 e.preventDefault();
                 e.stopPropagation();
                 this.dismiss();
@@ -56,7 +55,6 @@
 
             // Touch events for swipe detection
             this.banner.addEventListener('touchstart', (e) => {
-                console.log('Banner touchstart');
                 e.stopPropagation();
                 this.touchStartY = e.touches[0].clientY;
             }, { passive: false });
@@ -68,11 +66,8 @@
                 const touchY = e.touches[0].clientY;
                 const deltaY = touchY - this.touchStartY;
 
-                console.log('Banner touchmove, deltaY:', deltaY);
-
                 // Swipe down detection
                 if (deltaY > SWIPE_THRESHOLD) {
-                    console.log('Swipe down detected, dismissing banner');
                     e.preventDefault();
                     this.dismiss();
                 }
@@ -98,8 +93,6 @@
         }
 
         show() {
-            console.log('Showing instructional banner');
-
             // Mark as shown in session storage immediately
             sessionStorage.setItem(STORAGE_KEY, 'true');
 

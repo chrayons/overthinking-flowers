@@ -1,11 +1,12 @@
 /* Instructional Banner Styles */
 #instructional-banner {
     position: fixed;
-    top: 50%;
+    bottom: 120px; /* Position from bottom to be between nav and return button */
     left: 50%;
-    transform: translateX(-50%) translateY(-50%) translateY(100px) scale(0.8);
-    z-index: 9999;
+    transform: translateX(-50%) translateY(100px) scale(0.8);
+    z-index: 99999;
     opacity: 0;
+    pointer-events: auto;
 
     /* Exact styling from .mg-tooltip */
     background: rgba(255, 255, 255, 0.6);
@@ -34,19 +35,19 @@
 /* Show state */
 #instructional-banner.show {
     opacity: 1;
-    transform: translateX(-50%) translateY(-50%) translateY(0) scale(1);
+    transform: translateX(-50%) translateY(0) scale(1);
 }
 
 /* Bounce animation keyframes */
 @keyframes gentle-bounce {
     0%, 20%, 50%, 80%, 100% {
-        transform: translateX(-50%) translateY(-50%) translateY(0) scale(1);
+        transform: translateX(-50%) translateY(0) scale(1);
     }
     40% {
-        transform: translateX(-50%) translateY(-50%) translateY(4px) scale(1);
+        transform: translateX(-50%) translateY(4px) scale(1);
     }
     60% {
-        transform: translateX(-50%) translateY(-50%) translateY(2px) scale(1);
+        transform: translateX(-50%) translateY(2px) scale(1);
     }
 }
 
@@ -58,7 +59,7 @@
 /* Dismiss animation */
 #instructional-banner.dismissing {
     opacity: 0;
-    transform: translateX(-50%) translateY(-50%) translateY(80px) scale(0.9);
+    transform: translateX(-50%) translateY(80px) scale(0.9);
     transition: transform 0.3s ease-in, opacity 0.3s ease-in;
 }
 
@@ -69,7 +70,7 @@
     }
 
     #instructional-banner.show {
-        transform: translateX(-50%) translateY(-50%) translateY(0) scale(1);
+        transform: translateX(-50%) translateY(0) scale(1);
     }
 
     #instructional-banner.bounce {
@@ -79,7 +80,7 @@
     @keyframes gentle-bounce {
         /* Disable bounce animation */
         0%, 100% {
-            transform: translateX(-50%) translateY(-50%) translateY(0) scale(1);
+            transform: translateX(-50%) translateY(0) scale(1);
         }
     }
 }
