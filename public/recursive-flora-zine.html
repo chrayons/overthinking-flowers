@@ -242,21 +242,35 @@
       margin: 0;
     }
 
+    /* Hide headers in fullscreen */
+    .pdf-reader.fullscreen ~ .header-bar,
+    .pdf-reader.fullscreen ~ .mobile-header-dropdown {
+      display: none;
+    }
+
+    body:has(.pdf-reader.fullscreen) .header-bar,
+    body:has(.pdf-reader.fullscreen) .mobile-header-dropdown {
+      display: none;
+    }
+
     /* Mobile Landscape Fullscreen */
     @media (max-width: 768px) {
       .pdf-reader.fullscreen {
         transform-origin: center center;
         animation: rotateToLandscape 0.3s ease-out forwards;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
       }
 
       @keyframes rotateToLandscape {
         from {
-          transform: rotate(0deg);
+          transform: translate(-50%, -50%) rotate(0deg);
           width: 100vw;
           height: 100vh;
         }
         to {
-          transform: rotate(90deg);
+          transform: translate(-50%, -50%) rotate(90deg);
           width: 100vh;
           height: 100vw;
         }
@@ -268,12 +282,12 @@
 
       @keyframes rotateToPortrait {
         from {
-          transform: rotate(90deg);
+          transform: translate(-50%, -50%) rotate(90deg);
           width: 100vh;
           height: 100vw;
         }
         to {
-          transform: rotate(0deg);
+          transform: translate(-50%, -50%) rotate(0deg);
           width: 100vw;
           height: 100vh;
         }
