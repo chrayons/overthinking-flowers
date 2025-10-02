@@ -2171,46 +2171,39 @@ body.intro-active .header-label {
   animation: fadeInText 1s ease-out 0.5s forwards;
 }
 
-/* Text styling - Desktop */
+/* Text styling - Desktop and Mobile */
 .intro-text {
   font-family: "junicodeitalic", "junicoderegular", Georgia, serif;
   font-style: italic;
-  font-size: 120px;
+  font-size: 120px; /* Desktop size */
   font-weight: 400;
   line-height: 1.2;
   color: #F8F8FF; /* White text on blue background */
   margin: 0;
-  max-width: 672px;
+  max-width: none; /* Remove constraint to allow natural 3-line layout */
   letter-spacing: 0.02em;
+  text-align: center; /* Center the actual lines */
 }
 
-/* Touch SVG container positioning */
-.intro-touch-container {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  width: 672px;
-  margin-top: -20px; /* Base mobile positioning */
-  opacity: 0;
-  animation: fadeInTouch 1s ease-out 2.1s forwards; /* Slightly longer delay for ripples to appear after */
+/* Last line container for SVG positioning */
+.last-line {
+  position: relative; /* Anchor for the SVG */
+  display: inline-block; /* Shrink-wrap to the last line's width */
 }
 
-/* Desktop-specific positioning */
-@media (min-width: 776px) {
-  .intro-touch-container {
-    transform: translateY(-120px) !important; /* Move up more to test positioning on desktop */
-  }
-}
 
-/* Touch SVG styling - Desktop */
-.intro-touch-svg {
+/* Position the ripple right after the "?" and vertically centered on that line */
+.last-line .intro-touch-svg {
+  position: absolute;
+  left: 100%; /* Immediately after the text */
+  top: 50%; /* Middle of the line's cap-height box */
+  transform: translate(0, -50%);
+  margin-left: 0.35em; /* Breathing room from the "?" */
   width: 136px;
   height: 133px;
   cursor: pointer;
-  margin-left: 20px;
   pointer-events: auto; /* Ensure clicks are captured */
   z-index: 10; /* Ensure it's above other elements */
-  position: relative;
 }
 
 /* Auto-expand animation - same as click animation but happens on fade-in */
@@ -2452,27 +2445,19 @@ body.intro-active .mobile-header-menu {
   }
 
   .intro-text {
-    font-size: 60px;
-    max-width: 336px;
+    font-size: clamp(4rem, 9vw, 7.5rem); /* Responsive font sizing - 4rem = 64px */
+    max-width: none; /* Remove max-width constraint */
     margin: 0;
+    text-align: center; /* Ensure lines are centered */
   }
 
-  .intro-touch-container {
-    /* Keep the desktop layout structure - flex row with SVG to the right */
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    width: 336px;
-    margin-top: -10px; /* Slight overlap like desktop, but less aggressive */
-    /* Remove transforms - let the natural layout handle positioning */
-    transform: none !important;
-  }
-
-  .intro-touch-svg {
+  /* Mobile SVG sizing and positioning */
+  .last-line .intro-touch-svg {
     width: 88px;
-    height: 88px; /* Updated to match new square aspect ratio */
-    margin-left: 16px;
+    height: 88px; /* Mobile sizing */
+    margin-left: 0.2em; /* Tighter spacing on mobile */
   }
+
 }
 
 /* Animations */
@@ -2612,7 +2597,6 @@ body.intro-active .mobile-header-menu {
 /* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
   .intro-text-container,
-  .intro-touch-container,
   .intro-touch-svg {
     animation: none !important;
     opacity: 1 !important;
