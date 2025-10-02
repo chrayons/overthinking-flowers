@@ -828,14 +828,11 @@
           // Check if touch is on control elements - if so, don't handle it
           const target = e.target;
           if (target.closest('.pdf-controls')) {
-            console.log('Touch on controls - ignoring');
             return;
           }
 
           e.preventDefault();
           e.stopPropagation();
-
-          console.log('Mobile fullscreen touch detected');
 
           const rect = this.canvas.getBoundingClientRect();
           const touch = e.changedTouches ? e.changedTouches[0] : e;
@@ -843,8 +840,6 @@
           // Get touch position relative to the canvas
           const x = touch.clientX - rect.left;
           const y = touch.clientY - rect.top;
-
-          console.log(`Touch at: x=${x}, y=${y}, canvas: ${rect.width}x${rect.height}`);
 
           const canvasWidth = rect.width;
           const canvasHeight = rect.height;
@@ -859,14 +854,11 @@
           const centerSpineBottom = canvasHeight * 0.55;
           const rightEdge = canvasWidth * 0.9;          // Right 10% of screen
 
-          console.log(`Rotated touch zones - Top: 0-${topZone} (prev), Bottom: ${bottomZone}+ (next), CenterSpine: ${centerSpineTop}-${centerSpineBottom}, RightEdge: ${rightEdge}+`);
-
           // Check for controls first (center spine or right edge)
           const isInCenterSpine = (y >= centerSpineTop && y <= centerSpineBottom);
           const isInRightEdge = (x >= rightEdge);
 
           if (isInCenterSpine || isInRightEdge) {
-            console.log('Show controls (center spine or right edge)');
             this.showMobileControls();
             return;
           }
@@ -874,16 +866,12 @@
           // Navigation based on vertical position (which becomes left/right in rotated view)
           if (y < topZone) {
             // Top 30% = left side in landscape = previous page
-            console.log('Previous page (top zone = left in landscape)');
             this.goToPrevPage();
           } else if (y > bottomZone) {
             // Bottom 30% = right side in landscape = next page
-            console.log('Next page (bottom zone = right in landscape)');
             this.goToNextPage();
-          } else {
-            // Middle area that's not center spine = do nothing
-            console.log('Middle area - no action');
           }
+          // Middle area that's not center spine = do nothing
         };
 
         // Add to canvas only, but exclude control areas
