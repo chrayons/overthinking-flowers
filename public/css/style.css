@@ -2433,36 +2433,39 @@ body.intro-active .mobile-header-menu {
   }
 
   .intro-content {
-    /* Override grid centering for mobile with flex centering */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    /* Keep the original structure but ensure it's centered */
+    display: grid;
+    place-items: center;
     width: 100%;
-    height: auto; /* Let content determine height */
+    height: auto;
   }
 
   .intro-text-container {
-    /* Ensure text container is perfectly centered */
+    /* Keep original flex column structure */
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    margin: 0; /* Remove any default margins */
-    padding: 0; /* Remove any default padding */
+    text-align: center;
+    margin: 0;
+    padding: 0;
   }
 
   .intro-text {
     font-size: 60px;
     max-width: 336px;
-    margin: 0; /* Ensure no margin offset */
+    margin: 0;
   }
 
   .intro-touch-container {
+    /* Keep the desktop layout structure - flex row with SVG to the right */
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
     width: 336px;
-    /* Remove the transform that was pushing it up - let flexbox handle centering */
+    margin-top: -10px; /* Slight overlap like desktop, but less aggressive */
+    /* Remove transforms - let the natural layout handle positioning */
     transform: none !important;
-    margin-top: 32px; /* Controlled gap between text and touch indicator */
   }
 
   .intro-touch-svg {
