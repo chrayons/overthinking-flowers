@@ -5,7 +5,8 @@
 
 class AdaptiveHeader {
   constructor() {
-    this.scrollThreshold = 50; // Pixels before transition triggers
+    // Use smaller threshold on mobile for faster header activation
+    this.scrollThreshold = window.innerWidth <= 775 ? 20 : 50; // Earlier on mobile
     this.isScrolled = false;
     this.ticking = false;
 
@@ -88,9 +89,8 @@ class AdaptiveHeader {
   }
 }
 
-// Initialize when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-  // Only initialize if not in intro mode (intro has its own header handling)
+// Initialize immediately when script loads for faster header appearance
+function initializeAdaptiveHeader() {
   const introOverlay = document.getElementById('intro-overlay');
 
   if (!introOverlay || introOverlay.classList.contains('hidden')) {
@@ -102,10 +102,10 @@ document.addEventListener('DOMContentLoaded', () => {
       mutations.forEach((mutation) => {
         if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
           if (introOverlay.classList.contains('hidden')) {
-            // Intro finished, initialize adaptive header
+            // Intro finished, initialize adaptive header with minimal delay
             setTimeout(() => {
               window.adaptiveHeader = new AdaptiveHeader();
-            }, 500); // Small delay to let intro fully complete
+            }, 100); // Reduced delay for faster header
             observer.disconnect();
           }
         }
@@ -114,7 +114,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     observer.observe(introOverlay, { attributes: true });
   }
-});
+}
+
+// Try to initialize immediately if DOM is already ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeAdaptiveHeader);
+} else {
+  // DOM is already ready, initialize immediately
+  initializeAdaptiveHeader();
+}
 
 // Expose class globally for potential external use
 window.AdaptiveHeader = AdaptiveHeader;

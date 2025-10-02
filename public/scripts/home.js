@@ -428,9 +428,11 @@ window.addEventListener('resize', () => {
 });
 
 // Load + init
-fetch('metaphordata/data.json')
-  .then(r => r.json())
-  .then(rawData => {
+Promise.all([
+  fetch('metaphordata/data.json').then(r => r.json()),
+  window.FlowerRenderer?.preloadTexture() || Promise.resolve()
+])
+  .then(([rawData]) => {
     const flowers = parseFlowerData(rawData);
 
     createHomePage(flowers);

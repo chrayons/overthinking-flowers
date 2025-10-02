@@ -40,6 +40,9 @@ class IntroAnimation {
     // Set up video source based on device
     this.setupVideoSource();
 
+    // Force disable video controls (especially important for mobile)
+    this.disableVideoControls();
+
     // Set up event listeners
     this.setupEventListeners();
 
@@ -57,6 +60,35 @@ class IntroAnimation {
     const videoPath = isMobile ? 'videos/intro-mobile.mp4' : 'videos/intro-desktop.mp4';
     this.videoSource.src = videoPath;
     this.video.load(); // Reload video with new source
+  }
+
+  disableVideoControls() {
+    if (!this.video) return;
+
+    // Programmatically ensure no controls
+    this.video.controls = false;
+    this.video.removeAttribute('controls');
+
+    // Set mobile-specific attributes
+    this.video.setAttribute('playsinline', 'true');
+    this.video.setAttribute('webkit-playsinline', 'true');
+    this.video.setAttribute('x-webkit-airplay', 'deny');
+
+    // Disable context menu and selection
+    this.video.style.pointerEvents = 'none';
+    this.video.style.webkitUserSelect = 'none';
+    this.video.style.userSelect = 'none';
+
+    // Mobile-specific: force no controls on load
+    this.video.addEventListener('loadstart', () => {
+      this.video.controls = false;
+    });
+
+    this.video.addEventListener('loadedmetadata', () => {
+      this.video.controls = false;
+    });
+
+    console.log('Video controls forcibly disabled');
   }
 
   setupEventListeners() {

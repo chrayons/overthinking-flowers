@@ -2324,6 +2324,30 @@ body.intro-active .header-label {
     -webkit-touch-callout: none !important;
     -webkit-user-select: none !important;
     -khtml-user-select: none !important;
+
+    /* Additional mobile control hiding */
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+  }
+
+  /* Mobile-specific WebKit control selectors */
+  .intro-video::-webkit-media-controls-overlay-enclosure {
+    display: none !important;
+  }
+
+  .intro-video::-webkit-media-controls-overlay-play-button {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+  }
+
+  /* iOS specific controls */
+  .intro-video::-webkit-media-controls-start-playback-button {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+  }
     -moz-user-select: none !important;
     -ms-user-select: none !important;
     user-select: none !important;

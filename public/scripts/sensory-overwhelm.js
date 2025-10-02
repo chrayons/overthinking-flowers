@@ -340,9 +340,12 @@ async function createSensoryOverwhelmLayout(flowers, isResize = false) {
 }
 
 // Load data and initialize page
-fetch('metaphordata/data.json')
-  .then(r => r.json())
-  .then(rawData => {
+Promise.all([
+  fetch('metaphordata/data.json').then(r => r.json()),
+  window.FlowerRenderer?.preloadTexture() || Promise.resolve()
+])
+  
+  .then(([rawData]) => {
     const flowers = parseFlowerData(rawData);
 
     // Initialize modal system FIRST (if present)

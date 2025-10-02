@@ -454,9 +454,47 @@ function createFlower(flowerData, options = {}) {
     return svg;
 }
 
+// Preload texture for better mobile performance
+let textureLoaded = false;
+let textureLoadPromise = null;
+
+function preloadTexture() {
+    if (textureLoadPromise) return textureLoadPromise;
+
+    textureLoadPromise = new Promise((resolve) => {
+        // Skip texture loading in certain conditions
+        const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+        const verySlowConnection = connection && connection.effectiveType === 'slow-2g';
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        if (verySlowConnection || prefersReducedMotion) {
+            console.log("Skipping texture preload due to performance settings");
+            textureLoaded = true;
+            resolve();
+            return;
+        }
+
+        const img = new Image();
+        img.onload = () => {
+            console.log("Flower texture preloaded successfully");
+            textureLoaded = true;
+            resolve();
+        };
+        img.onerror = () => {
+            console.log("Flower texture failed to load, proceeding without texture");
+            textureLoaded = true;
+            resolve();
+        };
+        img.src = 'textures/flowertexture.jpg';
+    });
+
+    return textureLoadPromise;
+}
+
 // Export for use in other files
 if (typeof window !== 'undefined') {
     window.FlowerRenderer = {
-        createFlower
+        createFlower,
+        preloadTexture
     };
 }
