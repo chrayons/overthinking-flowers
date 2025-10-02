@@ -14,32 +14,19 @@
   <style>
     /* PDF Reader Styles */
     .zine-container {
-      max-width: 900px; /* Narrower for better page visibility */
-      margin: 0 auto;
-      padding: 2rem;
-    }
-
-    .zine-header {
-      text-align: center;
-      margin-bottom: 2rem;
-    }
-
-    .zine-title {
-      font: 400 36px/1.2 "junicoderegularcondensed", serif;
-      letter-spacing: 2.4px;
-      color: var(--text-primary);
-      margin-bottom: 1rem;
-    }
-
-    .zine-subtitle {
-      font: 400 16px/1.4 "Satoshi-Light", system-ui;
-      color: var(--text-primary);
-      opacity: 0.8;
+      width: 100%;
+      height: 100vh;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
     }
 
     .pdf-reader {
       position: relative;
-      margin-bottom: 2rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
     }
 
     .pdf-canvas-container {
@@ -47,15 +34,18 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 600px;
-      background: transparent; /* Clean, no background */
+      flex: 1;
+      background: transparent;
+      padding: 20px 20px 80px 20px; /* Extra bottom padding for fixed controls */
     }
 
     #pdf-canvas {
-      max-width: 100%;
+      max-width: calc(100vw - 40px);
+      max-height: calc(100vh - 120px);
+      width: auto;
       height: auto;
       display: block;
-      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15); /* Subtle document shadow */
+      object-fit: contain;
     }
 
     .pdf-loading {
@@ -69,105 +59,161 @@
     }
 
     .pdf-controls {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: transparent;
+      border-top: none;
+      padding: 12px 20px;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .pdf-controls-top {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 1rem 0;
-      background: transparent;
-      border-top: 1px solid #e1e5e9;
-      margin-top: 1rem;
+      position: relative;
+    }
+
+    .pdf-progress-container {
+      flex: 1;
+      height: 2px;
+      margin: 0 20px;
+      position: relative;
+    }
+
+    .pdf-nav-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .pdf-progress-container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: #e1e5e9;
+    }
+
+    .pdf-progress-container::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 2px;
+      background: #2259A1;
+      width: var(--progress-width, 0%);
+      transition: width 0.3s ease;
     }
 
     .pdf-nav-button {
       background: none;
-      border: 1px solid var(--text-primary);
+      border: none;
       color: var(--text-primary);
-      padding: 8px 16px;
-      border-radius: 4px;
-      font: 500 14px/1.4 "Satoshi-Medium", sans-serif;
+      padding: 12px;
       cursor: pointer;
       transition: all 0.2s ease;
-      min-width: 80px;
-    }
-
-    .pdf-nav-button:hover:not(:disabled) {
-      background: var(--text-primary);
-      color: white;
-    }
-
-    .pdf-nav-button:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
-
-    .pdf-page-info {
-      font: 500 14px/1.4 "Satoshi-Medium", sans-serif;
-      color: var(--text-primary);
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-
-    .pdf-page-input {
-      border: 1px solid #e1e5e9;
-      padding: 4px 8px;
       border-radius: 4px;
-      width: 60px;
-      text-align: center;
-      font: 500 14px/1.4 "Satoshi-Medium", sans-serif;
-    }
-
-    .pdf-zoom-controls {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .pdf-zoom-button {
-      background: none;
-      border: 1px solid var(--text-primary);
-      color: var(--text-primary);
-      width: 32px;
-      height: 32px;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: all 0.2s ease;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 18px;
+      width: 47px;
+      height: 47px;
     }
 
-    .pdf-zoom-button:hover {
-      background: var(--text-primary);
-      color: white;
+    .pdf-nav-button:hover:not(:disabled) {
+      background: #f0f0f0;
     }
 
-    .pdf-zoom-level {
+    .pdf-nav-button:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    .pdf-fullscreen-button {
+      background: none;
+      border: none;
+      color: var(--text-primary);
+      padding: 12px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border-radius: 4px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 47px;
+      height: 47px;
+    }
+
+    .pdf-fullscreen-button:hover {
+      background: #f0f0f0;
+    }
+
+    .pdf-page-info {
       font: 500 12px/1.4 "Satoshi-Medium", sans-serif;
       color: var(--text-primary);
-      min-width: 50px;
       text-align: center;
+      white-space: nowrap;
     }
+
 
     /* Responsive Design */
     @media (max-width: 768px) {
       .zine-container {
-        padding: 1rem;
+        height: 100vh;
+        padding: 0;
+      }
+
+      .pdf-canvas-container {
+        padding: 10px 10px 80px 10px;
+      }
+
+      #pdf-canvas {
+        max-width: calc(100vw - 20px);
+        max-height: calc(100vh - 120px);
       }
 
       .pdf-controls {
-        flex-direction: column;
-        gap: 1rem;
-        padding: 1rem;
+        padding: 8px 16px;
+        min-height: 50px;
+      }
+
+      .pdf-controls {
+        padding: 8px 16px;
+      }
+
+      .pdf-progress-container {
+        margin: 0 12px;
+      }
+
+      .pdf-nav-right {
+        gap: 12px;
+      }
+
+      .pdf-nav-button {
+        padding: 8px;
+        width: 40px;
+        height: 40px;
       }
 
       .pdf-page-info {
-        order: -1;
+        font-size: 11px;
       }
 
-      .pdf-zoom-controls {
-        order: 1;
+      .pdf-fullscreen-button {
+        padding: 8px;
+        font-size: 14px;
+        width: 40px;
+        height: 40px;
       }
     }
 
@@ -200,7 +246,7 @@
     }
 
     .pdf-reader.fullscreen #pdf-canvas {
-      max-height: calc(100vh - 120px); /* Account for controls */
+      max-height: calc(100vh - 80px); /* Account for simplified controls */
       max-width: 100%;
       width: auto;
       height: auto;
@@ -208,21 +254,13 @@
     }
 
     .pdf-reader.fullscreen .pdf-controls {
-      background: var(--page-bg);
-      border-top: 1px solid #e1e5e9;
-      padding: 1rem 2rem;
+      background: transparent;
+      border-top: none;
+      padding: 12px 20px;
       margin-top: 0;
-      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+      box-shadow: none;
     }
 
-    /* Keyboard shortcuts hint */
-    .keyboard-hints {
-      text-align: center;
-      margin-top: 1rem;
-      font: 400 12px/1.4 "Satoshi-Light", system-ui;
-      color: var(--text-primary);
-      opacity: 0.6;
-    }
 
     /* Header styling for zine page */
     .header-link {
@@ -260,6 +298,37 @@
       font-weight: 500 !important;
     }
 
+    /* Very small screens */
+    @media (max-width: 480px) {
+      .pdf-controls {
+        padding: 6px 12px;
+      }
+
+      .pdf-progress-container {
+        margin: 0 8px;
+      }
+
+      .pdf-nav-right {
+        gap: 8px;
+      }
+
+      .pdf-page-info {
+        font-size: 10px;
+      }
+
+      .pdf-nav-button {
+        padding: 6px;
+        width: 36px;
+        height: 36px;
+      }
+
+      .pdf-fullscreen-button {
+        padding: 6px;
+        width: 36px;
+        height: 36px;
+      }
+    }
+
     /* Fix mobile header spacing on zine page */
     @media (max-width: 400px) {
       .mobile-header-toggle {
@@ -270,8 +339,9 @@
         padding: 64px 20px 20px !important;
       }
       .zine-container {
-        padding: 1rem !important;
+        height: calc(100vh - 60px) !important;
         margin-top: 60px !important; /* Account for mobile header */
+        padding-bottom: 0 !important; /* Fixed controls handle spacing */
       }
     }
   </style>
@@ -300,13 +370,6 @@
   <div class="wrapper">
 
     <div class="zine-container">
-      <div class="zine-header">
-        <h1 class="zine-title">Recursive Flora Zine</h1>
-        <p class="zine-subtitle">Placeholder</p>
-        <div class="file-size-warning">
-          <small style="color: #666; font-style: italic;">PDF size: [NEW_SIZE]MB - Optimized for web viewing</small>
-        </div>
-      </div>
 
       <div class="pdf-reader">
         <div class="pdf-canvas-container">
@@ -321,29 +384,28 @@
         </div>
 
         <div class="pdf-controls">
-          <button class="pdf-nav-button" id="prev-page" disabled>← Previous</button>
-
+          <div class="pdf-controls-top">
+            <button class="pdf-nav-button" id="prev-page" disabled>
+              <svg width="23" height="23" viewBox="0 0 23 23" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12.4219 15.8438L8.20312 11.625L12.4219 7.40625" stroke="currentColor" stroke-width="1.40625" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <div class="pdf-progress-container"></div>
+            <div class="pdf-nav-right">
+              <button class="pdf-nav-button" id="next-page" disabled>
+                <svg width="23" height="23" viewBox="0 0 23 23" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M10.5781 6.65625L14.7969 10.875L10.5781 15.0937" stroke="currentColor" stroke-width="1.40625" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+              <button class="pdf-fullscreen-button" id="fullscreen-btn" title="Fullscreen">⛶</button>
+            </div>
+          </div>
           <div class="pdf-page-info">
-            <span>Page</span>
-            <input type="number" id="page-input" class="pdf-page-input" min="1" value="1">
-            <span>of <span id="page-count">-</span></span>
+            <span><span id="current-page">1</span> of <span id="page-count">-</span></span>
           </div>
-
-          <div class="pdf-zoom-controls">
-            <button class="pdf-zoom-button" id="zoom-out">−</button>
-            <span class="pdf-zoom-level" id="zoom-level">100%</span>
-            <button class="pdf-zoom-button" id="zoom-in">+</button>
-            <button class="pdf-zoom-button" id="fullscreen-btn" title="Fullscreen">⛶</button>
-          </div>
-
-          <button class="pdf-nav-button" id="next-page" disabled>Next →</button>
         </div>
       </div>
 
-      <div class="keyboard-hints">
-        Use ← → arrow keys to navigate pages • + - keys to zoom • Enter to go to specific page • F for fullscreen<br>
-        Touch left/right sides of PDF to navigate pages
-      </div>
     </div>
   </div>
 
@@ -376,13 +438,11 @@
         this.errorEl = document.getElementById('pdf-error');
         this.prevBtn = document.getElementById('prev-page');
         this.nextBtn = document.getElementById('next-page');
-        this.pageInput = document.getElementById('page-input');
+        this.currentPageEl = document.getElementById('current-page');
         this.pageCountEl = document.getElementById('page-count');
-        this.zoomInBtn = document.getElementById('zoom-in');
-        this.zoomOutBtn = document.getElementById('zoom-out');
-        this.zoomLevelEl = document.getElementById('zoom-level');
         this.fullscreenBtn = document.getElementById('fullscreen-btn');
         this.pdfReader = document.querySelector('.pdf-reader');
+        this.controlsEl = document.querySelector('.pdf-controls');
       }
 
       setupEventListeners() {
@@ -390,25 +450,6 @@
         this.prevBtn.addEventListener('click', () => this.goToPrevPage());
         this.nextBtn.addEventListener('click', () => this.goToNextPage());
 
-        // Page input
-        this.pageInput.addEventListener('change', (e) => {
-          const pageNum = parseInt(e.target.value);
-          if (pageNum >= 1 && pageNum <= this.pageCount) {
-            this.goToPage(pageNum);
-          } else {
-            e.target.value = this.pageNum;
-          }
-        });
-
-        this.pageInput.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter') {
-            e.target.blur();
-          }
-        });
-
-        // Zoom controls
-        this.zoomInBtn.addEventListener('click', () => this.zoomIn());
-        this.zoomOutBtn.addEventListener('click', () => this.zoomOut());
 
         // Fullscreen control
         this.fullscreenBtn.addEventListener('click', () => this.toggleFullscreen());
@@ -425,15 +466,6 @@
             case 'ArrowRight':
               e.preventDefault();
               this.goToNextPage();
-              break;
-            case '+':
-            case '=':
-              e.preventDefault();
-              this.zoomIn();
-              break;
-            case '-':
-              e.preventDefault();
-              this.zoomOut();
               break;
             case 'f':
             case 'F':
@@ -534,32 +566,17 @@
         }
       }
 
-      zoomIn() {
-        if (this.scale < 3) {
-          this.scale += 0.2;
-          this.renderPage(this.pageNum);
-          this.updateZoomLevel();
-        }
-      }
-
-      zoomOut() {
-        if (this.scale > 0.4) {
-          this.scale -= 0.2;
-          this.renderPage(this.pageNum);
-          this.updateZoomLevel();
-        }
-      }
 
       updateControls() {
         this.prevBtn.disabled = this.pageNum <= 1;
         this.nextBtn.disabled = this.pageNum >= this.pageCount;
-        this.pageInput.value = this.pageNum;
-        this.pageInput.max = this.pageCount;
+        this.currentPageEl.textContent = this.pageNum;
+
+        // Update progress indicator
+        const progress = (this.pageNum / this.pageCount) * 100;
+        this.controlsEl.style.setProperty('--progress-width', `${progress}%`);
       }
 
-      updateZoomLevel() {
-        this.zoomLevelEl.textContent = Math.round(this.scale * 100) + '%';
-      }
 
       showLoading(show) {
         this.loadingEl.style.display = show ? 'block' : 'none';
