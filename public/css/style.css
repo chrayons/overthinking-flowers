@@ -2250,6 +2250,7 @@ body.intro-active .header-label {
   width: 100vw; /* Full viewport width */
   height: 100vh; /* Full viewport height */
   object-fit: cover;
+  object-position: center center; /* Ensure center of video stays centered */
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
@@ -2329,6 +2330,25 @@ body.intro-active .header-label {
     -webkit-appearance: none !important;
     -moz-appearance: none !important;
     appearance: none !important;
+
+    /* Enhanced mobile centering - use small viewport height for UI bars */
+    height: 100vh; /* Fallback for older browsers */
+    height: 100svh; /* Small viewport height - excludes browser UI */
+    width: 100vw; /* Fallback for older browsers */
+    width: 100svw; /* Small viewport width */
+
+    /* Force center positioning with fallback */
+    object-position: center center;
+    transform: translateZ(0); /* Force hardware acceleration */
+
+    /* Additional centering for problematic browsers */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) translateZ(0);
+    width: 100vw;
+    height: 100vh;
+    width: 100svw;
+    height: 100svh;
   }
 
   /* Mobile-specific WebKit control selectors */
@@ -2404,16 +2424,45 @@ body.intro-active .mobile-header-menu {
     padding-top: 0; /* Remove top padding on mobile for true centering */
     height: 100vh;
     height: 100svh; /* Use small viewport height to account for browser UI */
+
+    /* Enhanced mobile centering - override grid with flex */
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .intro-content {
+    /* Override grid centering for mobile with flex centering */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: auto; /* Let content determine height */
+  }
+
+  .intro-text-container {
+    /* Ensure text container is perfectly centered */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0; /* Remove any default margins */
+    padding: 0; /* Remove any default padding */
   }
 
   .intro-text {
     font-size: 60px;
     max-width: 336px;
+    margin: 0; /* Ensure no margin offset */
   }
 
   .intro-touch-container {
     width: 336px;
-    transform: translateY(-50px) !important; /* Move up slightly higher on mobile to align with question mark */
+    /* Remove the transform that was pushing it up - let flexbox handle centering */
+    transform: none !important;
+    margin-top: 32px; /* Controlled gap between text and touch indicator */
   }
 
   .intro-touch-svg {
