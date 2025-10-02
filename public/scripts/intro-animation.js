@@ -10,7 +10,6 @@ class IntroAnimation {
     this.touchSvg = document.querySelector('.intro-touch-svg');
     this.video = document.querySelector('.intro-video');
     this.videoSource = document.querySelector('.intro-video-source');
-    this.skipBtn = document.querySelector('.intro-skip-btn');
 
     this.currentPhase = 1;
     this.skipTimeout = null;
@@ -22,8 +21,7 @@ class IntroAnimation {
       textContainer: !!this.textContainer,
       touchSvg: !!this.touchSvg,
       video: !!this.video,
-      videoSource: !!this.videoSource,
-      skipBtn: !!this.skipBtn
+      videoSource: !!this.videoSource
     });
 
     this.init();
@@ -84,8 +82,6 @@ class IntroAnimation {
       });
     }
 
-    // Skip button functionality
-    this.skipBtn.addEventListener('click', () => this.skipIntro());
 
     // Video ended event
     this.video.addEventListener('ended', () => this.completeIntro());
@@ -101,20 +97,11 @@ class IntroAnimation {
       }, 250);
     });
 
-    // Keyboard shortcuts
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && !this.overlay.classList.contains('hidden')) {
-        this.skipIntro();
-      }
-    });
   }
 
   startIntroSequence() {
     // Phase 1: Text and SVG animations are handled by CSS
-    // Show skip button after 2.5 seconds
-    this.skipTimeout = setTimeout(() => {
-      this.skipBtn.classList.add('visible');
-    }, 2500);
+    // No skip button needed since intro only plays once per session
   }
 
   startVideoPhase() {
@@ -182,23 +169,6 @@ class IntroAnimation {
     }, 300); // Wait for background transition to complete
   }
 
-  skipIntro() {
-    // Clear any timeouts
-    if (this.skipTimeout) {
-      clearTimeout(this.skipTimeout);
-    }
-
-    // Stop video if playing
-    if (this.video && !this.video.paused) {
-      this.video.pause();
-    }
-
-    // Remove video-related classes if we're in video phase
-    this.overlay.classList.remove('video-phase');
-
-    // Mark as completed and hide
-    this.completeIntro();
-  }
 
   hideIntro() {
     this.overlay.classList.add('hidden');
@@ -206,12 +176,49 @@ class IntroAnimation {
     // Remove intro-active class from body to restore normal header styling
     document.body.classList.remove('intro-active');
 
+    // Temporarily disable flower interactions to prevent hover from interfering with grow animations
+    this.disableFlowerInteractions();
+
+    // Trigger flower animations after intro completes
+    setTimeout(() => {
+      if (window.triggerFlowerAnimations) {
+        console.log('Triggering flower animations after intro completion');
+        window.triggerFlowerAnimations();
+      }
+    }, 300); // Small delay to let intro transition finish
+
     // Remove from DOM after transition
     setTimeout(() => {
       if (this.overlay && this.overlay.parentNode) {
         this.overlay.style.display = 'none';
       }
     }, 500);
+  }
+
+  disableFlowerInteractions() {
+    // Disable pointer events on all interactive flower elements temporarily
+    const flowerSectors = document.querySelectorAll('.mg-sector');
+    const categoryLabels = document.querySelectorAll('.category-label');
+    const categoryCells = document.querySelectorAll('.category-cell');
+
+    // Store original pointer-events values for restoration
+    const originalPointerEvents = new Map();
+
+    [...flowerSectors, ...categoryLabels, ...categoryCells].forEach(element => {
+      originalPointerEvents.set(element, element.style.pointerEvents || 'auto');
+      element.style.pointerEvents = 'none';
+    });
+
+    console.log('Flower interactions disabled during grow animations');
+
+    // Re-enable interactions after grow animations complete
+    setTimeout(() => {
+      [...flowerSectors, ...categoryLabels, ...categoryCells].forEach(element => {
+        const originalValue = originalPointerEvents.get(element);
+        element.style.pointerEvents = originalValue;
+      });
+      console.log('Flower interactions re-enabled after grow animations');
+    }, 1500); // 1500ms = 300ms intro delay + 800ms animation + 400ms buffer
   }
 
   // Public method to reset intro (for testing or admin purposes)
@@ -234,6 +241,13 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('IntroAnimation initialized:', !!window.introAnimation);
   } else {
     console.log('No intro overlay found, skipping initialization');
+    // If no intro overlay exists, trigger flower animations directly after page load
+    setTimeout(() => {
+      if (window.triggerFlowerAnimations) {
+        console.log('Triggering flower animations (no intro system)');
+        window.triggerFlowerAnimations();
+      }
+    }, 1000); // Wait for page load to complete
   }
 });
 

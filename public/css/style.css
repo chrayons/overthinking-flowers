@@ -1981,7 +1981,7 @@ body {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: #005BA6; /* Blue background for Phase 1 */
+  background: #2564AA; /* Blue background for Phase 1 */
   z-index: 500; /* Above garden (1) but below headers (1000) */
   display: grid;
   place-items: center; /* Use same centering as main page */
@@ -1994,7 +1994,7 @@ body {
 
 /* Background transitions during video phase */
 .intro-overlay.video-phase {
-  background: #005BA6; /* Keep blue during video */
+  background: #2564AA; /* Keep blue during video */
 }
 
 .intro-overlay.completing {
@@ -2118,36 +2118,6 @@ body {
   visibility: visible;
 }
 
-/* Skip button */
-.intro-skip-btn {
-  position: absolute;
-  bottom: 40px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: transparent;
-  border: 1px solid #F8F8FF;
-  border-radius: 5px;
-  padding: 8px 16px;
-  font-family: "Satoshi-Light", system-ui;
-  font-size: 12px;
-  color: #F8F8FF;
-  cursor: pointer;
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.3s ease;
-  z-index: 10;
-}
-
-.intro-skip-btn.visible {
-  opacity: 0.7;
-  visibility: visible;
-}
-
-.intro-skip-btn:hover {
-  opacity: 1;
-  background: #F8F8FF;
-  color: #005BA6;
-}
 
 /* Header styling during intro phase - highest specificity override */
 body.intro-active .header-link,
@@ -2181,7 +2151,7 @@ body.intro-active .mobile-header-menu-item.secondary {
 }
 
 body.intro-active .mobile-header-menu {
-  background: #005BA6 !important;
+  background: #2564AA !important;
 }
 
 /* Header fade-out during video */
@@ -2214,10 +2184,6 @@ body.intro-active .mobile-header-menu {
     margin-left: 16px;
   }
 
-  .intro-skip-btn {
-    font-size: 11px;
-    padding: 6px 12px;
-  }
 }
 
 /* Animations */
@@ -2366,7 +2332,6 @@ body.intro-active .mobile-header-menu {
 
   .intro-overlay,
   .intro-video,
-  .intro-skip-btn,
   .header-link,
   .header-label {
     transition: none !important;

@@ -191,8 +191,6 @@
         <source class="intro-video-source" src="" type="video/mp4">
       </video>
 
-      <!-- Skip Button -->
-      <button class="intro-skip-btn">Skip Intro</button>
     </div>
   </div>
 
@@ -325,17 +323,10 @@
             if (categoryGrid && categoryGrid.children.length > 0 &&
                 shuffleCards && shuffleCards.children.length > 0) {
 
-              // Hide loader and then trigger flower animations
+              // Hide loader (flower animations will be triggered by intro completion)
               hideLoader();
 
               // Tooltips already initialized on DOMContentLoaded
-
-              // Trigger flower animations after a brief delay
-              setTimeout(() => {
-                if (window.triggerFlowerAnimations) {
-                  window.triggerFlowerAnimations();
-                }
-              }, 200);
 
             } else {
               // If content isn't ready yet, check again in a bit
