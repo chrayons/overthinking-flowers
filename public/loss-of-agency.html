@@ -14,43 +14,6 @@
   <link rel="stylesheet" href="css/instructional-banner.css">
 </head>
 <body class="category-page">
-  <!-- Fixed header elements -->
-  <a href="index.html" class="header-link">METAPHOR GARDEN</a>
-  <a href="recursive-flora-zine.html" class="header-label">RECURSIVE FLORA ZINE</a>
-
-  <!-- Mobile Header Dropdown (shows on very small screens) -->
-  <div class="mobile-header-dropdown">
-    <button class="mobile-header-toggle" aria-label="Menu" aria-expanded="false">
-      <div class="menu-icon-inner">
-        <span></span>
-        <span></span>
-          <!-- Adaptive header system -->
-    <script defer src="scripts/adaptive-header.js"></script>
-  </div>
-    </button>
-    <nav class="mobile-header-menu">
-      <a href="index.html" class="mobile-header-menu-item">METAPHOR GARDEN</a>
-      <a href="recursive-flora-zine.html" class="mobile-header-menu-item secondary">RECURSIVE FLORA ZINE</a>
-    </nav>
-      <!-- Adaptive header system -->
-    <script defer src="scripts/adaptive-header.js"></script>
-  </div>
-
-  <!-- Full-bleed stage for flowers and title -->
-  <div class="category-page-content">
-    <div id="flower-container">    <!-- Adaptive header system -->
-    <script defer src="scripts/adaptive-header.js"></script>
-  </div>
-    <div class="category-title-container">
-      <h2 class="category-title">Loss of <br>Agency</h2>
-        <!-- Adaptive header system -->
-    <script defer src="scripts/adaptive-header.js"></script>
-  </div>
-      <!-- Adaptive header system -->
-    <script defer src="scripts/adaptive-header.js"></script>
-  </div>
-
-  <!-- Mobile layout matching home page structure EXACTLY -->
   <!-- Full-width header bar -->
   <header class="header-bar">
     <a href="index.html" class="header-link">METAPHOR GARDEN</a>
@@ -59,3 +22,89 @@
 
   <!-- Mobile Header Dropdown (shows on very small screens) -->
   <div class="mobile-header-dropdown">
+    <button class="mobile-header-toggle" aria-label="Menu" aria-expanded="false">
+      <div class="menu-icon-inner">
+        <span></span>
+        <span></span>
+      </div>
+    </button>
+    <nav class="mobile-header-menu">
+      <a href="index.html" class="mobile-header-menu-item">METAPHOR GARDEN</a>
+      <a href="recursive-flora-zine.html" class="mobile-header-menu-item secondary">RECURSIVE FLORA ZINE</a>
+    </nav>
+  </div>
+
+  <div class="category-page-content">
+    <div id="flower-container"></div>
+    <div class="category-title-container">
+      <h2 class="category-title">Loss of<br>Agency</h2>
+    </div>
+  </div>
+
+  <!-- Category overlay with navigation -->
+  <div class="category-overlay">
+    <div class="category-title-section">
+      <h2 class="category-name">Loss of<br>Agency</h2>
+    </div>
+
+    <div class="category-nav-section">
+      <button class="category-nav-arrow category-prev" aria-label="Previous category">
+        <img src="svg/arrow-left.svg" alt="Previous" width="23" height="23">
+      </button>
+      <div class="category-nav-dots">
+        <div class="category-nav-dot" data-category="0" aria-label="Perpetual Looping"></div>
+        <div class="category-nav-dot active" data-category="1" aria-label="Loss of Agency"></div>
+        <div class="category-nav-dot" data-category="2" aria-label="Sensory Overwhelm"></div>
+        <div class="category-nav-dot" data-category="3" aria-label="Emotional Dysregulation"></div>
+        <div class="category-nav-dot" data-category="4" aria-label="Perceptual Barriers"></div>
+        <div class="category-nav-dot" data-category="5" aria-label="Thought Entanglement"></div>
+        <div class="category-nav-dot" data-category="6" aria-label="Temporal Disconnection"></div>
+      </div>
+      <button class="category-nav-arrow category-next" aria-label="Next category">
+        <img src="svg/arrow-right.svg" alt="Next" width="23" height="23">
+      </button>
+    </div>
+
+    <!-- Mobile/Tablet Instructional Banner -->
+    <div id="instructional-banner"
+         role="region"
+         aria-live="polite"
+         aria-label="Instruction for interacting with flowers"
+         style="display: none;">
+      <div class="banner-content">
+        CLICK ON THE FLOWERS TO EXPLORE
+      </div>
+    </div>
+
+    <a href="index.html" class="btn-return-home">Return to Home</a>
+  </div>
+
+  <section id="reflections" style="display: none;">
+    <h2>REFLECTIONS</h2>
+    <div id="shuffle-cards"></div>
+    <button id="shuffle-btn" class="btn-primary">Shuffle Thoughts</button>
+  </section>
+
+  <!-- Critical scripts (needed for initial render) -->
+  <script defer src="scripts/shared.js"></script>
+  <script defer src="scripts/flower-renderer.js"></script>
+  <script defer src="scripts/flower-interactions.js"></script>
+  <script defer src="scripts/category-navigation.js"></script>
+  <script defer src="scripts/loss-of-agency.js"></script>
+
+  <script defer src="scripts/instructional-banner.js"></script>
+
+  <!-- Information tooltip system -->
+  <script type="module">
+    import { InformationTooltip, createInfoTipSVG } from './scripts/information-tooltip.js';
+    window.InformationTooltip = InformationTooltip;
+    window.InformationTooltip.createInfoTipSVG = createInfoTipSVG;
+  </script>
+
+  <!-- Non-critical scripts (can load after page renders) -->
+  <script async src="scripts/modal.js"></script>
+  <script async src="scripts/mobile-header.js"></script>
+  <!-- Adaptive header system -->
+  <script defer src="scripts/adaptive-header.js"></script>
+</body>
+</html>

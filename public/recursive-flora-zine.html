@@ -341,7 +341,8 @@
       </div>
 
       <div class="keyboard-hints">
-        Use ← → arrow keys to navigate pages • + - keys to zoom • Enter to go to specific page
+        Use ← → arrow keys to navigate pages • + - keys to zoom • Enter to go to specific page • F for fullscreen<br>
+        Touch left/right sides of PDF to navigate pages
       </div>
     </div>
   </div>
@@ -366,6 +367,7 @@
 
         this.initializeElements();
         this.setupEventListeners();
+        this.setupTouchNavigation();
         this.loadPDF();
       }
 
@@ -444,6 +446,11 @@
               break;
           }
         });
+
+        // Handle fullscreen changes (when user exits via ESC or browser controls)
+        document.addEventListener('fullscreenchange', () => this.handleFullscreenChange());
+        document.addEventListener('webkitfullscreenchange', () => this.handleFullscreenChange());
+        document.addEventListener('msfullscreenchange', () => this.handleFullscreenChange());
       }
 
       async loadPDF() {
@@ -564,6 +571,108 @@
         this.canvas.style.display = 'none';
         this.errorEl.style.display = 'block';
         this.errorEl.textContent = message;
+      }
+
+      toggleFullscreen() {
+        if (this.pdfReader.classList.contains('fullscreen')) {
+          this.exitFullscreen();
+        } else {
+          this.enterFullscreen();
+        }
+      }
+
+      enterFullscreen() {
+        this.pdfReader.classList.add('fullscreen');
+        this.fullscreenBtn.textContent = '⛉'; // Exit fullscreen icon
+        this.fullscreenBtn.title = 'Exit Fullscreen';
+
+        // Try to enter browser fullscreen as well
+        if (this.pdfReader.requestFullscreen) {
+          this.pdfReader.requestFullscreen();
+        } else if (this.pdfReader.webkitRequestFullscreen) {
+          this.pdfReader.webkitRequestFullscreen();
+        } else if (this.pdfReader.msRequestFullscreen) {
+          this.pdfReader.msRequestFullscreen();
+        }
+
+        // Re-render page to fit fullscreen
+        this.renderPage(this.pageNum);
+      }
+
+      exitFullscreen() {
+        this.pdfReader.classList.remove('fullscreen');
+        this.fullscreenBtn.textContent = '⛶'; // Enter fullscreen icon
+        this.fullscreenBtn.title = 'Fullscreen';
+
+        // Exit browser fullscreen
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) {
+          document.msExitFullscreen();
+        }
+
+        // Re-render page to fit normal view
+        this.renderPage(this.pageNum);
+      }
+
+      handleFullscreenChange() {
+        // Check if we're no longer in browser fullscreen
+        const isInFullscreen = document.fullscreenElement ||
+                              document.webkitFullscreenElement ||
+                              document.msFullscreenElement;
+
+        if (!isInFullscreen && this.pdfReader.classList.contains('fullscreen')) {
+          // User exited fullscreen via ESC or browser controls, update our state
+          this.pdfReader.classList.remove('fullscreen');
+          this.fullscreenBtn.textContent = '⛶'; // Enter fullscreen icon
+          this.fullscreenBtn.title = 'Fullscreen';
+          this.renderPage(this.pageNum);
+        }
+      }
+
+      setupTouchNavigation() {
+        this.canvas.addEventListener('click', (e) => {
+          const rect = this.canvas.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const canvasWidth = rect.width;
+
+          // Divide canvas into thirds
+          const leftThird = canvasWidth / 3;
+          const rightThird = canvasWidth * 2 / 3;
+
+          if (x < leftThird) {
+            // Left third - previous page
+            this.goToPrevPage();
+          } else if (x > rightThird) {
+            // Right third - next page
+            this.goToNextPage();
+          }
+          // Middle third - do nothing (allows for other interactions)
+        });
+
+        // Touch events for mobile
+        this.canvas.addEventListener('touchend', (e) => {
+          e.preventDefault(); // Prevent double-firing with click
+
+          const touch = e.changedTouches[0];
+          const rect = this.canvas.getBoundingClientRect();
+          const x = touch.clientX - rect.left;
+          const canvasWidth = rect.width;
+
+          // Divide canvas into thirds
+          const leftThird = canvasWidth / 3;
+          const rightThird = canvasWidth * 2 / 3;
+
+          if (x < leftThird) {
+            // Left third - previous page
+            this.goToPrevPage();
+          } else if (x > rightThird) {
+            // Right third - next page
+            this.goToNextPage();
+          }
+        });
       }
     }
 
