@@ -242,6 +242,44 @@
       margin: 0;
     }
 
+    /* Mobile Landscape Fullscreen */
+    @media (max-width: 768px) {
+      .pdf-reader.fullscreen {
+        transform-origin: center center;
+        animation: rotateToLandscape 0.3s ease-out forwards;
+      }
+
+      @keyframes rotateToLandscape {
+        from {
+          transform: rotate(0deg);
+          width: 100vw;
+          height: 100vh;
+        }
+        to {
+          transform: rotate(90deg);
+          width: 100vh;
+          height: 100vw;
+        }
+      }
+
+      .pdf-reader.fullscreen.exiting {
+        animation: rotateToPortrait 0.3s ease-out forwards;
+      }
+
+      @keyframes rotateToPortrait {
+        from {
+          transform: rotate(90deg);
+          width: 100vh;
+          height: 100vw;
+        }
+        to {
+          transform: rotate(0deg);
+          width: 100vw;
+          height: 100vh;
+        }
+      }
+    }
+
     .pdf-reader.fullscreen .pdf-canvas-container {
       flex: 1;
       min-height: auto;
@@ -256,10 +294,17 @@
       object-fit: contain;
     }
 
+    @media (max-width: 768px) {
+      .pdf-reader.fullscreen #pdf-canvas {
+        max-height: calc(100vw - 80px); /* Landscape dimensions */
+        max-width: 100vh;
+      }
+    }
+
     .pdf-reader.fullscreen .pdf-controls {
       background: transparent;
       border-top: none;
-      padding: 12px 20px;
+      padding: 12px 20px 32px 20px;
       margin-top: 0;
       box-shadow: none;
     }
@@ -603,39 +648,62 @@
       }
 
       enterFullscreen() {
+        const isMobile = window.innerWidth <= 768;
+
         this.pdfReader.classList.add('fullscreen');
         this.fullscreenBtn.textContent = '⛉'; // Exit fullscreen icon
         this.fullscreenBtn.title = 'Exit Fullscreen';
 
-        // Try to enter browser fullscreen as well
-        if (this.pdfReader.requestFullscreen) {
-          this.pdfReader.requestFullscreen();
-        } else if (this.pdfReader.webkitRequestFullscreen) {
-          this.pdfReader.webkitRequestFullscreen();
-        } else if (this.pdfReader.msRequestFullscreen) {
-          this.pdfReader.msRequestFullscreen();
+        if (isMobile) {
+          // On mobile, show instruction and rotate interface
+          this.showMobileLandscapeHint();
+          // Re-render after animation completes
+          setTimeout(() => {
+            this.renderPage(this.pageNum);
+          }, 300);
+        } else {
+          // Desktop: try browser fullscreen
+          if (this.pdfReader.requestFullscreen) {
+            this.pdfReader.requestFullscreen();
+          } else if (this.pdfReader.webkitRequestFullscreen) {
+            this.pdfReader.webkitRequestFullscreen();
+          } else if (this.pdfReader.msRequestFullscreen) {
+            this.pdfReader.msRequestFullscreen();
+          }
+          this.renderPage(this.pageNum);
         }
-
-        // Re-render page to fit fullscreen
-        this.renderPage(this.pageNum);
       }
 
       exitFullscreen() {
-        this.pdfReader.classList.remove('fullscreen');
-        this.fullscreenBtn.textContent = '⛶'; // Enter fullscreen icon
-        this.fullscreenBtn.title = 'Fullscreen';
+        const isMobile = window.innerWidth <= 768;
 
-        // Exit browser fullscreen
-        if (document.exitFullscreen) {
-          document.exitFullscreen();
-        } else if (document.webkitExitFullscreen) {
-          document.webkitExitFullscreen();
-        } else if (document.msExitFullscreen) {
-          document.msExitFullscreen();
+        if (isMobile) {
+          // Add exiting class for reverse animation
+          this.pdfReader.classList.add('exiting');
+          this.hideMobileLandscapeHint();
+
+          // Remove classes after animation
+          setTimeout(() => {
+            this.pdfReader.classList.remove('fullscreen', 'exiting');
+            this.renderPage(this.pageNum);
+          }, 300);
+        } else {
+          this.pdfReader.classList.remove('fullscreen');
+
+          // Exit browser fullscreen
+          if (document.exitFullscreen) {
+            document.exitFullscreen();
+          } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+          } else if (document.msExitFullscreen) {
+            document.msExitFullscreen();
+          }
+
+          this.renderPage(this.pageNum);
         }
 
-        // Re-render page to fit normal view
-        this.renderPage(this.pageNum);
+        this.fullscreenBtn.textContent = '⛶'; // Enter fullscreen icon
+        this.fullscreenBtn.title = 'Fullscreen';
       }
 
       handleFullscreenChange() {
@@ -650,6 +718,51 @@
           this.fullscreenBtn.textContent = '⛶'; // Enter fullscreen icon
           this.fullscreenBtn.title = 'Fullscreen';
           this.renderPage(this.pageNum);
+        }
+      }
+
+      showMobileLandscapeHint() {
+        // Create a hint overlay for mobile users
+        const hint = document.createElement('div');
+        hint.id = 'mobile-landscape-hint';
+        hint.innerHTML = `
+          <div style="
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            font: 500 14px/1.4 'Satoshi-Medium', sans-serif;
+            z-index: 1000000;
+            max-width: 280px;
+          ">
+            <div style="font-size: 24px; margin-bottom: 8px;">🔄</div>
+            <div>Rotate your device to landscape for better reading</div>
+            <div style="font-size: 12px; margin-top: 8px; opacity: 0.8;">Tap anywhere to continue</div>
+          </div>
+        `;
+
+        // Remove hint on tap
+        hint.addEventListener('click', () => {
+          this.hideMobileLandscapeHint();
+        });
+
+        document.body.appendChild(hint);
+
+        // Auto-hide after 4 seconds
+        setTimeout(() => {
+          this.hideMobileLandscapeHint();
+        }, 4000);
+      }
+
+      hideMobileLandscapeHint() {
+        const hint = document.getElementById('mobile-landscape-hint');
+        if (hint) {
+          hint.remove();
         }
       }
 
