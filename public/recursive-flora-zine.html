@@ -251,13 +251,28 @@
     }
 
     .mobile-header-menu-item:hover {
-      color: #4a90e2 !important; /* Blue on hover */
+      color: #2259A1 !important; /* Blue on hover */
     }
 
     .mobile-header-menu-item.secondary {
-      color: #4a90e2 !important; /* Blue for mobile RECURSIVE FLORA ZINE */
+      color: #2259A1 !important; /* Blue for mobile RECURSIVE FLORA ZINE */
       font-family: "Satoshi-Medium", system-ui !important;
       font-weight: 500 !important;
+    }
+
+    /* Fix mobile header spacing on zine page */
+    @media (max-width: 400px) {
+      .mobile-header-toggle {
+        top: 20px !important;
+        right: 20px !important;
+      }
+      .mobile-header-menu {
+        padding: 64px 20px 20px !important;
+      }
+      .zine-container {
+        padding: 1rem !important;
+        margin-top: 60px !important; /* Account for mobile header */
+      }
     }
   </style>
 </head>
