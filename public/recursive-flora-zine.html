@@ -234,11 +234,11 @@
     }
 
     .header-link:hover {
-      color: #4a90e2 !important; /* Blue on hover */
+      color: #2259A1 !important; /* Blue on hover */
     }
 
     .header-label {
-      color: #4a90e2 !important; /* Blue for RECURSIVE FLORA ZINE */
+      color: #2259A1 !important; /* Blue for RECURSIVE FLORA ZINE */
       font-family: "Satoshi-Medium", system-ui !important;
       font-weight: 500 !important;
       text-decoration: none;
@@ -262,23 +262,27 @@
   </style>
 </head>
 <body class="zine-page">
-  <div class="wrapper">
+  <!-- Full-width header bar -->
+  <header class="header-bar">
     <a href="index.html" class="header-link">METAPHOR GARDEN</a>
     <div class="header-label">RECURSIVE FLORA ZINE</div>
+  </header>
 
-    <!-- Mobile Header Dropdown -->
-    <div class="mobile-header-dropdown">
-      <button class="mobile-header-toggle" aria-label="Menu" aria-expanded="false">
-        <div class="menu-icon-inner">
-          <span></span>
-          <span></span>
-        </div>
-      </button>
-      <nav class="mobile-header-menu">
-        <a href="index.html" class="mobile-header-menu-item">METAPHOR GARDEN</a>
-        <span class="mobile-header-menu-item secondary">RECURSIVE FLORA ZINE</span>
-      </nav>
-    </div>
+  <!-- Mobile Header Dropdown (shows on very small screens) -->
+  <div class="mobile-header-dropdown">
+    <button class="mobile-header-toggle" aria-label="Menu" aria-expanded="false">
+      <div class="menu-icon-inner">
+        <span></span>
+        <span></span>
+      </div>
+    </button>
+    <nav class="mobile-header-menu">
+      <a href="index.html" class="mobile-header-menu-item">METAPHOR GARDEN</a>
+      <span class="mobile-header-menu-item secondary">RECURSIVE FLORA ZINE</span>
+    </nav>
+  </div>
+
+  <div class="wrapper">
 
     <div class="zine-container">
       <div class="zine-header">
@@ -556,5 +560,8 @@
 
   <!-- Mobile header functionality -->
   <script async src="scripts/mobile-header.js"></script>
+
+  <!-- Adaptive header system -->
+  <script defer src="scripts/adaptive-header.js"></script>
 </body>
 </html>

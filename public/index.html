@@ -187,30 +187,34 @@
       </div>
 
       <!-- Phase 2: Video -->
-      <video class="intro-video" muted playsinline preload="metadata" controls="false" disablepictureinpicture controlslist="nodownload nofullscreen noremoteplayback">
+      <video class="intro-video" muted playsinline preload="metadata" controls="false" disablepictureinpicture controlslist="nodownload nofullscreen noremoteplayback" webkit-playsinline x-webkit-airplay="deny">
         <source class="intro-video-source" src="" type="video/mp4">
       </video>
 
     </div>
   </div>
 
-  <div class="wrapper">
+  <!-- Full-width header bar -->
+  <header class="header-bar">
     <a href="index.html" class="header-link">METAPHOR GARDEN</a>
     <a href="recursive-flora-zine.html" class="header-label">RECURSIVE FLORA ZINE</a>
+  </header>
 
-    <!-- Mobile Header Dropdown (shows on very small screens) -->
-    <div class="mobile-header-dropdown">
-      <button class="mobile-header-toggle" aria-label="Menu" aria-expanded="false">
-        <div class="menu-icon-inner">
-          <span></span>
-          <span></span>
-        </div>
-      </button>
-      <nav class="mobile-header-menu">
-        <a href="index.html" class="mobile-header-menu-item">METAPHOR GARDEN</a>
-        <a href="recursive-flora-zine.html" class="mobile-header-menu-item secondary">RECURSIVE FLORA ZINE</a>
-      </nav>
-    </div>
+  <!-- Mobile Header Dropdown (shows on very small screens) -->
+  <div class="mobile-header-dropdown">
+    <button class="mobile-header-toggle" aria-label="Menu" aria-expanded="false">
+      <div class="menu-icon-inner">
+        <span></span>
+        <span></span>
+      </div>
+    </button>
+    <nav class="mobile-header-menu">
+      <a href="index.html" class="mobile-header-menu-item">METAPHOR GARDEN</a>
+      <a href="recursive-flora-zine.html" class="mobile-header-menu-item secondary">RECURSIVE FLORA ZINE</a>
+    </nav>
+  </div>
+
+  <div class="wrapper">
 
     <section id="themes-desktop">
       <h2 class="eyebrow">EXPLORE BY THEME
@@ -374,6 +378,9 @@
 
   <!-- Intro animation script - load directly -->
   <script defer src="scripts/intro-animation.js"></script>
+
+  <!-- Adaptive header system -->
+  <script defer src="scripts/adaptive-header.js"></script>
 
   <!-- Non-critical scripts (can load after page renders) -->
   <script async src="scripts/modal.js"></script>
