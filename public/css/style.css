@@ -2118,6 +2118,27 @@ body {
   visibility: visible;
 }
 
+/* Hide all video controls and browser-added buttons */
+.intro-video::-webkit-media-controls {
+  display: none !important;
+}
+
+.intro-video::-webkit-media-controls-enclosure {
+  display: none !important;
+}
+
+.intro-video::-webkit-media-controls-panel {
+  display: none !important;
+}
+
+.intro-video::-webkit-media-controls-play-button {
+  display: none !important;
+}
+
+.intro-video::-webkit-media-controls-start-playback-button {
+  display: none !important;
+}
+
 
 /* Header styling during intro phase - highest specificity override */
 body.intro-active .header-link,
