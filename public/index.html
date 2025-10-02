@@ -73,21 +73,38 @@
       transition: opacity 0.4s ease-out;
     }
 
-    .loader {
-      width: 36px; /* Smaller size */
-      aspect-ratio: 1;
+    .loader, .loader:before, .loader:after {
       border-radius: 50%;
-      border: 4px solid; /* Thinner border */
-      border-color: #005BA6 #005BA600; /* Blue with transparent */
-      animation: variableSpin 2s ease-in-out infinite;
+      width: 2.5em;
+      height: 2.5em;
+      animation-fill-mode: both;
+      animation: bblFadInOut 1.8s infinite ease-in-out;
+    }
+    .loader {
+      color: #AFBCC7;
+      font-size: 7px;
+      position: relative;
+      text-indent: -9999em;
+      transform: translateZ(0);
+      animation-delay: -0.16s;
+    }
+    .loader:before,
+    .loader:after {
+      content: '';
+      position: absolute;
+      top: 0;
+    }
+    .loader:before {
+      left: -3.5em;
+      animation-delay: -0.32s;
+    }
+    .loader:after {
+      left: 3.5em;
     }
 
-    @keyframes variableSpin {
-      0% { transform: rotate(0deg); }
-      25% { transform: rotate(45deg); } /* Slow start */
-      50% { transform: rotate(180deg); } /* Speed up */
-      75% { transform: rotate(300deg); } /* Fast section */
-      100% { transform: rotate(360deg); } /* Complete rotation */
+    @keyframes bblFadInOut {
+      0%, 80%, 100% { box-shadow: 0 2.5em 0 -1.3em }
+      40% { box-shadow: 0 2.5em 0 0 }
     }
 
     .page-loader.fade-out {
@@ -97,7 +114,7 @@
 
     /* Respect reduced motion preferences */
     @media (prefers-reduced-motion: reduce) {
-      .loader {
+      .loader, .loader:before, .loader:after {
         animation: none;
       }
       .page-loader {
@@ -114,7 +131,7 @@
 <body>
   <!-- Loading spinner for immediate user feedback -->
   <div class="page-loader">
-    <div class="loader"></div>
+    <span class="loader"></span>
   </div>
 
   <!-- Intro Animation Overlay -->
