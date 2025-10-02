@@ -1970,4 +1970,407 @@ body {
   }
 }
 
+/* ================================
+   Intro Animation Overlay System
+   ================================ */
+
+/* Main overlay container */
+.intro-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #005BA6; /* Blue background for Phase 1 */
+  z-index: 500; /* Above garden (1) but below headers (1000) */
+  display: grid;
+  place-items: center; /* Use same centering as main page */
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.5s ease-out, visibility 0.5s ease-out, background-color 0.3s ease-out;
+  /* Account for header space like main page */
+  padding-top: 68px; /* Half of wrapper's 136px to maintain visual balance */
+}
+
+/* Background transitions during video phase */
+.intro-overlay.video-phase {
+  background: #005BA6; /* Keep blue during video */
+}
+
+.intro-overlay.completing {
+  background: var(--page-bg); /* Return to normal background when completing */
+}
+
+/* Hidden state for completed/skipped intro */
+.intro-overlay.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Content container */
+.intro-content {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  /* Remove height constraint to allow natural centering */
+}
+
+/* Phase 1: Text and SVG Container */
+.intro-text-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  opacity: 0;
+  animation: fadeInText 1s ease-out 0.5s forwards;
+}
+
+/* Text styling - Desktop */
+.intro-text {
+  font-family: "junicodeitalic", "junicoderegular", Georgia, serif;
+  font-style: italic;
+  font-size: 120px;
+  font-weight: 400;
+  line-height: 1.2;
+  color: #F8F8FF; /* White text on blue background */
+  margin: 0;
+  max-width: 672px;
+  letter-spacing: 0.02em;
+}
+
+/* Touch SVG container positioning */
+.intro-touch-container {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 672px;
+  margin-top: -20px; /* Base mobile positioning */
+  opacity: 0;
+  animation: fadeInTouch 1s ease-out 2.1s forwards; /* Slightly longer delay for ripples to appear after */
+}
+
+/* Desktop-specific positioning */
+@media (min-width: 776px) {
+  .intro-touch-container {
+    transform: translateY(-120px) !important; /* Move up more to test positioning on desktop */
+  }
+}
+
+/* Touch SVG styling - Desktop */
+.intro-touch-svg {
+  width: 136px;
+  height: 133px;
+  cursor: pointer;
+  margin-left: 20px;
+  pointer-events: auto; /* Ensure clicks are captured */
+  z-index: 10; /* Ensure it's above other elements */
+  position: relative;
+}
+
+/* Auto-expand animation - same as click animation but happens on fade-in */
+.intro-touch-svg .ripple-outer {
+  opacity: 0.25;
+  animation: rippleAutoExpand 1.2s ease-out 0.1s forwards, rippleOuterPulse 3s ease-in-out 1.4s infinite;
+}
+
+.intro-touch-svg .ripple-inner {
+  opacity: 0.5;
+  animation: rippleAutoExpandInner 1.2s ease-out 0.1s forwards, rippleInnerPulse 3s ease-in-out 1.4s infinite;
+}
+
+.intro-touch-svg .center-dot {
+  opacity: 1;
+  animation: centerDotPulse 3s ease-in-out 1.4s infinite;
+}
+
+/* Ripple effect on click - overrides the looping animations */
+.intro-touch-svg.clicked .ripple-outer {
+  animation: rippleExpand 0.8s ease-out forwards !important;
+}
+
+.intro-touch-svg.clicked .ripple-inner {
+  animation: rippleExpandInner 0.8s ease-out forwards !important;
+}
+
+.intro-touch-svg.clicked .center-dot {
+  animation: centerStable 0.8s ease-out forwards !important;
+}
+
+/* Phase 2: Video */
+.intro-video {
+  position: fixed; /* Fixed to viewport instead of absolute */
+  top: 0;
+  left: 0;
+  width: 100vw; /* Full viewport width */
+  height: 100vh; /* Full viewport height */
+  object-fit: cover;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
+  z-index: 600; /* Above intro overlay (500) to cover everything */
+}
+
+.intro-video.playing {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Skip button */
+.intro-skip-btn {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: transparent;
+  border: 1px solid #F8F8FF;
+  border-radius: 5px;
+  padding: 8px 16px;
+  font-family: "Satoshi-Light", system-ui;
+  font-size: 12px;
+  color: #F8F8FF;
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.intro-skip-btn.visible {
+  opacity: 0.7;
+  visibility: visible;
+}
+
+.intro-skip-btn:hover {
+  opacity: 1;
+  background: #F8F8FF;
+  color: #005BA6;
+}
+
+/* Header styling during intro phase - highest specificity override */
+body.intro-active .header-link,
+body.intro-active .header-label {
+  color: #F8F8FF !important;
+  background: none !important;
+  background-color: transparent !important;
+}
+
+body.intro-active .header-link:hover,
+body.intro-active .header-label:hover {
+  color: #F8F8FF !important;
+  opacity: 0.8 !important;
+  text-decoration: none !important;
+  background: none !important;
+  background-color: transparent !important;
+}
+
+/* Mobile header during intro */
+body.intro-active .mobile-header-toggle span {
+  background-color: #F8F8FF !important;
+}
+
+body.intro-active .mobile-header-menu-item {
+  color: #F8F8FF !important;
+}
+
+body.intro-active .mobile-header-menu-item.secondary {
+  color: #F8F8FF !important;
+  opacity: 0.8;
+}
+
+body.intro-active .mobile-header-menu {
+  background: #005BA6 !important;
+}
+
+/* Header fade-out during video */
+.headers-faded .header-link,
+.headers-faded .header-label,
+.headers-faded .mobile-header-dropdown {
+  opacity: 0;
+  transition: opacity 0.3s ease-out;
+}
+
+/* Mobile responsive design */
+@media (max-width: 775px) {
+  .intro-overlay {
+    padding-top: 80px; /* Reduced mobile padding for better centering */
+  }
+
+  .intro-text {
+    font-size: 60px;
+    max-width: 336px;
+  }
+
+  .intro-touch-container {
+    width: 336px;
+    transform: translateY(-50px) !important; /* Move up slightly higher on mobile to align with question mark */
+  }
+
+  .intro-touch-svg {
+    width: 88px;
+    height: 88px; /* Updated to match new square aspect ratio */
+    margin-left: 16px;
+  }
+
+  .intro-skip-btn {
+    font-size: 11px;
+    padding: 6px 12px;
+  }
+}
+
+/* Animations */
+@keyframes fadeInText {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInTouch {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Auto-expand animations - same as click but for automatic appearance */
+@keyframes rippleAutoExpand {
+  0% {
+    r: 18.4442;
+    opacity: 0;
+    stroke-width: 0.423519;
+  }
+  30% {
+    r: 142.538;
+    opacity: 0.25;
+    stroke-width: 3.27298;
+  }
+  100% {
+    r: 18.4442;
+    opacity: 0.25;
+    stroke-width: 0.423519;
+  }
+}
+
+@keyframes rippleAutoExpandInner {
+  0% {
+    r: 12.642;
+    opacity: 0;
+    stroke-width: 0.847038;
+  }
+  30% {
+    r: 84.7143;
+    opacity: 0.5;
+    stroke-width: 5.676;
+  }
+  100% {
+    r: 12.642;
+    opacity: 0.5;
+    stroke-width: 0.847038;
+  }
+}
+
+/* Subtle idle pulse animations */
+@keyframes rippleOuterPulse {
+  0%, 100% {
+    r: 18.4442;
+    opacity: 0.25;
+  }
+  50% {
+    r: 22;
+    opacity: 0.15;
+  }
+}
+
+@keyframes rippleInnerPulse {
+  0%, 100% {
+    r: 12.642;
+    opacity: 0.5;
+  }
+  50% {
+    r: 15;
+    opacity: 0.3;
+  }
+}
+
+@keyframes centerDotPulse {
+  0%, 100% {
+    r: 21.1107;
+    opacity: 1;
+  }
+  50% {
+    r: 19;
+    opacity: 0.9;
+  }
+}
+
+/* Click ripple expansion animations */
+@keyframes rippleExpand {
+  0% {
+    r: 18.4442;
+    opacity: 0.25;
+    stroke-width: 0.423519;
+  }
+  70% {
+    r: 142.538;
+    opacity: 0.25;
+    stroke-width: 3.27298;
+  }
+  100% {
+    r: 142.538;
+    opacity: 0;
+    stroke-width: 3.27298;
+  }
+}
+
+@keyframes rippleExpandInner {
+  0% {
+    r: 12.642;
+    opacity: 0.5;
+    stroke-width: 0.847038;
+  }
+  70% {
+    r: 84.7143;
+    opacity: 0.5;
+    stroke-width: 5.676;
+  }
+  100% {
+    r: 84.7143;
+    opacity: 0;
+    stroke-width: 5.676;
+  }
+}
+
+@keyframes centerStable {
+  0%, 100% {
+    r: 21.1107;
+    opacity: 1;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .intro-text-container,
+  .intro-touch-container,
+  .intro-touch-svg {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .intro-overlay,
+  .intro-video,
+  .intro-skip-btn,
+  .header-link,
+  .header-label {
+    transition: none !important;
+  }
+}
+
 
