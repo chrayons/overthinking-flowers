@@ -228,28 +228,28 @@ class IntroAnimation {
   }
 
   disableFlowerInteractions() {
-    // Disable pointer events on all interactive flower elements temporarily
+    // Disable pointer events on desktop flower elements only, avoid mobile carousel
     const flowerSectors = document.querySelectorAll('.mg-sector');
-    const categoryLabels = document.querySelectorAll('.category-label');
+    const desktopCategoryLabels = document.querySelectorAll('#category-grid .category-label'); // Only desktop grid labels
     const categoryCells = document.querySelectorAll('.category-cell');
 
     // Store original pointer-events values for restoration
     const originalPointerEvents = new Map();
 
-    [...flowerSectors, ...categoryLabels, ...categoryCells].forEach(element => {
+    [...flowerSectors, ...desktopCategoryLabels, ...categoryCells].forEach(element => {
       originalPointerEvents.set(element, element.style.pointerEvents || 'auto');
       element.style.pointerEvents = 'none';
     });
 
-    console.log('Flower interactions disabled during grow animations');
+    console.log('Desktop flower interactions disabled during grow animations');
 
     // Re-enable interactions after grow animations complete
     setTimeout(() => {
-      [...flowerSectors, ...categoryLabels, ...categoryCells].forEach(element => {
+      [...flowerSectors, ...desktopCategoryLabels, ...categoryCells].forEach(element => {
         const originalValue = originalPointerEvents.get(element);
         element.style.pointerEvents = originalValue;
       });
-      console.log('Flower interactions re-enabled after grow animations');
+      console.log('Desktop flower interactions re-enabled after grow animations');
     }, 1500); // 1500ms = 300ms intro delay + 800ms animation + 400ms buffer
   }
 

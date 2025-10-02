@@ -374,8 +374,14 @@ function shouldUseReducedAnimations() {
 window.triggerFlowerAnimations = function() {
   console.log('Triggering flower expansion animations...');
 
-  const allFlowers = document.querySelectorAll('.flower-ready');
+  // Only target desktop grid flowers, avoid mobile carousel elements
+  const allFlowers = document.querySelectorAll('#category-grid .flower-ready');
   const useReducedAnimations = shouldUseReducedAnimations();
+
+  if (allFlowers.length === 0) {
+    console.log('No desktop flowers found to animate, skipping animation');
+    return;
+  }
 
   // Use requestAnimationFrame for smoother performance
   requestAnimationFrame(() => {

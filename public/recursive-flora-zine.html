@@ -61,8 +61,10 @@
     .pdf-controls {
       position: fixed;
       bottom: 0;
-      left: 0;
-      right: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 75%;
+      max-width: 800px;
       background: transparent;
       border-top: none;
       padding: 12px 20px;
@@ -189,6 +191,7 @@
 
       .pdf-controls {
         padding: 8px 16px;
+        width: 85%; /* Slightly wider on mobile for usability */
       }
 
       .pdf-progress-container {
@@ -302,6 +305,7 @@
     @media (max-width: 480px) {
       .pdf-controls {
         padding: 6px 12px;
+        width: 90%; /* Even wider on very small screens */
       }
 
       .pdf-progress-container {
@@ -419,7 +423,7 @@
         this.pdfDoc = null;
         this.pageNum = 1;
         this.pageCount = 0;
-        this.scale = 1.2;
+        this.scale = 0.75;
         this.canvas = document.getElementById('pdf-canvas');
         this.ctx = this.canvas.getContext('2d');
         this.isRendering = false;
