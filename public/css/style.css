@@ -1109,8 +1109,7 @@ body.intro-active .header-label {
   cursor: pointer;
   box-sizing: border-box;
   pointer-events: auto; /* Enable clicking */
-  transition: all 0.3s ease; /* Allow smooth transitions */
-  view-transition-name: return-btn; /* Enable cross-page transitions */
+  transition: background 0.3s ease, color 0.3s ease; /* Only transition hover states */
   /* Prevent flicker during page loads */
   opacity: 1;
   visibility: visible;
