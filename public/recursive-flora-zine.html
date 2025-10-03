@@ -10,44 +10,10 @@
   <link rel="preload" as="style" href="fonts/Satoshi/css/satoshi.css">
   <link rel="stylesheet" href="fonts/Satoshi/css/satoshi.css">
   <link rel="stylesheet" href="css/style.css">
-
+</head>
+<body class="zine-page">
+  <!-- Minimal inline styles for PDF reader functionality -->
   <style>
-    /* PDF Reader Styles */
-    .zine-container {
-      width: 100%;
-      height: 100vh;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .pdf-reader {
-      position: relative;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .pdf-canvas-container {
-      position: relative;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex: 1;
-      background: transparent;
-      padding: 20px 20px 80px 20px; /* Extra bottom padding for fixed controls */
-    }
-
-    #pdf-canvas {
-      max-width: calc(100vw - 40px);
-      max-height: calc(100vh - 120px);
-      width: auto;
-      height: auto;
-      display: block;
-      object-fit: contain;
-    }
-
     .pdf-loading {
       position: absolute;
       top: 50%;
@@ -297,14 +263,18 @@
     .pdf-reader.fullscreen .pdf-canvas-container {
       flex: 1;
       min-height: auto;
-      padding: 1rem;
+      padding: 20px 20px 0 20px;
+      display: flex;
+      align-items: flex-start; /* Align to top instead of center */
+      justify-content: center;
+      padding-bottom: 120px; /* Space for controls */
     }
 
     .pdf-reader.fullscreen #pdf-canvas {
-      max-height: calc(100vh - 80px); /* Account for simplified controls */
-      max-width: 100%;
-      width: auto;
-      height: auto;
+      max-height: calc(100vh - 180px); /* More clearance for controls */
+      max-width: calc(100vw - 40px);
+      width: 100%;
+      height: 100%;
       object-fit: contain;
     }
 
@@ -514,8 +484,9 @@
   </div>
 
   <div class="wrapper">
-
-    <div class="zine-container">
+    <div class="zine-center">
+      <!-- Zine Title -->
+      <h1 class="zine-title">Recursive Flora</h1>
 
       <div class="pdf-reader">
         <button class="mobile-fullscreen-close" id="mobile-close-btn" aria-label="Exit fullscreen">✕</button>
@@ -677,7 +648,29 @@
 
         try {
           const page = await this.pdfDoc.getPage(pageNum);
-          const viewport = page.getViewport({ scale: this.scale });
+
+          // Calculate optimal scale based on viewport size and fullscreen state
+          const isFullscreen = this.pdfReader.classList.contains('fullscreen');
+          const isMobile = window.innerWidth <= 768;
+
+          let scale;
+          if (isFullscreen && !isMobile) {
+            // Desktop fullscreen: scale to fill available space
+            const containerWidth = this.canvas.parentElement.clientWidth;
+            const containerHeight = this.canvas.parentElement.clientHeight;
+
+            const baseViewport = page.getViewport({ scale: 1.0 });
+            const scaleX = containerWidth / baseViewport.width;
+            const scaleY = containerHeight / baseViewport.height;
+
+            // Use the smaller scale to fit within bounds
+            scale = Math.min(scaleX, scaleY) * 0.95; // 95% to add small margin
+          } else {
+            // Normal view or mobile: use default scale
+            scale = this.scale;
+          }
+
+          const viewport = page.getViewport({ scale: scale });
 
           this.canvas.height = viewport.height;
           this.canvas.width = viewport.width;
