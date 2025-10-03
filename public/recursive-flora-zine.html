@@ -326,11 +326,49 @@
       pointer-events: auto; /* Ensure controls are clickable */
     }
 
+    /* Compact controls on mobile landscape fullscreen */
+    @media (max-width: 768px) {
+      .pdf-reader.fullscreen .pdf-controls {
+        padding: 4px 12px 12px 12px; /* Much more compact for landscape */
+        gap: 4px;
+      }
+
+      .pdf-reader.fullscreen .pdf-nav-button {
+        width: 32px;
+        height: 32px;
+        padding: 4px;
+      }
+
+      .pdf-reader.fullscreen .pdf-fullscreen-button {
+        width: 32px;
+        height: 32px;
+        padding: 4px;
+      }
+
+      .pdf-reader.fullscreen .pdf-progress-container {
+        margin: 0 8px;
+      }
+
+      .pdf-reader.fullscreen .pdf-nav-right {
+        gap: 8px;
+      }
+
+      .pdf-reader.fullscreen .pdf-page-info {
+        font-size: 10px;
+      }
+    }
+
     /* Auto-hide controls on mobile fullscreen */
     @media (max-width: 768px) {
       .pdf-reader.fullscreen .pdf-controls.auto-hidden {
         opacity: 0;
         pointer-events: none;
+      }
+
+      /* Keep close button visible always on mobile landscape */
+      .pdf-reader.fullscreen .mobile-fullscreen-close {
+        opacity: 1 !important;
+        pointer-events: auto !important;
       }
     }
 
@@ -365,12 +403,6 @@
     @media (max-width: 768px) {
       .pdf-reader.fullscreen .mobile-fullscreen-close {
         display: flex;
-      }
-
-      /* Auto-hide close button with controls */
-      .pdf-reader.fullscreen .mobile-fullscreen-close.auto-hidden {
-        opacity: 0;
-        pointer-events: none;
       }
     }
 
@@ -855,10 +887,10 @@
       }
 
       startMobileFullscreenMode() {
-        // Auto-hide controls and close button after 2 seconds
+        // Auto-hide controls after 2 seconds (close button stays visible)
         this.mobileFullscreenTimeout = setTimeout(() => {
           this.controlsEl.classList.add('auto-hidden');
-          this.mobileCloseBtn.classList.add('auto-hidden');
+          // Note: mobileCloseBtn stays visible always
         }, 2000);
 
         // Set up mobile fullscreen touch handling
@@ -870,21 +902,21 @@
           clearTimeout(this.mobileFullscreenTimeout);
         }
         this.controlsEl.classList.remove('auto-hidden');
-        this.mobileCloseBtn.classList.remove('auto-hidden');
+        // Note: mobileCloseBtn doesn't need classList change as it's always visible
         this.removeMobileFullscreenTouch();
       }
 
       showMobileControls() {
         this.controlsEl.classList.remove('auto-hidden');
-        this.mobileCloseBtn.classList.remove('auto-hidden');
+        // Note: mobileCloseBtn is always visible, no need to show/hide
 
-        // Reset the auto-hide timer
+        // Reset the auto-hide timer for controls only
         if (this.mobileFullscreenTimeout) {
           clearTimeout(this.mobileFullscreenTimeout);
         }
         this.mobileFullscreenTimeout = setTimeout(() => {
           this.controlsEl.classList.add('auto-hidden');
-          this.mobileCloseBtn.classList.add('auto-hidden');
+          // Note: mobileCloseBtn stays visible
         }, 3000); // 3 seconds after showing
       }
 
@@ -914,16 +946,15 @@
           const topZone = canvasHeight * 0.3;     // Top 30% = left side in landscape = previous page
           const bottomZone = canvasHeight * 0.7;  // Bottom 30% = right side in landscape = next page
 
-          // Control zones: center spine (horizontal in rotated view) or right edge
-          const centerSpineTop = canvasHeight * 0.45;   // Center spine area (horizontal)
-          const centerSpineBottom = canvasHeight * 0.55;
-          const rightEdge = canvasWidth * 0.9;          // Right 10% of screen
+          // Center tap zone (middle of the PDF image) shows navigation controls
+          const centerX = canvasWidth * 0.4;
+          const centerXEnd = canvasWidth * 0.6;
+          const centerY = canvasHeight * 0.4;
+          const centerYEnd = canvasHeight * 0.6;
 
-          // Check for controls first (center spine or right edge)
-          const isInCenterSpine = (y >= centerSpineTop && y <= centerSpineBottom);
-          const isInRightEdge = (x >= rightEdge);
+          const isInCenter = (x >= centerX && x <= centerXEnd && y >= centerY && y <= centerYEnd);
 
-          if (isInCenterSpine || isInRightEdge) {
+          if (isInCenter) {
             this.showMobileControls();
             return;
           }
@@ -936,7 +967,7 @@
             // Bottom 30% = right side in landscape = next page
             this.goToNextPage();
           }
-          // Middle area that's not center spine = do nothing
+          // Middle area that's not center = do nothing
         };
 
         // Add to canvas only, but exclude control areas
