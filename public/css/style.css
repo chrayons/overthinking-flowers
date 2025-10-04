@@ -2237,10 +2237,13 @@ body.intro-active .header-label {
 /* Phase 2: Video */
 .intro-video {
   position: fixed; /* Fixed to viewport instead of absolute */
-  top: 0;
-  left: 0;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   width: 100vw; /* Full viewport width */
   height: 100vh; /* Full viewport height */
+  min-width: 100%;
+  min-height: 100%;
   object-fit: cover;
   object-position: center center; /* Ensure center of video stays centered */
   opacity: 0;
@@ -2317,30 +2320,23 @@ body.intro-active .header-label {
     -webkit-touch-callout: none !important;
     -webkit-user-select: none !important;
     -khtml-user-select: none !important;
+    -moz-user-select: none !important;
+    -ms-user-select: none !important;
+    user-select: none !important;
 
     /* Additional mobile control hiding */
     -webkit-appearance: none !important;
     -moz-appearance: none !important;
     appearance: none !important;
 
-    /* Enhanced mobile centering - use small viewport height for UI bars */
-    height: 100vh; /* Fallback for older browsers */
-    height: 100svh; /* Small viewport height - excludes browser UI */
-    width: 100vw; /* Fallback for older browsers */
-    width: 100svw; /* Small viewport width */
-
-    /* Force center positioning with fallback */
-    object-position: center center;
-    transform: translateZ(0); /* Force hardware acceleration */
-
-    /* Additional centering for problematic browsers */
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) translateZ(0);
+    /* Enhanced mobile centering - use dynamic viewport for true fullscreen */
     width: 100vw;
-    height: 100vh;
-    width: 100svw;
-    height: 100svh;
+    height: 100dvh; /* Dynamic viewport height - adjusts for browser UI */
+    min-width: 100vw;
+    min-height: 100dvh;
+
+    /* Ensure transform stays intact for centering */
+    transform: translate(-50%, -50%) translateZ(0); /* Force hardware acceleration */
   }
 
   /* Mobile-specific WebKit control selectors */
@@ -2359,10 +2355,6 @@ body.intro-active .header-label {
     display: none !important;
     opacity: 0 !important;
     visibility: hidden !important;
-  }
-    -moz-user-select: none !important;
-    -ms-user-select: none !important;
-    user-select: none !important;
   }
 }
 
