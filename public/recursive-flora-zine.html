@@ -178,11 +178,9 @@
         font-size: 11px;
       }
 
+      /* Hide fullscreen button on mobile */
       .pdf-fullscreen-button {
-        padding: 8px;
-        font-size: 14px;
-        width: 40px;
-        height: 40px;
+        display: none;
       }
     }
 
@@ -194,7 +192,7 @@
       font: 500 14px/1.4 "Satoshi-Medium", sans-serif;
     }
 
-    /* Fullscreen Mode */
+    /* Desktop Fullscreen Mode */
     .pdf-reader.fullscreen {
       position: fixed;
       top: 0;
@@ -208,174 +206,47 @@
       margin: 0;
     }
 
-    /* Hide headers in fullscreen */
-    .pdf-reader.fullscreen ~ .header-bar,
-    .pdf-reader.fullscreen ~ .mobile-header-dropdown {
-      display: none;
-    }
-
-    body:has(.pdf-reader.fullscreen) .header-bar,
-    body:has(.pdf-reader.fullscreen) .mobile-header-dropdown {
-      display: none;
-    }
-
-    /* Mobile Landscape Fullscreen */
-    @media (max-width: 768px) {
-      .pdf-reader.fullscreen {
-        transform-origin: center center;
-        animation: rotateToLandscape 0.3s ease-out forwards;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
+    /* Hide headers in fullscreen on desktop only */
+    @media (min-width: 769px) {
+      .pdf-reader.fullscreen ~ .header-bar,
+      .pdf-reader.fullscreen ~ .mobile-header-dropdown {
+        display: none;
       }
 
-      @keyframes rotateToLandscape {
-        from {
-          transform: translate(-50%, -50%) rotate(0deg);
-          width: 100vw;
-          height: 100vh;
-        }
-        to {
-          transform: translate(-50%, -50%) rotate(90deg);
-          width: 100vh;
-          height: 100vw;
-        }
+      body:has(.pdf-reader.fullscreen) .header-bar,
+      body:has(.pdf-reader.fullscreen) .mobile-header-dropdown {
+        display: none;
       }
 
-      .pdf-reader.fullscreen.exiting {
-        animation: rotateToPortrait 0.3s ease-out forwards;
-      }
-
-      @keyframes rotateToPortrait {
-        from {
-          transform: translate(-50%, -50%) rotate(90deg);
-          width: 100vh;
-          height: 100vw;
-        }
-        to {
-          transform: translate(-50%, -50%) rotate(0deg);
-          width: 100vw;
-          height: 100vh;
-        }
-      }
-    }
-
-    .pdf-reader.fullscreen .pdf-canvas-container {
-      flex: 1;
-      min-height: auto;
-      padding: 20px 20px 0 20px;
-      display: flex;
-      align-items: flex-start; /* Align to top instead of center */
-      justify-content: center;
-      padding-bottom: 120px; /* Space for controls */
-    }
-
-    .pdf-reader.fullscreen #pdf-canvas {
-      max-height: calc(100vh - 180px); /* More clearance for controls */
-      max-width: calc(100vw - 40px);
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-    }
-
-    @media (max-width: 768px) {
-      .pdf-reader.fullscreen #pdf-canvas {
-        max-height: calc(100vw - 80px); /* Landscape dimensions */
-        max-width: 100vh;
-      }
-    }
-
-    .pdf-reader.fullscreen .pdf-controls {
-      background: transparent;
-      border-top: none;
-      padding: 12px 20px 32px 20px;
-      margin-top: 0;
-      box-shadow: none;
-      transition: opacity 0.3s ease;
-      z-index: 1000001; /* Above touch zones */
-      pointer-events: auto; /* Ensure controls are clickable */
-    }
-
-    /* Compact controls on mobile landscape fullscreen */
-    @media (max-width: 768px) {
-      .pdf-reader.fullscreen .pdf-controls {
-        padding: 4px 12px 12px 12px; /* Much more compact for landscape */
-        gap: 4px;
-      }
-
-      .pdf-reader.fullscreen .pdf-nav-button {
-        width: 32px;
-        height: 32px;
-        padding: 4px;
-      }
-
-      .pdf-reader.fullscreen .pdf-fullscreen-button {
-        width: 32px;
-        height: 32px;
-        padding: 4px;
-      }
-
-      .pdf-reader.fullscreen .pdf-progress-container {
-        margin: 0 8px;
-      }
-
-      .pdf-reader.fullscreen .pdf-nav-right {
-        gap: 8px;
-      }
-
-      .pdf-reader.fullscreen .pdf-page-info {
-        font-size: 10px;
-      }
-    }
-
-    /* Auto-hide controls on mobile fullscreen */
-    @media (max-width: 768px) {
-      .pdf-reader.fullscreen .pdf-controls.auto-hidden {
-        opacity: 0;
-        pointer-events: none;
-      }
-
-      /* Keep close button visible always on mobile landscape */
-      .pdf-reader.fullscreen .mobile-fullscreen-close {
-        opacity: 1 !important;
-        pointer-events: auto !important;
-      }
-    }
-
-    /* Mobile fullscreen close button */
-    .mobile-fullscreen-close {
-      display: none;
-      position: fixed;
-      top: 20px;
-      right: 60px;
-      width: 44px;
-      height: 44px;
-      background: rgba(255, 255, 255, 0.6);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 0.5px solid #F8F8FF;
-      border-radius: 50%;
-      z-index: 1000002; /* Above controls */
-      cursor: pointer;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-      color: var(--text-primary);
-      transition: all 0.2s ease;
-      pointer-events: auto;
-    }
-
-    .mobile-fullscreen-close:hover {
-      background: rgba(255, 255, 255, 0.8);
-    }
-
-    /* Show close button only on mobile fullscreen */
-    @media (max-width: 768px) {
-      .pdf-reader.fullscreen .mobile-fullscreen-close {
+      .pdf-reader.fullscreen .pdf-canvas-container {
+        flex: 1;
+        min-height: auto;
+        padding: 20px 20px 0 20px;
         display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        padding-bottom: 120px;
+      }
+
+      .pdf-reader.fullscreen #pdf-canvas {
+        max-height: calc(100vh - 180px);
+        max-width: calc(100vw - 40px);
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+      }
+
+      .pdf-reader.fullscreen .pdf-controls {
+        background: transparent;
+        border-top: none;
+        padding: 12px 20px 32px 20px;
+        margin-top: 0;
+        box-shadow: none;
+        transition: opacity 0.3s ease;
+        z-index: 1000001;
+        pointer-events: auto;
       }
     }
-
 
     /* Header styling for zine page */
     .header-link {
@@ -489,7 +360,6 @@
       <h1 class="zine-title">Recursive Flora</h1>
 
       <div class="pdf-reader">
-        <button class="mobile-fullscreen-close" id="mobile-close-btn" aria-label="Exit fullscreen">✕</button>
         <div class="pdf-canvas-container">
           <canvas id="pdf-canvas"></canvas>
           <div class="pdf-loading" id="pdf-loading">
@@ -561,7 +431,6 @@
         this.fullscreenBtn = document.getElementById('fullscreen-btn');
         this.pdfReader = document.querySelector('.pdf-reader');
         this.controlsEl = document.querySelector('.pdf-controls');
-        this.mobileCloseBtn = document.getElementById('mobile-close-btn');
       }
 
       setupEventListeners() {
@@ -570,11 +439,8 @@
         this.nextBtn.addEventListener('click', () => this.goToNextPage());
 
 
-        // Fullscreen control
+        // Fullscreen control (desktop only)
         this.fullscreenBtn.addEventListener('click', () => this.toggleFullscreen());
-
-        // Mobile close button
-        this.mobileCloseBtn.addEventListener('click', () => this.exitFullscreen());
 
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
@@ -735,6 +601,10 @@
       }
 
       toggleFullscreen() {
+        // Disable fullscreen on mobile
+        const isMobile = window.innerWidth <= 768;
+        if (isMobile) return;
+
         if (this.pdfReader.classList.contains('fullscreen')) {
           this.exitFullscreen();
         } else {
@@ -743,61 +613,42 @@
       }
 
       enterFullscreen() {
+        // Desktop only
         const isMobile = window.innerWidth <= 768;
+        if (isMobile) return;
 
         this.pdfReader.classList.add('fullscreen');
         this.fullscreenBtn.textContent = '⛉'; // Exit fullscreen icon
         this.fullscreenBtn.title = 'Exit Fullscreen';
 
-        if (isMobile) {
-          // On mobile, show instruction and rotate interface
-          this.showMobileLandscapeHint();
-          // Re-render after animation completes
-          setTimeout(() => {
-            this.renderPage(this.pageNum);
-            this.startMobileFullscreenMode();
-          }, 300);
-        } else {
-          // Desktop: try browser fullscreen
-          if (this.pdfReader.requestFullscreen) {
-            this.pdfReader.requestFullscreen();
-          } else if (this.pdfReader.webkitRequestFullscreen) {
-            this.pdfReader.webkitRequestFullscreen();
-          } else if (this.pdfReader.msRequestFullscreen) {
-            this.pdfReader.msRequestFullscreen();
-          }
-          this.renderPage(this.pageNum);
+        // Desktop: try browser fullscreen
+        if (this.pdfReader.requestFullscreen) {
+          this.pdfReader.requestFullscreen();
+        } else if (this.pdfReader.webkitRequestFullscreen) {
+          this.pdfReader.webkitRequestFullscreen();
+        } else if (this.pdfReader.msRequestFullscreen) {
+          this.pdfReader.msRequestFullscreen();
         }
+        this.renderPage(this.pageNum);
       }
 
       exitFullscreen() {
+        // Desktop only
         const isMobile = window.innerWidth <= 768;
+        if (isMobile) return;
 
-        if (isMobile) {
-          // Add exiting class for reverse animation
-          this.pdfReader.classList.add('exiting');
-          this.hideMobileLandscapeHint();
-          this.stopMobileFullscreenMode();
+        this.pdfReader.classList.remove('fullscreen');
 
-          // Remove classes after animation
-          setTimeout(() => {
-            this.pdfReader.classList.remove('fullscreen', 'exiting');
-            this.renderPage(this.pageNum);
-          }, 300);
-        } else {
-          this.pdfReader.classList.remove('fullscreen');
-
-          // Exit browser fullscreen
-          if (document.exitFullscreen) {
-            document.exitFullscreen();
-          } else if (document.webkitExitFullscreen) {
-            document.webkitExitFullscreen();
-          } else if (document.msExitFullscreen) {
-            document.msExitFullscreen();
-          }
-
-          this.renderPage(this.pageNum);
+        // Exit browser fullscreen
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) {
+          document.msExitFullscreen();
         }
+
+        this.renderPage(this.pageNum);
 
         this.fullscreenBtn.textContent = '⛶'; // Enter fullscreen icon
         this.fullscreenBtn.title = 'Fullscreen';
@@ -818,172 +669,9 @@
         }
       }
 
-      showMobileLandscapeHint() {
-        // Create a hint overlay for mobile users
-        const hint = document.createElement('div');
-        hint.id = 'mobile-landscape-hint';
-        hint.innerHTML = `
-          <div style="
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(255, 255, 255, 0.6);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            will-change: backdrop-filter;
-            isolation: isolate;
-            border: 0.5px solid #F8F8FF;
-            border-radius: 5px;
-            padding: 20px;
-            text-align: center;
-            font: 500 14px/1.4 'Satoshi-Medium', sans-serif;
-            color: var(--text-primary);
-            z-index: 1000000;
-            max-width: 280px;
-            pointer-events: auto;
-          ">
-            <div style="margin-bottom: 8px; display: flex; justify-content: center;">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 80" width="32" height="40" style="fill: var(--text-primary);">
-                <g data-name="Rotate Phone">
-                  <path d="M59.9585,28.6123a.99993.99993,0,0,1-1.98829.21485A22.95616,22.95616,0,0,0,42.86005,9.6864L44.646,13.03271a1,1,0,0,1-1.76465.94141L40.2085,8.96631a1.45193,1.45193,0,0,1,.59765-1.97168L45.72754,4.396a1,1,0,0,1,.93359,1.76855L43.54456,7.81036A24.97223,24.97223,0,0,1,59.9585,28.6123Z"/>
-                  <path d="M23.19385,57.00537,18.27246,59.604a1,1,0,0,1-.93359-1.76855l3.11657-1.64581A24.97223,24.97223,0,0,1,4.0415,35.3877a1,1,0,0,1,1.98829-.21485A22.95616,22.95616,0,0,0,21.14,54.3136L19.354,50.96729a1.00007,1.00007,0,0,1,1.76465-.94141l2.67285,5.00781A1.45193,1.45193,0,0,1,23.19385,57.00537Z"/>
-                  <path d="M37.041,57.61523,6.38477,26.959a3.71386,3.71386,0,0,1,0-5.24609L21.71289,6.38477a3.71386,3.71386,0,0,1,5.24609,0L57.61523,37.041a3.71386,3.71386,0,0,1,0,5.24609L42.28711,57.61523A3.71325,3.71325,0,0,1,37.041,57.61523ZM23.127,7.79883,7.79883,23.127a1.71193,1.71193,0,0,0,0,2.418L38.45508,56.20117a1.71282,1.71282,0,0,0,2.418,0L56.20117,40.87305a1.71193,1.71193,0,0,0,0-2.418L25.54492,7.79883A1.71277,1.71277,0,0,0,23.127,7.79883Z"/>
-                  <path d="M14.6875,18.51953l3.832-3.832a.99992.99992,0,0,1,1.41406,1.41406l-3.832,3.832A.99991.99991,0,0,1,14.6875,18.51953Z"/>
-                  <path d="M43.42773,47.39648a2.80633,2.80633,0,1,1,3.96875,0A2.80943,2.80943,0,0,1,43.42773,47.39648ZM44.8418,44.8418a.80654.80654,0,1,0,1.14062,0A.80747.80747,0,0,0,44.8418,44.8418Z"/>
-                </g>
-              </svg>
-            </div>
-            <div style="color: var(--text-primary);">Rotate your device to landscape for better reading</div>
-            <div style="font-size: 12px; margin-top: 8px; opacity: 0.7; color: var(--text-primary);">Tap anywhere to continue</div>
-          </div>
-        `;
-
-        // Remove hint on tap
-        hint.addEventListener('click', () => {
-          this.hideMobileLandscapeHint();
-        });
-
-        document.body.appendChild(hint);
-
-        // Auto-hide after 4 seconds
-        setTimeout(() => {
-          this.hideMobileLandscapeHint();
-        }, 4000);
-      }
-
-      hideMobileLandscapeHint() {
-        const hint = document.getElementById('mobile-landscape-hint');
-        if (hint) {
-          hint.remove();
-        }
-      }
-
-      startMobileFullscreenMode() {
-        // Auto-hide controls after 2 seconds (close button stays visible)
-        this.mobileFullscreenTimeout = setTimeout(() => {
-          this.controlsEl.classList.add('auto-hidden');
-          // Note: mobileCloseBtn stays visible always
-        }, 2000);
-
-        // Set up mobile fullscreen touch handling
-        this.setupMobileFullscreenTouch();
-      }
-
-      stopMobileFullscreenMode() {
-        if (this.mobileFullscreenTimeout) {
-          clearTimeout(this.mobileFullscreenTimeout);
-        }
-        this.controlsEl.classList.remove('auto-hidden');
-        // Note: mobileCloseBtn doesn't need classList change as it's always visible
-        this.removeMobileFullscreenTouch();
-      }
-
-      showMobileControls() {
-        this.controlsEl.classList.remove('auto-hidden');
-        // Note: mobileCloseBtn is always visible, no need to show/hide
-
-        // Reset the auto-hide timer for controls only
-        if (this.mobileFullscreenTimeout) {
-          clearTimeout(this.mobileFullscreenTimeout);
-        }
-        this.mobileFullscreenTimeout = setTimeout(() => {
-          this.controlsEl.classList.add('auto-hidden');
-          // Note: mobileCloseBtn stays visible
-        }, 3000); // 3 seconds after showing
-      }
-
-      setupMobileFullscreenTouch() {
-        this.mobileFullscreenHandler = (e) => {
-          // Check if touch is on control elements - if so, don't handle it
-          const target = e.target;
-          if (target.closest('.pdf-controls')) {
-            return;
-          }
-
-          e.preventDefault();
-          e.stopPropagation();
-
-          const rect = this.canvas.getBoundingClientRect();
-          const touch = e.changedTouches ? e.changedTouches[0] : e;
-
-          // Get touch position relative to the canvas
-          const x = touch.clientX - rect.left;
-          const y = touch.clientY - rect.top;
-
-          const canvasWidth = rect.width;
-          const canvasHeight = rect.height;
-
-          // For 90-degree rotated view, flip the zones:
-          // Navigation zones: top and bottom become left and right in rotated space
-          const topZone = canvasHeight * 0.3;     // Top 30% = left side in landscape = previous page
-          const bottomZone = canvasHeight * 0.7;  // Bottom 30% = right side in landscape = next page
-
-          // Center tap zone (middle of the PDF image) shows navigation controls
-          const centerX = canvasWidth * 0.4;
-          const centerXEnd = canvasWidth * 0.6;
-          const centerY = canvasHeight * 0.4;
-          const centerYEnd = canvasHeight * 0.6;
-
-          const isInCenter = (x >= centerX && x <= centerXEnd && y >= centerY && y <= centerYEnd);
-
-          if (isInCenter) {
-            this.showMobileControls();
-            return;
-          }
-
-          // Navigation based on vertical position (which becomes left/right in rotated view)
-          if (y < topZone) {
-            // Top 30% = left side in landscape = previous page
-            this.goToPrevPage();
-          } else if (y > bottomZone) {
-            // Bottom 30% = right side in landscape = next page
-            this.goToNextPage();
-          }
-          // Middle area that's not center = do nothing
-        };
-
-        // Add to canvas only, but exclude control areas
-        this.canvas.addEventListener('touchend', this.mobileFullscreenHandler, { passive: false });
-        this.canvas.addEventListener('click', this.mobileFullscreenHandler, { passive: false });
-
-        // Don't add to pdfReader to avoid intercepting control clicks
-      }
-
-      removeMobileFullscreenTouch() {
-        if (this.mobileFullscreenHandler) {
-          this.canvas.removeEventListener('touchend', this.mobileFullscreenHandler);
-          this.canvas.removeEventListener('click', this.mobileFullscreenHandler);
-        }
-      }
 
       setupTouchNavigation() {
-        this.normalTouchHandler = (e) => {
-          // Skip if in mobile fullscreen mode
-          if (this.pdfReader.classList.contains('fullscreen') && window.innerWidth <= 768) {
-            return;
-          }
-
+        this.touchHandler = (e) => {
           const rect = this.canvas.getBoundingClientRect();
           const x = e.clientX - rect.left;
           const canvasWidth = rect.width;
@@ -1002,12 +690,7 @@
           // Middle third - do nothing (allows for other interactions)
         };
 
-        this.normalTouchEndHandler = (e) => {
-          // Skip if in mobile fullscreen mode
-          if (this.pdfReader.classList.contains('fullscreen') && window.innerWidth <= 768) {
-            return;
-          }
-
+        this.touchEndHandler = (e) => {
           e.preventDefault(); // Prevent double-firing with click
 
           const touch = e.changedTouches[0];
@@ -1028,8 +711,8 @@
           }
         };
 
-        this.canvas.addEventListener('click', this.normalTouchHandler);
-        this.canvas.addEventListener('touchend', this.normalTouchEndHandler);
+        this.canvas.addEventListener('click', this.touchHandler);
+        this.canvas.addEventListener('touchend', this.touchEndHandler);
       }
     }
 
