@@ -2123,7 +2123,7 @@ body.intro-active .header-label {
   height: 100vh;
   height: 100dvh; /* Use dynamic viewport height when supported */
   background: #2564AA; /* Blue background for Phase 1 */
-  z-index: 10000; /* Above loader (9999) and everything else */
+  z-index: 999; /* Above loader but below headers (1000) so headers are visible */
   display: grid;
   place-items: center; /* Use same centering as main page */
   opacity: 1;
