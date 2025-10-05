@@ -91,6 +91,11 @@ class IntroAnimation {
     this.debug(`Setting video source: ${videoPath}`);
     this.videoSource.src = videoPath;
 
+    // Show the full resolved URL for debugging
+    setTimeout(() => {
+      this.debug(`Full video URL: ${this.video.currentSrc || 'not resolved'}`);
+    }, 100);
+
     // Add video loading event listeners
     this.video.addEventListener('loadstart', () => {
       this.debug('Video: loadstart');
