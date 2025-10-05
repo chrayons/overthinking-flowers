@@ -2118,13 +2118,12 @@ body.intro-active .header-label {
 /* Main overlay container */
 .intro-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
+  inset: 0;
   width: 100vw;
   height: 100vh;
   height: 100dvh; /* Use dynamic viewport height when supported */
   background: #2564AA; /* Blue background for Phase 1 */
-  z-index: 500; /* Above garden (1) but below headers (1000) */
+  z-index: 10000; /* Above loader (9999) and everything else */
   display: grid;
   place-items: center; /* Use same centering as main page */
   opacity: 1;
