@@ -87,8 +87,33 @@ class IntroAnimation {
   setupVideoSource() {
     const isMobile = window.innerWidth <= 775;
     const videoPath = isMobile ? 'videos/intro-mobile.mp4' : 'videos/intro-desktop.mp4';
+
+    this.debug(`Setting video source: ${videoPath}`);
     this.videoSource.src = videoPath;
+
+    // Add video loading event listeners
+    this.video.addEventListener('loadstart', () => {
+      this.debug('Video: loadstart');
+    }, { once: true });
+
+    this.video.addEventListener('loadedmetadata', () => {
+      this.debug('Video: metadata loaded');
+    }, { once: true });
+
+    this.video.addEventListener('loadeddata', () => {
+      this.debug('Video: data loaded');
+    }, { once: true });
+
+    this.video.addEventListener('canplay', () => {
+      this.debug('Video: canplay');
+    }, { once: true });
+
+    this.video.addEventListener('error', (e) => {
+      this.debug(`Video ERROR: ${this.video.error ? this.video.error.code : 'unknown'}`);
+    }, { once: true });
+
     this.video.load(); // Reload video with new source
+    this.debug('Video load() called');
   }
 
   disableVideoControls() {
@@ -179,18 +204,36 @@ class IntroAnimation {
     // CRITICAL: Start video play() IMMEDIATELY on user tap (required for mobile Safari)
     // This must be called synchronously in the user interaction handler
     this.debug('Calling video.play()...');
+    this.debug(`networkState: ${this.video.networkState}`);
+
     const playPromise = this.video.play();
+
+    // Add timeout in case play() hangs
+    let playResolved = false;
+    setTimeout(() => {
+      if (!playResolved) {
+        this.debug('Video play TIMEOUT after 3s');
+        this.debug(`Final readyState: ${this.video.readyState}`);
+        this.debug(`Final networkState: ${this.video.networkState}`);
+        this.debug(`Paused: ${this.video.paused}`);
+        this.completeIntro();
+      }
+    }, 3000);
 
     if (playPromise !== undefined) {
       playPromise.then(() => {
+        playResolved = true;
         this.debug('Video play SUCCESS!');
       }).catch(error => {
-        this.debug(`Video play FAILED: ${error.name}`);
+        playResolved = true;
+        this.debug(`Video play FAILED: ${error.name} - ${error.message}`);
         this.debug(`readyState: ${this.video.readyState}`);
+        this.debug(`networkState: ${this.video.networkState}`);
         // If autoplay fails, skip to completion
         setTimeout(() => this.completeIntro(), 1000);
       });
     } else {
+      playResolved = true;
       this.debug('play() returned undefined');
     }
 
