@@ -150,13 +150,29 @@ class IntroAnimation {
     console.log('Video source:', this.videoSource.src);
     console.log('Video element:', this.video);
 
+    // CRITICAL: Start video play() IMMEDIATELY on user tap (required for mobile Safari)
+    // This must be called synchronously in the user interaction handler
+    console.log('Calling video.play() immediately...');
+    const playPromise = this.video.play();
+
+    if (playPromise !== undefined) {
+      playPromise.then(() => {
+        console.log('Video play started successfully');
+      }).catch(error => {
+        console.error('Video play failed:', error);
+        console.log('Video ready state:', this.video.readyState);
+        // If autoplay fails, skip to completion
+        setTimeout(() => this.completeIntro(), 1000);
+      });
+    }
+
     // Trigger ripple animation
     this.touchSvg.classList.add('clicked');
 
     // Add video phase class to maintain blue background
     this.overlay.classList.add('video-phase');
 
-    // Start video after ripple animation (0.8s)
+    // Animate transitions after ripple animation (0.8s)
     setTimeout(() => {
       // Hide text and SVG
       this.textContainer.style.opacity = '0';
@@ -164,19 +180,10 @@ class IntroAnimation {
       // Fade out headers
       document.body.classList.add('headers-faded');
 
-      // Start video after short delay
+      // Show video after short delay
       setTimeout(() => {
         this.video.classList.add('playing');
-        console.log('Attempting to play video...');
-        this.video.play().then(() => {
-          console.log('Video started playing successfully');
-        }).catch(error => {
-          console.error('Video autoplay failed:', error);
-          console.log('Video ready state:', this.video.readyState);
-          console.log('Video can play type:', this.video.canPlayType('video/mp4'));
-          // If autoplay fails, skip to completion
-          setTimeout(() => this.completeIntro(), 500);
-        });
+        console.log('Video made visible');
       }, 300);
     }, 800); // Wait for ripple animation to complete
   }
