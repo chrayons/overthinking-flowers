@@ -89,7 +89,10 @@ class IntroAnimation {
     const videoPath = isMobile ? 'videos/intro-mobile.mp4' : 'videos/intro-desktop.mp4';
 
     this.debug(`Setting video source: ${videoPath}`);
-    this.videoSource.src = videoPath;
+
+    // Try setting src directly on video element instead of source element
+    // This is more reliable on mobile Safari
+    this.video.src = videoPath;
 
     // Show the full resolved URL for debugging
     setTimeout(() => {
