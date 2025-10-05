@@ -92,26 +92,21 @@ class IntroAnimation {
   }
 
   setupEventListeners() {
-    // Make entire overlay tappable for better mobile UX
+    // Make SVG tappable - use touchstart for immediate response on mobile
     const handleTap = (e) => {
       if (this.currentPhase !== 1) {
         console.log('Already started, ignoring tap');
         return;
       }
-      console.log('Tap detected:', e.type);
+      console.log('SVG tapped:', e.type);
       e.preventDefault();
       e.stopPropagation();
       this.startVideoPhase();
     };
 
-    // Listen on overlay for widest tap target
-    this.overlay.addEventListener('touchstart', handleTap, { passive: false });
-    this.overlay.addEventListener('click', handleTap);
-
-    // Also listen on SVG specifically for visual feedback
-    this.touchSvg.addEventListener('touchstart', (e) => {
-      console.log('SVG touched!');
-    }, { passive: true });
+    // Listen on SVG with both touch and click
+    this.touchSvg.addEventListener('touchstart', handleTap, { passive: false });
+    this.touchSvg.addEventListener('click', handleTap);
 
     // Video ended event
     this.video.addEventListener('ended', () => this.completeIntro());
