@@ -92,28 +92,26 @@ class IntroAnimation {
   }
 
   setupEventListeners() {
-    // Touch/click on SVG to start video
-    this.touchSvg.addEventListener('click', (e) => {
-      console.log('SVG clicked!');
+    // Make entire overlay tappable for better mobile UX
+    const handleTap = (e) => {
+      if (this.currentPhase !== 1) {
+        console.log('Already started, ignoring tap');
+        return;
+      }
+      console.log('Tap detected:', e.type);
       e.preventDefault();
+      e.stopPropagation();
       this.startVideoPhase();
-    });
-    this.touchSvg.addEventListener('touchend', (e) => {
-      console.log('SVG touch ended!');
-      e.preventDefault();
-      this.startVideoPhase();
-    });
+    };
 
-    // Fallback: click on the entire touch container
-    const touchContainer = document.querySelector('.intro-touch-container');
-    if (touchContainer) {
-      touchContainer.addEventListener('click', (e) => {
-        console.log('Touch container clicked!');
-        e.preventDefault();
-        this.startVideoPhase();
-      });
-    }
+    // Listen on overlay for widest tap target
+    this.overlay.addEventListener('touchstart', handleTap, { passive: false });
+    this.overlay.addEventListener('click', handleTap);
 
+    // Also listen on SVG specifically for visual feedback
+    this.touchSvg.addEventListener('touchstart', (e) => {
+      console.log('SVG touched!');
+    }, { passive: true });
 
     // Video ended event
     this.video.addEventListener('ended', () => this.completeIntro());
