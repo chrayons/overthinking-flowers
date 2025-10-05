@@ -15,16 +15,45 @@ class IntroAnimation {
     this.skipTimeout = null;
     this.isPlaying = false;
 
+    // Create visible debug console for mobile
+    this.createDebugConsole();
+
     // Debug element selection
-    console.log('Intro elements:', {
-      overlay: !!this.overlay,
-      textContainer: !!this.textContainer,
-      touchSvg: !!this.touchSvg,
-      video: !!this.video,
-      videoSource: !!this.videoSource
-    });
+    this.debug('Intro elements initialized');
+    this.debug(`SVG found: ${!!this.touchSvg}`);
+    this.debug(`Video found: ${!!this.video}`);
 
     this.init();
+  }
+
+  createDebugConsole() {
+    this.debugEl = document.createElement('div');
+    this.debugEl.style.cssText = `
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      right: 10px;
+      max-height: 200px;
+      background: rgba(0, 0, 0, 0.9);
+      color: #0f0;
+      padding: 10px;
+      font-family: monospace;
+      font-size: 11px;
+      z-index: 99999;
+      overflow-y: auto;
+      pointer-events: none;
+      border: 1px solid #0f0;
+    `;
+    document.body.appendChild(this.debugEl);
+  }
+
+  debug(msg) {
+    console.log(msg);
+    if (this.debugEl) {
+      const time = new Date().toLocaleTimeString();
+      this.debugEl.innerHTML += `<div>[${time}] ${msg}</div>`;
+      this.debugEl.scrollTop = this.debugEl.scrollHeight;
+    }
   }
 
   init() {
@@ -92,13 +121,15 @@ class IntroAnimation {
   }
 
   setupEventListeners() {
+    this.debug('Setting up event listeners...');
+
     // Make SVG tappable - use touchstart for immediate response on mobile
     const handleTap = (e) => {
       if (this.currentPhase !== 1) {
-        console.log('Already started, ignoring tap');
+        this.debug('Already started, ignoring tap');
         return;
       }
-      console.log('SVG tapped:', e.type);
+      this.debug(`SVG tapped: ${e.type}`);
       e.preventDefault();
       e.stopPropagation();
       this.startVideoPhase();
@@ -107,6 +138,8 @@ class IntroAnimation {
     // Listen on SVG with both touch and click
     this.touchSvg.addEventListener('touchstart', handleTap, { passive: false });
     this.touchSvg.addEventListener('click', handleTap);
+
+    this.debug('Event listeners attached to SVG');
 
     // Video ended event
     this.video.addEventListener('ended', () => this.completeIntro());
@@ -130,33 +163,35 @@ class IntroAnimation {
   }
 
   startVideoPhase() {
-    console.log('Starting video phase, current phase:', this.currentPhase);
+    this.debug(`Starting video phase, phase: ${this.currentPhase}`);
 
     if (this.currentPhase !== 1) {
-      console.log('Not in phase 1, ignoring video start');
+      this.debug('Not in phase 1, ignoring');
       return;
     }
 
     this.currentPhase = 2;
     this.isPlaying = true;
 
-    console.log('Video source:', this.videoSource.src);
-    console.log('Video element:', this.video);
+    this.debug(`Video src: ${this.videoSource.src}`);
+    this.debug(`Video readyState: ${this.video.readyState}`);
 
     // CRITICAL: Start video play() IMMEDIATELY on user tap (required for mobile Safari)
     // This must be called synchronously in the user interaction handler
-    console.log('Calling video.play() immediately...');
+    this.debug('Calling video.play()...');
     const playPromise = this.video.play();
 
     if (playPromise !== undefined) {
       playPromise.then(() => {
-        console.log('Video play started successfully');
+        this.debug('Video play SUCCESS!');
       }).catch(error => {
-        console.error('Video play failed:', error);
-        console.log('Video ready state:', this.video.readyState);
+        this.debug(`Video play FAILED: ${error.name}`);
+        this.debug(`readyState: ${this.video.readyState}`);
         // If autoplay fails, skip to completion
         setTimeout(() => this.completeIntro(), 1000);
       });
+    } else {
+      this.debug('play() returned undefined');
     }
 
     // Trigger ripple animation
