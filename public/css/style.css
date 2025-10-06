@@ -80,6 +80,7 @@ html, body {
   margin: 0;
   padding: 0;
   min-height: 100vh; /* Allow vertical centering while maintaining scroll */
+  min-height: 100svh; /* Use small viewport height on mobile to account for browser UI */
 }
 
 /* Apply grid centering to desktop, normal flow to mobile */
@@ -105,6 +106,7 @@ body {
   left: 0;
   width: 100vw;               /* true full-bleed width */
   height: calc(100vh - 32px); /* viewport minus header */
+  height: calc(100svh - 32px); /* small viewport height for mobile Safari */
   overflow: visible;          /* allow flowers to extend beyond container */
   display: flex;
   align-items: center;
@@ -957,6 +959,7 @@ body.intro-active .header-label {
   left: 0;
   width: 100vw;
   height: 100vh;
+  height: 100svh; /* Small viewport height for mobile Safari */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2121,7 +2124,7 @@ body.intro-active .header-label {
   inset: 0;
   width: 100vw;
   height: 100vh;
-  height: 100dvh; /* Use dynamic viewport height when supported */
+  height: 100svh; /* Use small viewport height for full coverage on mobile Safari */
   background: #2564AA; /* Blue background for Phase 1 */
   z-index: 999; /* Above loader but below headers (1000) so headers are visible */
   display: grid;
@@ -2241,6 +2244,7 @@ body.intro-active .header-label {
   transform: translate(-50%, -50%);
   width: 100vw; /* Full viewport width */
   height: 100vh; /* Full viewport height */
+  height: 100svh; /* Use small viewport height for full coverage on mobile Safari */
   min-width: 100%;
   min-height: 100%;
   object-fit: cover;
@@ -2328,11 +2332,11 @@ body.intro-active .header-label {
     -moz-appearance: none !important;
     appearance: none !important;
 
-    /* Enhanced mobile centering - use dynamic viewport for true fullscreen */
+    /* Enhanced mobile centering - use small viewport for true fullscreen */
     width: 100vw;
-    height: 100dvh; /* Dynamic viewport height - adjusts for browser UI */
+    height: 100svh; /* Small viewport height - includes Safari UI bars for full coverage */
     min-width: 100vw;
-    min-height: 100dvh;
+    min-height: 100svh;
 
     /* Ensure transform stays intact for centering */
     transform: translate(-50%, -50%) translateZ(0); /* Force hardware acceleration */
@@ -2612,6 +2616,7 @@ body.intro-active .mobile-header-menu {
   align-items: center;
   justify-content: center;
   min-height: calc(100vh - 96px);
+  min-height: calc(100svh - 96px); /* Small viewport height for mobile Safari */
 }
 
 /* Center container for title + reader */
@@ -2660,6 +2665,7 @@ body.intro-active .mobile-header-menu {
 #pdf-canvas {
   max-width: calc(100vw - 40px);
   max-height: calc(100vh - 120px);
+  max-height: calc(100svh - 120px); /* Small viewport height for mobile Safari */
   width: auto;
   height: auto;
   display: block;
