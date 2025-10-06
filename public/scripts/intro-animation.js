@@ -66,11 +66,11 @@ class IntroAnimation {
       return;
     }
 
-    // Set up video source based on device
-    this.setupVideoSource();
-
-    // Force disable video controls (especially important for mobile)
+    // Force disable video controls FIRST (especially important for mobile)
     this.disableVideoControls();
+
+    // Set up video source based on device (after muted/playsinline are set)
+    this.setupVideoSource();
 
     // Set up event listeners
     this.setupEventListeners();
@@ -86,7 +86,10 @@ class IntroAnimation {
 
   setupVideoSource() {
     const isMobile = window.innerWidth <= 775;
-    const videoPath = isMobile ? 'videos/intro-mobile.mp4' : 'videos/intro-desktop.mp4';
+    const videoFilename = isMobile ? 'intro-mobile.mp4' : 'intro-desktop.mp4';
+
+    // Use absolute URL to avoid any path resolution issues
+    const videoPath = `${window.location.origin}/videos/${videoFilename}`;
 
     this.debug(`Setting video source: ${videoPath}`);
 
