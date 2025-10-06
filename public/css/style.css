@@ -79,21 +79,22 @@ button, a, [role="button"], [tabindex] {
 html {
   margin: 0;
   padding: 0;
-  background: var(--page-bg); /* Root background renders under Safari's translucent chrome */
-  block-size: 100dvh; /* Dynamic viewport height adapts to Safari UI chrome */
+  /* Root background renders under Safari's translucent chrome - this paints the "underlay" */
+  background: var(--page-bg);
+  /* Use 100dvh to cover physical screen height for liquid glass underlay */
+  min-height: 100dvh;
   width: 100%;
   /* Smooth transition for intro background color change */
   transition: background-color 0.3s ease-out;
 }
 
 /* During intro text phase, html shows blue background behind liquid glass */
-html:has(body.intro-active) {
+html.intro-phase {
   background: #2564AA;
 }
 
-/* During video phase and after, html shows normal page background */
-html:has(.intro-overlay.video-phase),
-html:has(.intro-overlay.completing) {
+/* During video phase, remove blue background */
+html.intro-video-phase {
   background: var(--page-bg);
 }
 

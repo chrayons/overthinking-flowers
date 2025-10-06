@@ -216,6 +216,10 @@ class IntroAnimation {
     // Add video phase class to maintain blue background
     this.overlay.classList.add('video-phase');
 
+    // Change html background to light grey for video phase
+    document.documentElement.classList.remove('intro-phase');
+    document.documentElement.classList.add('intro-video-phase');
+
     // Animate transitions after ripple animation (0.8s)
     setTimeout(() => {
       // Hide text and SVG
@@ -258,6 +262,10 @@ class IntroAnimation {
 
     // Remove intro-active class from body to restore normal header styling
     document.body.classList.remove('intro-active');
+
+    // Remove html intro classes to ensure light grey background
+    document.documentElement.classList.remove('intro-phase');
+    document.documentElement.classList.remove('intro-video-phase');
 
     // Temporarily disable flower interactions to prevent hover from interfering with grow animations
     this.disableFlowerInteractions();
