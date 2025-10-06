@@ -75,25 +75,32 @@ button, a, [role="button"], [tabindex] {
   tap-highlight-color: transparent !important;
 }
 
+/* Paint background on html for Safari's liquid glass effect */
 html {
-  background: var(--page-bg);
   margin: 0;
   padding: 0;
+  background: var(--page-bg); /* Root background renders under Safari's translucent chrome */
+  block-size: 100dvh; /* Dynamic viewport height adapts to Safari UI chrome */
   width: 100%;
-  height: 100%;
-  /* Extend background to absolute edges for Safari macOS */
-  position: relative;
 }
 
 body {
-  background: var(--page-bg);
   margin: 0;
   padding: 0;
-  min-height: 100vh; /* Allow vertical centering while maintaining scroll */
-  min-height: 100svh; /* Use small viewport height on mobile to account for browser UI */
-  /* Ensure no gaps at viewport edges */
+  background: transparent; /* Let html's background show through */
+  min-block-size: 100dvh; /* Fill remaining space with dynamic viewport units */
   width: 100%;
   overflow-x: hidden; /* Prevent horizontal scrolling that might create gaps */
+}
+
+/* Optional: keep content away from safe areas (notches/rounded corners) */
+@supports (padding: max(0px)) {
+  body {
+    padding-block-start: max(env(safe-area-inset-top), 0px);
+    padding-block-end: max(env(safe-area-inset-bottom), 0px);
+    padding-inline-start: max(env(safe-area-inset-left), 0px);
+    padding-inline-end: max(env(safe-area-inset-right), 0px);
+  }
 }
 
 /* Apply grid centering to desktop, normal flow to mobile */
@@ -118,8 +125,7 @@ body {
   top: 0;                     /* Start from very top */
   left: 0;
   width: 100vw;               /* true full-bleed width */
-  height: 100vh;              /* Full viewport height */
-  height: 100svh;             /* small viewport height for mobile Safari */
+  block-size: 100dvh;         /* Dynamic viewport height adapts to Safari UI */
   background: var(--page-bg); /* Ensure background fills to edges */
   overflow: visible;          /* allow flowers to extend beyond container */
   display: flex;
@@ -977,8 +983,7 @@ body.intro-active .header-label {
   right: 0;
   bottom: 0;
   width: 100vw;
-  height: 100vh;
-  height: 100svh; /* Small viewport height for mobile Safari */
+  block-size: 100dvh; /* Dynamic viewport height for Safari liquid glass */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2149,8 +2154,7 @@ body.intro-active .header-label {
   right: 0;
   bottom: 0;
   width: 100vw;
-  height: 100vh;
-  height: 100svh; /* Use small viewport height for full coverage on mobile Safari */
+  block-size: 100dvh; /* Dynamic viewport height for Safari liquid glass */
   background: #2564AA; /* Blue background for Phase 1 */
   z-index: 999; /* Above loader but below headers (1000) so headers are visible */
   display: flex; /* Use flex instead of grid for better padding control */
@@ -2275,12 +2279,10 @@ body.intro-active .header-label {
   top: 50%;
   left: 50%;
   width: 100vw; /* Full viewport width */
-  height: 100vh; /* Full viewport height */
-  height: 100svh; /* Use small viewport height for full coverage on mobile Safari */
+  block-size: 100dvh; /* Dynamic viewport height adapts to Safari UI */
   /* Scale large enough to cover viewport completely */
   min-width: 100vw;
-  min-height: 100vh;
-  min-height: 100svh;
+  min-block-size: 100dvh;
   object-fit: cover;
   object-position: center center; /* Ensure center of video stays centered */
   opacity: 0;
@@ -2371,10 +2373,10 @@ body.intro-active .header-label {
 
     /* Enhanced mobile edge-to-edge coverage */
     width: 100vw;
-    height: 100svh;
+    block-size: 100dvh; /* Dynamic viewport for mobile Safari UI adaptation */
     /* Force minimum dimensions to ensure full coverage */
     min-width: 100vw;
-    min-height: 100svh;
+    min-block-size: 100dvh;
     /* Scale slightly larger to ensure no gaps on any aspect ratio */
     max-width: none;
     max-height: none;
@@ -2660,8 +2662,7 @@ body.intro-active .mobile-header-menu {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: calc(100vh - 96px);
-  min-height: calc(100svh - 96px); /* Small viewport height for mobile Safari */
+  min-block-size: calc(100dvh - 96px); /* Dynamic viewport height for Safari */
 }
 
 /* Center container for title + reader */
@@ -2709,8 +2710,7 @@ body.intro-active .mobile-header-menu {
 
 #pdf-canvas {
   max-width: calc(100vw - 40px);
-  max-height: calc(100vh - 120px);
-  max-height: calc(100svh - 120px); /* Small viewport height for mobile Safari */
+  max-block-size: calc(100dvh - 120px); /* Dynamic viewport height for Safari */
   width: auto;
   height: auto;
   display: block;
