@@ -82,6 +82,13 @@ html {
   background: var(--page-bg); /* Root background renders under Safari's translucent chrome */
   block-size: 100dvh; /* Dynamic viewport height adapts to Safari UI chrome */
   width: 100%;
+  /* Smooth transition for intro background color change */
+  transition: background-color 0.3s ease-out;
+}
+
+/* During intro, html shows blue background behind liquid glass */
+html:has(body.intro-active) {
+  background: #2564AA;
 }
 
 body {
@@ -2149,12 +2156,7 @@ body.intro-active .header-label {
 /* Main overlay container */
 .intro-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100vw;
-  block-size: 100dvh; /* Dynamic viewport height for Safari liquid glass */
+  inset: 0; /* Use inset shorthand for perfect edge coverage */
   background: #2564AA; /* Blue background for Phase 1 */
   z-index: 999; /* Above loader but below headers (1000) so headers are visible */
   display: flex; /* Use flex instead of grid for better padding control */
@@ -2278,11 +2280,14 @@ body.intro-active .header-label {
   position: fixed; /* Fixed to viewport instead of absolute */
   top: 50%;
   left: 50%;
-  width: 100vw; /* Full viewport width */
-  block-size: 100dvh; /* Dynamic viewport height adapts to Safari UI */
-  /* Scale large enough to cover viewport completely */
-  min-width: 100vw;
-  min-block-size: 100dvh;
+  /* Scale video larger than viewport to ensure complete coverage */
+  width: 110vw;
+  height: 110vh;
+  height: 110dvh;
+  /* Force minimum dimensions to guarantee no gaps */
+  min-width: 110vw;
+  min-height: 110vh;
+  min-height: 110dvh;
   object-fit: cover;
   object-position: center center; /* Ensure center of video stays centered */
   opacity: 0;
@@ -2371,13 +2376,15 @@ body.intro-active .header-label {
     -moz-appearance: none !important;
     appearance: none !important;
 
-    /* Enhanced mobile edge-to-edge coverage */
-    width: 100vw;
-    block-size: 100dvh; /* Dynamic viewport for mobile Safari UI adaptation */
+    /* Enhanced mobile edge-to-edge coverage - scale larger than viewport */
+    width: 110vw;
+    height: 110vh;
+    height: 110dvh;
     /* Force minimum dimensions to ensure full coverage */
-    min-width: 100vw;
-    min-block-size: 100dvh;
-    /* Scale slightly larger to ensure no gaps on any aspect ratio */
+    min-width: 110vw;
+    min-height: 110vh;
+    min-height: 110dvh;
+    /* No max constraints - allow scaling as large as needed */
     max-width: none;
     max-height: none;
 
