@@ -842,6 +842,18 @@ body.intro-active .header-label {
   z-index: 10; /* Below flowers (100) */
   position: relative;
 }
+
+/* Desktop (>1160px): vertically center content */
+@media (min-width: 1161px) {
+  .wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+}
+
 /* Medium screens need padding for proper scroll behavior */
 @media (max-width: 1160px) and (min-width: 776px) {
   .wrapper { padding-top: 136px; } /* Maintain padding for scrollable content */
