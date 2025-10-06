@@ -171,43 +171,85 @@ class IntroAnimation {
     this.currentPhase = 2;
     this.isPlaying = true;
 
-    console.log(`Video src: ${this.videoSource.src}`);
+    console.log(`Video src: ${this.video.src}`);
     console.log(`Video readyState: ${this.video.readyState}`);
 
-    // CRITICAL: Start video play() IMMEDIATELY on user tap (required for mobile Safari)
-    // This must be called synchronously in the user interaction handler
-    console.log('Calling video.play()...');
-    console.log(`networkState: ${this.video.networkState}`);
+    // Function to attempt playing the video
+    const attemptPlay = () => {
+      console.log('Attempting to play video...');
+      console.log(`networkState: ${this.video.networkState}`);
 
-    const playPromise = this.video.play();
+      const playPromise = this.video.play();
 
-    // Add timeout in case play() hangs
-    let playResolved = false;
-    setTimeout(() => {
-      if (!playResolved) {
-        console.log('Video play TIMEOUT after 3s');
-        console.log(`Final readyState: ${this.video.readyState}`);
-        console.log(`Final networkState: ${this.video.networkState}`);
-        console.log(`Paused: ${this.video.paused}`);
-        this.completeIntro();
+      // Add timeout in case play() hangs (longer timeout for slower connections)
+      let playResolved = false;
+      const timeoutId = setTimeout(() => {
+        if (!playResolved) {
+          console.log('Video play TIMEOUT after 5s');
+          console.log(`Final readyState: ${this.video.readyState}`);
+          console.log(`Final networkState: ${this.video.networkState}`);
+          console.log(`Paused: ${this.video.paused}`);
+
+          // Only skip if video is actually failing, not just loading
+          if (this.video.networkState === 3) { // NETWORK_NO_SOURCE
+            console.log('Video source failed - skipping intro');
+            this.completeIntro();
+          } else {
+            console.log('Video still loading - waiting for video to play naturally');
+          }
+        }
+      }, 5000);
+
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          playResolved = true;
+          clearTimeout(timeoutId);
+          console.log('Video play SUCCESS!');
+        }).catch(error => {
+          playResolved = true;
+          clearTimeout(timeoutId);
+          console.log(`Video play FAILED: ${error.name} - ${error.message}`);
+          console.log(`readyState: ${this.video.readyState}`);
+          console.log(`networkState: ${this.video.networkState}`);
+
+          // If video can't play due to policy, wait for user interaction
+          if (error.name === 'NotAllowedError') {
+            console.log('Video blocked by autoplay policy - user must click to play');
+            // Don't skip - video will play when user clicks again
+          } else {
+            // Other errors - skip intro
+            console.log('Video error - skipping intro');
+            setTimeout(() => this.completeIntro(), 1000);
+          }
+        });
+      } else {
+        playResolved = true;
+        clearTimeout(timeoutId);
+        console.log('play() returned undefined');
       }
-    }, 3000);
+    };
 
-    if (playPromise !== undefined) {
-      playPromise.then(() => {
-        playResolved = true;
-        console.log('Video play SUCCESS!');
-      }).catch(error => {
-        playResolved = true;
-        console.log(`Video play FAILED: ${error.name} - ${error.message}`);
-        console.log(`readyState: ${this.video.readyState}`);
-        console.log(`networkState: ${this.video.networkState}`);
-        // If autoplay fails, skip to completion
-        setTimeout(() => this.completeIntro(), 1000);
-      });
+    // If video has enough data, play immediately
+    // Otherwise wait for it to be ready
+    if (this.video.readyState >= 3) { // HAVE_FUTURE_DATA or better
+      console.log('Video ready - playing immediately');
+      attemptPlay();
     } else {
-      playResolved = true;
-      console.log('play() returned undefined');
+      console.log('Video not ready - waiting for canplay event');
+      const onCanPlay = () => {
+        console.log('Video canplay event fired');
+        attemptPlay();
+      };
+      this.video.addEventListener('canplay', onCanPlay, { once: true });
+
+      // Fallback: try to play after 2 seconds even if not ready
+      setTimeout(() => {
+        if (!this.isPlaying || this.video.paused) {
+          console.log('Fallback: attempting play after 2s delay');
+          this.video.removeEventListener('canplay', onCanPlay);
+          attemptPlay();
+        }
+      }, 2000);
     }
 
     // Trigger ripple animation
