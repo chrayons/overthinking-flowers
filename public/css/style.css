@@ -86,9 +86,15 @@ html {
   transition: background-color 0.3s ease-out;
 }
 
-/* During intro, html shows blue background behind liquid glass */
+/* During intro text phase, html shows blue background behind liquid glass */
 html:has(body.intro-active) {
   background: #2564AA;
+}
+
+/* During video phase and after, html shows normal page background */
+html:has(.intro-overlay.video-phase),
+html:has(.intro-overlay.completing) {
+  background: var(--page-bg);
 }
 
 body {
