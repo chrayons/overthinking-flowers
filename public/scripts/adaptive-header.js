@@ -3,7 +3,9 @@
  * Provides transparent-to-frosted-glass header transitions based on scroll position
  */
 
-class AdaptiveHeader {
+// Only define if not already defined (prevent duplicate script loading errors)
+if (typeof AdaptiveHeader === 'undefined') {
+  class AdaptiveHeader {
   constructor() {
     // Use smaller threshold on mobile for faster header activation
     this.scrollThreshold = window.innerWidth <= 775 ? 20 : 50; // Earlier on mobile
