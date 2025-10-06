@@ -19,14 +19,14 @@ class IntroAnimation {
   }
 
   init() {
-    // Add intro-active class to body for header styling
-    document.body.classList.add('intro-active');
-
     // Check session storage - skip intro if already seen
     if (this.shouldSkipIntro()) {
       this.hideIntro();
       return;
     }
+
+    // Add intro-active class to body for header styling (only if showing intro)
+    document.body.classList.add('intro-active');
 
     // Force disable video controls FIRST (especially important for mobile)
     this.disableVideoControls();
