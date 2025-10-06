@@ -91,24 +91,31 @@ if (typeof AdaptiveHeader === 'undefined') {
   }
 }
 
-// Initialize immediately when script loads for faster header appearance
-function initializeAdaptiveHeader() {
-  const introOverlay = document.getElementById('intro-overlay');
+  // Initialize immediately when script loads for faster header appearance
+  function initializeAdaptiveHeader() {
+    // Only initialize if not already initialized
+    if (window.adaptiveHeader) {
+      return;
+    }
 
-  if (!introOverlay || introOverlay.classList.contains('hidden')) {
-    // Initialize immediately if no intro
-    window.adaptiveHeader = new AdaptiveHeader();
-  } else {
-    // Wait for intro to complete before initializing
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-          if (introOverlay.classList.contains('hidden')) {
-            // Intro finished, initialize adaptive header with minimal delay
-            setTimeout(() => {
-              window.adaptiveHeader = new AdaptiveHeader();
-            }, 100); // Reduced delay for faster header
-            observer.disconnect();
+    const introOverlay = document.getElementById('intro-overlay');
+
+    if (!introOverlay || introOverlay.classList.contains('hidden')) {
+      // Initialize immediately if no intro
+      window.adaptiveHeader = new AdaptiveHeader();
+    } else {
+      // Wait for intro to complete before initializing
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+            if (introOverlay.classList.contains('hidden')) {
+              // Intro finished, initialize adaptive header with minimal delay
+              setTimeout(() => {
+                if (!window.adaptiveHeader) {
+                  window.adaptiveHeader = new AdaptiveHeader();
+                }
+              }, 100); // Reduced delay for faster header
+              observer.disconnect();
           }
         }
       });
@@ -116,15 +123,16 @@ function initializeAdaptiveHeader() {
 
     observer.observe(introOverlay, { attributes: true });
   }
-}
+  }
 
-// Try to initialize immediately if DOM is already ready
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initializeAdaptiveHeader);
-} else {
-  // DOM is already ready, initialize immediately
-  initializeAdaptiveHeader();
-}
+  // Try to initialize immediately if DOM is already ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeAdaptiveHeader);
+  } else {
+    // DOM is already ready, initialize immediately
+    initializeAdaptiveHeader();
+  }
 
-// Expose class globally for potential external use
-window.AdaptiveHeader = AdaptiveHeader;
+  // Expose class globally for potential external use
+  window.AdaptiveHeader = AdaptiveHeader;
+}
