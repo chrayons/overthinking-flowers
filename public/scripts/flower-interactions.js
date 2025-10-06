@@ -618,7 +618,7 @@ const FlowerInteractions = {
     });
 
     // Also restore labels and buttons to normal state
-    const labelsAndButtons = document.querySelectorAll('.category-title, .header-link, .header-label, .btn-return-home, .btn-return-home-white, #shuffle-btn, .carousel-arrow, .mobile-category-item, .category-label, .mobile-header-toggle, .mobile-header-menu, .category-overlay .category-name, .category-nav-arrow, .category-nav-dots, .category-nav-dot, .category-overlay .btn-return-home');
+    const labelsAndButtons = document.querySelectorAll('.category-title, .header-link, .header-label, .btn-return-home, .btn-return-home-white, #shuffle-btn, .carousel-arrow, .mobile-category-item, .category-label, .mobile-header-toggle, .mobile-header-menu, .category-overlay .category-name, .category-title-section, .category-nav-arrow, .category-nav-dots, .category-nav-dot, .category-overlay .btn-return-home');
     labelsAndButtons.forEach(element => {
       element.style.opacity = '';
       element.style.transition = 'all 0.3s ease';
