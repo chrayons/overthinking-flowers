@@ -55,9 +55,19 @@ class IntroAnimation {
 
     console.log(`Setting video source: ${videoPath}`);
 
+    // Preload the video using link rel="preload"
+    const preloadLink = document.createElement('link');
+    preloadLink.rel = 'preload';
+    preloadLink.as = 'video';
+    preloadLink.href = videoPath;
+    document.head.appendChild(preloadLink);
+
     // Try setting src directly on video element instead of source element
     // This is more reliable on mobile Safari
     this.video.src = videoPath;
+
+    // Force preload metadata immediately
+    this.video.preload = 'auto';
 
     // Show the full resolved URL for debugging
     setTimeout(() => {
