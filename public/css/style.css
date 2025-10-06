@@ -79,6 +79,17 @@ html {
   margin: 0;
   padding: 0;
   background: var(--page-bg);
+  transition: background-color 0.3s ease-out;
+}
+
+/* During intro text phase - make html background blue to match intro overlay */
+body.intro-active html {
+  background: #2564AA;
+}
+
+/* During video phase and after - return to light grey */
+body.headers-faded html {
+  background: var(--page-bg);
 }
 
 body {
