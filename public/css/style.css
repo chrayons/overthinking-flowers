@@ -75,12 +75,25 @@ button, a, [role="button"], [tabindex] {
   tap-highlight-color: transparent !important;
 }
 
-html, body {
+html {
+  background: var(--page-bg);
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  /* Extend background to absolute edges for Safari macOS */
+  position: relative;
+}
+
+body {
   background: var(--page-bg);
   margin: 0;
   padding: 0;
   min-height: 100vh; /* Allow vertical centering while maintaining scroll */
   min-height: 100svh; /* Use small viewport height on mobile to account for browser UI */
+  /* Ensure no gaps at viewport edges */
+  width: 100%;
+  overflow-x: hidden; /* Prevent horizontal scrolling that might create gaps */
 }
 
 /* Apply grid centering to desktop, normal flow to mobile */
@@ -102,17 +115,21 @@ body {
 /* Full-bleed stage for category pages - allow flowers to extend beyond bounds */
 .category-page-content {
   position: fixed;
-  top: 32px;                  /* below fixed header */
+  top: 0;                     /* Start from very top */
   left: 0;
   width: 100vw;               /* true full-bleed width */
-  height: calc(100vh - 32px); /* viewport minus header */
-  height: calc(100svh - 32px); /* small viewport height for mobile Safari */
+  height: 100vh;              /* Full viewport height */
+  height: 100svh;             /* small viewport height for mobile Safari */
+  background: var(--page-bg); /* Ensure background fills to edges */
   overflow: visible;          /* allow flowers to extend beyond container */
   display: flex;
   align-items: center;
   justify-content: center;
   /* Page content stays static - no animation */
   opacity: 1;
+  padding-top: 32px;          /* Content padding to account for header */
+  box-sizing: border-box;     /* Include padding in height calculation */
+  margin: 0;                  /* Ensure no gaps */
 }
 
 /* Flower container for category pages */
@@ -957,6 +974,8 @@ body.intro-active .header-label {
   position: fixed;
   top: 0;
   left: 0;
+  right: 0;
+  bottom: 0;
   width: 100vw;
   height: 100vh;
   height: 100svh; /* Small viewport height for mobile Safari */
@@ -969,6 +988,10 @@ body.intro-active .header-label {
   pointer-events: none; /* Allow click-through to flowers */
   /* Navigation overlay stays static - no animation */
   opacity: 1;
+  margin: 0;
+  /* Force extension to absolute edges */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
 }
 
 /* Category title section - just the label */
@@ -2121,19 +2144,29 @@ body.intro-active .header-label {
 /* Main overlay container */
 .intro-overlay {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   width: 100vw;
   height: 100vh;
   height: 100svh; /* Use small viewport height for full coverage on mobile Safari */
   background: #2564AA; /* Blue background for Phase 1 */
   z-index: 999; /* Above loader but below headers (1000) so headers are visible */
-  display: grid;
-  place-items: center; /* Use same centering as main page */
+  display: flex; /* Use flex instead of grid for better padding control */
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-top: 32px; /* Content padding - doesn't affect background */
   opacity: 1;
   visibility: visible;
   transition: opacity 0.5s ease-out, visibility 0.5s ease-out, background-color 0.3s ease-out;
-  /* Reduced padding for better vertical centering */
-  padding-top: 32px;
+  /* Ensure no gaps at edges - extend to absolute viewport edges */
+  margin: 0;
+  overflow: hidden; /* Prevent any overflow that might create gaps */
+  /* Force background to extend under Safari chrome on macOS */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
 }
 
 /* Background transitions during video phase */
@@ -2239,9 +2272,10 @@ body.intro-active .header-label {
 /* Phase 2: Video */
 .intro-video {
   position: fixed; /* Fixed to viewport instead of absolute */
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   width: 100vw; /* Full viewport width */
   height: 100vh; /* Full viewport height */
   height: 100svh; /* Use small viewport height for full coverage on mobile Safari */
@@ -2253,6 +2287,9 @@ body.intro-active .header-label {
   visibility: hidden;
   transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
   z-index: 600; /* Above intro overlay (500) to cover everything */
+  /* Force video to extend to absolute edges */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
 }
 
 .intro-video.playing {
@@ -2338,8 +2375,14 @@ body.intro-active .header-label {
     min-width: 100vw;
     min-height: 100svh;
 
-    /* Ensure transform stays intact for centering */
-    transform: translate(-50%, -50%) translateZ(0); /* Force hardware acceleration */
+    /* Use absolute positioning to ensure edge-to-edge coverage */
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    /* Force hardware acceleration */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
   }
 
   /* Mobile-specific WebKit control selectors */
