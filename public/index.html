@@ -4,20 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Metaphor Garden</title>
-  <!-- Immediate intro check to prevent blue flash -->
-  <script>
-    (function() {
-      // Check if intro was already seen before any rendering happens
-      var introSeen = sessionStorage.getItem('intro-seen') === 'true';
-      if (introSeen) {
-        // If intro already seen, ensure html stays light grey (don't add intro-active)
-        // The CSS default is already light grey, so we don't need to do anything
-      } else {
-        // If intro needs to show, add a class to html for immediate blue background
-        document.documentElement.classList.add('intro-phase');
-      }
-    })();
-  </script>
+  <!-- HTML background is always light grey (no intro-phase classes needed) -->
   <!-- Critical font preloading for immediate render -->
   <link rel="preload" as="font" href="fonts/Satoshi/fonts/Satoshi-Light.woff2" type="font/woff2" crossorigin>
   <link rel="preload" href="fonts/Junicode/junicode-regularcondensed-webfont.woff2" as="font" type="font/woff2" crossorigin>

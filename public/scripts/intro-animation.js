@@ -257,10 +257,6 @@ class IntroAnimation {
     // Add video phase class to maintain blue background
     this.overlay.classList.add('video-phase');
 
-    // Change html background to light grey for video phase
-    document.documentElement.classList.remove('intro-phase');
-    document.documentElement.classList.add('intro-video-phase');
-
     // Animate transitions after ripple animation (0.8s)
     setTimeout(() => {
       // Hide text and SVG
@@ -285,11 +281,6 @@ class IntroAnimation {
     // Mark intro as seen
     sessionStorage.setItem('intro-seen', 'true');
 
-    // CRITICAL: Remove intro-video-phase class IMMEDIATELY to fix Safari liquid glass blue strip
-    document.documentElement.classList.remove('intro-video-phase');
-    document.documentElement.classList.remove('intro-phase');
-    this.debugLog('Removed intro classes from html element');
-
     // Transition background to normal color before revealing garden
     this.overlay.classList.remove('video-phase');
     this.overlay.classList.add('completing');
@@ -310,10 +301,6 @@ class IntroAnimation {
 
     // Remove intro-active class from body to restore normal header styling
     document.body.classList.remove('intro-active');
-
-    // Remove html intro classes to ensure light grey background
-    document.documentElement.classList.remove('intro-phase');
-    document.documentElement.classList.remove('intro-video-phase');
 
     // CRITICAL: Ensure page content is visible on mobile
     // Check that carousel and shuffle cards are present
