@@ -969,6 +969,7 @@ body.intro-active .header-label {
   align-items: center;
   justify-content: center;
   gap: 40px;
+  padding-top: 60px; /* Push content down slightly */
   z-index: 10; /* Above flowers */
   pointer-events: none; /* Allow click-through to flowers */
   /* Navigation overlay stays static - no animation */
