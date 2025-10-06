@@ -2448,7 +2448,7 @@ body.intro-active .mobile-header-menu-item.secondary {
 }
 
 body.intro-active .mobile-header-menu {
-  background: #2564AA !important;
+  background: var(--page-bg) !important;
 }
 
 /* Header fade-out during video */
