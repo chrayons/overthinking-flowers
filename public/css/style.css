@@ -2177,7 +2177,7 @@ body.intro-active .header-label {
 
 /* Background transitions during video phase */
 .intro-overlay.video-phase {
-  background: #2564AA; /* Keep blue during video */
+  background: var(--page-bg); /* Change to light grey during video to prevent blue showing in Safari chrome */
 }
 
 .intro-overlay.completing {
