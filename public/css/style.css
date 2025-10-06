@@ -982,7 +982,7 @@ body.intro-active .header-label {
 /* Mobile only: push content down slightly */
 @media (max-width: 775px) {
   .category-overlay {
-    padding-top: 60px;
+    padding-top: 100px;
   }
 }
 
