@@ -273,7 +273,8 @@ class IntroAnimation {
       // Hide text and SVG
       this.textContainer.style.opacity = '0';
 
-      // Fade out headers
+      // Remove intro-active and add headers-faded to transition html background
+      document.body.classList.remove('intro-active');
       document.body.classList.add('headers-faded');
 
       // Show video after short delay
