@@ -1168,7 +1168,7 @@ body.intro-active .header-label {
 /* Enhanced mobile positioning for very small screens */
 @media (max-width: 775px) {
   .category-overlay {
-    padding-top: 30vh; /* Slightly higher positioning on mobile for better thumb zone */
+    padding-top: 0; /* Keep centered on small screens */
     gap: 24px; /* Even tighter spacing for mobile */
   }
 
