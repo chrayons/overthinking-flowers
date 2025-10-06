@@ -15,48 +15,7 @@ class IntroAnimation {
     this.skipTimeout = null;
     this.isPlaying = false;
 
-    // Create visual debug UI for mobile
-    this.createDebugUI();
-
     this.init();
-  }
-
-  createDebugUI() {
-    // Only create debug UI on mobile (width <= 775px)
-    if (window.innerWidth > 775) return;
-
-    const debugDiv = document.createElement('div');
-    debugDiv.id = 'mobile-debug';
-    debugDiv.style.cssText = `
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: rgba(0, 0, 0, 0.9);
-      color: #0f0;
-      font-family: monospace;
-      font-size: 11px;
-      padding: 8px;
-      z-index: 10000;
-      max-height: 150px;
-      overflow-y: auto;
-      line-height: 1.3;
-    `;
-    document.body.appendChild(debugDiv);
-    this.debugDiv = debugDiv;
-  }
-
-  debugLog(message) {
-    console.log(message);
-
-    // Also show in visual debug UI on mobile
-    if (this.debugDiv) {
-      const line = document.createElement('div');
-      line.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
-      this.debugDiv.appendChild(line);
-      // Auto-scroll to bottom
-      this.debugDiv.scrollTop = this.debugDiv.scrollHeight;
-    }
   }
 
   init() {
@@ -202,23 +161,23 @@ class IntroAnimation {
   }
 
   startVideoPhase() {
-    this.debugLog(`Starting video phase, phase: ${this.currentPhase}`);
+    console.log(`Starting video phase, phase: ${this.currentPhase}`);
 
     if (this.currentPhase !== 1) {
-      this.debugLog('Not in phase 1, ignoring');
+      console.log('Not in phase 1, ignoring');
       return;
     }
 
     this.currentPhase = 2;
     this.isPlaying = true;
 
-    this.debugLog(`Video src: ${this.videoSource.src}`);
-    this.debugLog(`Video readyState: ${this.video.readyState}`);
+    console.log(`Video src: ${this.videoSource.src}`);
+    console.log(`Video readyState: ${this.video.readyState}`);
 
     // CRITICAL: Start video play() IMMEDIATELY on user tap (required for mobile Safari)
     // This must be called synchronously in the user interaction handler
-    this.debugLog('Calling video.play()...');
-    this.debugLog(`networkState: ${this.video.networkState}`);
+    console.log('Calling video.play()...');
+    console.log(`networkState: ${this.video.networkState}`);
 
     const playPromise = this.video.play();
 
@@ -226,10 +185,10 @@ class IntroAnimation {
     let playResolved = false;
     setTimeout(() => {
       if (!playResolved) {
-        this.debugLog('Video play TIMEOUT after 3s');
-        this.debugLog(`Final readyState: ${this.video.readyState}`);
-        this.debugLog(`Final networkState: ${this.video.networkState}`);
-        this.debugLog(`Paused: ${this.video.paused}`);
+        console.log('Video play TIMEOUT after 3s');
+        console.log(`Final readyState: ${this.video.readyState}`);
+        console.log(`Final networkState: ${this.video.networkState}`);
+        console.log(`Paused: ${this.video.paused}`);
         this.completeIntro();
       }
     }, 3000);
@@ -237,18 +196,18 @@ class IntroAnimation {
     if (playPromise !== undefined) {
       playPromise.then(() => {
         playResolved = true;
-        this.debugLog('Video play SUCCESS!');
+        console.log('Video play SUCCESS!');
       }).catch(error => {
         playResolved = true;
-        this.debugLog(`Video play FAILED: ${error.name} - ${error.message}`);
-        this.debugLog(`readyState: ${this.video.readyState}`);
-        this.debugLog(`networkState: ${this.video.networkState}`);
+        console.log(`Video play FAILED: ${error.name} - ${error.message}`);
+        console.log(`readyState: ${this.video.readyState}`);
+        console.log(`networkState: ${this.video.networkState}`);
         // If autoplay fails, skip to completion
         setTimeout(() => this.completeIntro(), 1000);
       });
     } else {
       playResolved = true;
-      this.debugLog('play() returned undefined');
+      console.log('play() returned undefined');
     }
 
     // Trigger ripple animation
@@ -268,13 +227,12 @@ class IntroAnimation {
       // Show video after short delay
       setTimeout(() => {
         this.video.classList.add('playing');
-        this.debugLog('Video made visible');
+        console.log('Video made visible');
       }, 300);
     }, 800); // Wait for ripple animation to complete
   }
 
   completeIntro() {
-    this.debugLog('completeIntro called');
     this.currentPhase = 3;
     this.isPlaying = false;
 
@@ -296,18 +254,10 @@ class IntroAnimation {
 
 
   hideIntro() {
-    this.debugLog('hideIntro called - hiding overlay and revealing content');
     this.overlay.classList.add('hidden');
 
     // Remove intro-active class from body to restore normal header styling
     document.body.classList.remove('intro-active');
-
-    // CRITICAL: Ensure page content is visible on mobile
-    // Check that carousel and shuffle cards are present
-    const mobileCarousel = document.getElementById('mobile-category-track');
-    const shuffleCards = document.getElementById('shuffle-cards');
-    this.debugLog(`Carousel: ${!!mobileCarousel}, children: ${mobileCarousel?.children.length || 0}`);
-    this.debugLog(`Shuffle: ${!!shuffleCards}, children: ${shuffleCards?.children.length || 0}`);
 
     // Temporarily disable flower interactions to prevent hover from interfering with grow animations
     this.disableFlowerInteractions();
@@ -315,7 +265,7 @@ class IntroAnimation {
     // Trigger flower animations after intro completes
     setTimeout(() => {
       if (window.triggerFlowerAnimations) {
-        this.debugLog('Triggering flower animations');
+        console.log('Triggering flower animations after intro completion');
         window.triggerFlowerAnimations();
       }
     }, 300); // Small delay to let intro transition finish
@@ -324,15 +274,7 @@ class IntroAnimation {
     setTimeout(() => {
       if (this.overlay && this.overlay.parentNode) {
         this.overlay.style.display = 'none';
-        this.debugLog('Intro overlay removed from DOM');
       }
-
-      // Remove debug UI after 5 seconds
-      setTimeout(() => {
-        if (this.debugDiv && this.debugDiv.parentNode) {
-          this.debugDiv.parentNode.removeChild(this.debugDiv);
-        }
-      }, 5000);
     }, 500);
   }
 

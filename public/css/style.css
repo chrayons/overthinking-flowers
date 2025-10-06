@@ -75,49 +75,26 @@ button, a, [role="button"], [tabindex] {
   tap-highlight-color: transparent !important;
 }
 
-/* Paint background on html for Safari's liquid glass effect */
 html {
   margin: 0;
   padding: 0;
-  /* Root background renders under Safari's translucent chrome - this paints the "underlay" */
   background: var(--page-bg);
-  /* Use 100dvh to cover physical screen height for liquid glass underlay */
-  min-height: 100dvh;
-  width: 100%;
-  /* No transitions needed - always light grey */
 }
 
 body {
   margin: 0;
   padding: 0;
-  background: transparent; /* Let html's background show through */
-  min-block-size: 100dvh; /* Fill remaining space with dynamic viewport units */
+  background: var(--page-bg);
   width: 100%;
-  overflow-x: hidden; /* Prevent horizontal scrolling that might create gaps */
-}
-
-/* Optional: keep content away from safe areas (notches/rounded corners) */
-@supports (padding: max(0px)) {
-  body {
-    padding-block-start: max(env(safe-area-inset-top), 0px);
-    padding-block-end: max(env(safe-area-inset-bottom), 0px);
-    padding-inline-start: max(env(safe-area-inset-left), 0px);
-    padding-inline-end: max(env(safe-area-inset-right), 0px);
-  }
-}
-
-/* Apply grid centering to desktop, normal flow to mobile */
-body {
-  /* Default mobile layout - normal document flow */
+  overflow-x: hidden;
   display: block;
 }
 
-/* Desktop and larger screens (>775px) - use grid centering */
 @media (min-width: 776px) {
   body {
     display: grid;
-    place-items: center; /* Center content vertically and horizontally when space allows */
-    grid-template-rows: 1fr; /* Explicit grid template to prevent layout shifts */
+    place-items: center;
+    grid-template-rows: 1fr;
     grid-template-columns: 1fr;
   }
 }
