@@ -1631,6 +1631,8 @@ body.intro-active .header-label {
 body:has(#mg-modal-overlay.open) .mg-flower-wrap,
 body:has(#mg-modal-overlay.open) .category-nav-arrow,
 body:has(#mg-modal-overlay.open) .category-name,
+body:has(#mg-modal-overlay.open) .category-label,
+body:has(#mg-modal-overlay.open) .category-title-section,
 body:has(#mg-modal-overlay.open) .flower {
   opacity: 0.3;
   transition: opacity 0.3s ease;
