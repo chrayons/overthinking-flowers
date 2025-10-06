@@ -296,8 +296,11 @@ class IntroAnimation {
     this.overlay.classList.remove('video-phase');
     this.overlay.classList.add('completing');
 
-    // Fade headers back in
-    document.body.classList.remove('headers-faded');
+    // 🔑 Remove intro-active NOW to stop html from being blue
+    document.body.classList.remove('intro-active');
+
+    // Keep headers faded until overlay is hidden (prevents blue snap-back)
+    // Will remove headers-faded in hideIntro()
 
     // Hide the entire overlay after background transition
     setTimeout(() => {
@@ -309,8 +312,8 @@ class IntroAnimation {
   hideIntro() {
     this.overlay.classList.add('hidden');
 
-    // Remove intro-active class from body to restore normal header styling
-    document.body.classList.remove('intro-active');
+    // Bring headers back only after overlay is hidden
+    document.body.classList.remove('headers-faded');
 
     // Temporarily disable flower interactions to prevent hover from interfering with grow animations
     this.disableFlowerInteractions();

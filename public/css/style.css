@@ -82,14 +82,10 @@ html {
   transition: background-color 0.3s ease-out;
 }
 
-/* During intro text phase - make html background blue to match intro overlay */
-html:has(body.intro-active) {
+/* During intro - make html background blue while overlay is visible */
+/* This avoids timing races by directly checking overlay visibility */
+html:has(#intro-overlay:not(.hidden)) {
   background: #2564AA;
-}
-
-/* During video phase and after - return to light grey */
-html:has(body.headers-faded) {
-  background: var(--page-bg);
 }
 
 body {
