@@ -2163,6 +2163,11 @@ body.intro-active .header-label {
 .intro-overlay {
   position: fixed;
   inset: 0; /* Use inset shorthand for perfect edge coverage */
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh; /* Dynamic viewport height to cover full screen */
+  min-height: 100vh;
+  min-height: 100dvh;
   background: #2564AA; /* Blue background for Phase 1 */
   z-index: 999; /* Above loader but below headers (1000) so headers are visible */
   display: flex; /* Use flex instead of grid for better padding control */
@@ -2176,6 +2181,8 @@ body.intro-active .header-label {
   /* Ensure no gaps at edges - extend to absolute viewport edges */
   margin: 0;
   overflow: hidden; /* Prevent any overflow that might create gaps */
+  /* Block all interactions with content below */
+  pointer-events: auto;
   /* Force background to extend under Safari chrome on macOS */
   -webkit-transform: translateZ(0);
   transform: translateZ(0);
@@ -2470,7 +2477,11 @@ body.intro-active .mobile-header-menu {
   .intro-overlay {
     padding-top: 0; /* Remove top padding on mobile for true centering */
     height: 100vh;
-    height: 100svh; /* Use small viewport height to account for browser UI */
+    height: 100dvh; /* Dynamic viewport height for full coverage */
+    min-height: 100vh;
+    min-height: 100dvh;
+    /* Force full coverage on mobile to block underlying content */
+    width: 100vw;
 
     /* Enhanced mobile centering - override grid with flex */
     display: flex !important;
