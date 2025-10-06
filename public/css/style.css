@@ -83,12 +83,12 @@ html {
 }
 
 /* During intro text phase - make html background blue to match intro overlay */
-body.intro-active html {
+html:has(body.intro-active) {
   background: #2564AA;
 }
 
 /* During video phase and after - return to light grey */
-body.headers-faded html {
+html:has(body.headers-faded) {
   background: var(--page-bg);
 }
 
