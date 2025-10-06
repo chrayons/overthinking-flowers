@@ -979,15 +979,6 @@ body.intro-active .header-label {
   transform: translateZ(0);
 }
 
-/* Mobile and tablet (≤1160px): center content vertically with responsive spacing */
-@media (max-width: 1160px) {
-  .category-overlay {
-    padding-top: 0;
-    padding-bottom: 0;
-    /* Ensure perfect vertical centering on all mobile screen sizes */
-    justify-content: center;
-  }
-}
 
 /* Category title section - just the label */
 .category-title-section {
@@ -1146,12 +1137,13 @@ body.intro-active .header-label {
 }
 
 
-/* Responsive adjustments for smaller screens - rule of thirds positioning */
+/* Responsive adjustments for smaller screens - center content */
 @media (max-width: 1160px) {
   .category-overlay {
     gap: 32px; /* Tighter spacing on small screens */
-    justify-content: flex-start; /* Move away from center for rule of thirds */
-    padding-top: 30vh; /* Consistent positioning with mobile for better visual alignment */
+    justify-content: center; /* Center vertically for all mobile screen sizes */
+    padding-top: 0;
+    padding-bottom: 0;
   }
 
   .category-overlay .category-name {
@@ -1165,6 +1157,11 @@ body.intro-active .header-label {
 
   .category-overlay .btn-return-home {
     width: 155px; /* Match mobile button width */
+    /* Ensure button is visible and positioned absolutely at bottom */
+    position: fixed;
+    bottom: 50px;
+    left: 50%;
+    transform: translateX(-50%);
   }
 }
 
