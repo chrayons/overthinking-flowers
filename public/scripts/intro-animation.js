@@ -15,45 +15,7 @@ class IntroAnimation {
     this.skipTimeout = null;
     this.isPlaying = false;
 
-    // Create visible debug console for mobile
-    this.createDebugConsole();
-
-    // Debug element selection
-    this.debug('Intro elements initialized');
-    this.debug(`SVG found: ${!!this.touchSvg}`);
-    this.debug(`Video found: ${!!this.video}`);
-
     this.init();
-  }
-
-  createDebugConsole() {
-    this.debugEl = document.createElement('div');
-    this.debugEl.style.cssText = `
-      position: fixed;
-      top: 10px;
-      left: 10px;
-      right: 10px;
-      max-height: 200px;
-      background: rgba(0, 0, 0, 0.9);
-      color: #0f0;
-      padding: 10px;
-      font-family: monospace;
-      font-size: 11px;
-      z-index: 99999;
-      overflow-y: auto;
-      pointer-events: none;
-      border: 1px solid #0f0;
-    `;
-    document.body.appendChild(this.debugEl);
-  }
-
-  debug(msg) {
-    console.log(msg);
-    if (this.debugEl) {
-      const time = new Date().toLocaleTimeString();
-      this.debugEl.innerHTML += `<div>[${time}] ${msg}</div>`;
-      this.debugEl.scrollTop = this.debugEl.scrollHeight;
-    }
   }
 
   init() {
@@ -91,7 +53,7 @@ class IntroAnimation {
     // Use absolute URL to avoid any path resolution issues
     const videoPath = `${window.location.origin}/videos/${videoFilename}`;
 
-    this.debug(`Setting video source: ${videoPath}`);
+    console.log(`Setting video source: ${videoPath}`);
 
     // Try setting src directly on video element instead of source element
     // This is more reliable on mobile Safari
@@ -99,32 +61,32 @@ class IntroAnimation {
 
     // Show the full resolved URL for debugging
     setTimeout(() => {
-      this.debug(`Full video URL: ${this.video.currentSrc || 'not resolved'}`);
+      console.log(`Full video URL: ${this.video.currentSrc || 'not resolved'}`);
     }, 100);
 
     // Add video loading event listeners
     this.video.addEventListener('loadstart', () => {
-      this.debug('Video: loadstart');
+      console.log('Video: loadstart');
     }, { once: true });
 
     this.video.addEventListener('loadedmetadata', () => {
-      this.debug('Video: metadata loaded');
+      console.log('Video: metadata loaded');
     }, { once: true });
 
     this.video.addEventListener('loadeddata', () => {
-      this.debug('Video: data loaded');
+      console.log('Video: data loaded');
     }, { once: true });
 
     this.video.addEventListener('canplay', () => {
-      this.debug('Video: canplay');
+      console.log('Video: canplay');
     }, { once: true });
 
     this.video.addEventListener('error', (e) => {
-      this.debug(`Video ERROR: ${this.video.error ? this.video.error.code : 'unknown'}`);
+      console.log(`Video ERROR: ${this.video.error ? this.video.error.code : 'unknown'}`);
     }, { once: true });
 
     this.video.load(); // Reload video with new source
-    this.debug('Video load() called');
+    console.log('Video load() called');
   }
 
   disableVideoControls() {
@@ -157,15 +119,15 @@ class IntroAnimation {
   }
 
   setupEventListeners() {
-    this.debug('Setting up event listeners...');
+    console.log('Setting up event listeners...');
 
     // Make SVG tappable - use touchstart for immediate response on mobile
     const handleTap = (e) => {
       if (this.currentPhase !== 1) {
-        this.debug('Already started, ignoring tap');
+        console.log('Already started, ignoring tap');
         return;
       }
-      this.debug(`SVG tapped: ${e.type}`);
+      console.log(`SVG tapped: ${e.type}`);
       e.preventDefault();
       e.stopPropagation();
       this.startVideoPhase();
@@ -175,7 +137,7 @@ class IntroAnimation {
     this.touchSvg.addEventListener('touchstart', handleTap, { passive: false });
     this.touchSvg.addEventListener('click', handleTap);
 
-    this.debug('Event listeners attached to SVG');
+    console.log('Event listeners attached to SVG');
 
     // Video ended event
     this.video.addEventListener('ended', () => this.completeIntro());
@@ -199,23 +161,23 @@ class IntroAnimation {
   }
 
   startVideoPhase() {
-    this.debug(`Starting video phase, phase: ${this.currentPhase}`);
+    console.log(`Starting video phase, phase: ${this.currentPhase}`);
 
     if (this.currentPhase !== 1) {
-      this.debug('Not in phase 1, ignoring');
+      console.log('Not in phase 1, ignoring');
       return;
     }
 
     this.currentPhase = 2;
     this.isPlaying = true;
 
-    this.debug(`Video src: ${this.videoSource.src}`);
-    this.debug(`Video readyState: ${this.video.readyState}`);
+    console.log(`Video src: ${this.videoSource.src}`);
+    console.log(`Video readyState: ${this.video.readyState}`);
 
     // CRITICAL: Start video play() IMMEDIATELY on user tap (required for mobile Safari)
     // This must be called synchronously in the user interaction handler
-    this.debug('Calling video.play()...');
-    this.debug(`networkState: ${this.video.networkState}`);
+    console.log('Calling video.play()...');
+    console.log(`networkState: ${this.video.networkState}`);
 
     const playPromise = this.video.play();
 
@@ -223,10 +185,10 @@ class IntroAnimation {
     let playResolved = false;
     setTimeout(() => {
       if (!playResolved) {
-        this.debug('Video play TIMEOUT after 3s');
-        this.debug(`Final readyState: ${this.video.readyState}`);
-        this.debug(`Final networkState: ${this.video.networkState}`);
-        this.debug(`Paused: ${this.video.paused}`);
+        console.log('Video play TIMEOUT after 3s');
+        console.log(`Final readyState: ${this.video.readyState}`);
+        console.log(`Final networkState: ${this.video.networkState}`);
+        console.log(`Paused: ${this.video.paused}`);
         this.completeIntro();
       }
     }, 3000);
@@ -234,18 +196,18 @@ class IntroAnimation {
     if (playPromise !== undefined) {
       playPromise.then(() => {
         playResolved = true;
-        this.debug('Video play SUCCESS!');
+        console.log('Video play SUCCESS!');
       }).catch(error => {
         playResolved = true;
-        this.debug(`Video play FAILED: ${error.name} - ${error.message}`);
-        this.debug(`readyState: ${this.video.readyState}`);
-        this.debug(`networkState: ${this.video.networkState}`);
+        console.log(`Video play FAILED: ${error.name} - ${error.message}`);
+        console.log(`readyState: ${this.video.readyState}`);
+        console.log(`networkState: ${this.video.networkState}`);
         // If autoplay fails, skip to completion
         setTimeout(() => this.completeIntro(), 1000);
       });
     } else {
       playResolved = true;
-      this.debug('play() returned undefined');
+      console.log('play() returned undefined');
     }
 
     // Trigger ripple animation
