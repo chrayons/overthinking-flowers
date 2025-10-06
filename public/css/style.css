@@ -2272,24 +2272,24 @@ body.intro-active .header-label {
 /* Phase 2: Video */
 .intro-video {
   position: fixed; /* Fixed to viewport instead of absolute */
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  top: 50%;
+  left: 50%;
   width: 100vw; /* Full viewport width */
   height: 100vh; /* Full viewport height */
   height: 100svh; /* Use small viewport height for full coverage on mobile Safari */
-  min-width: 100%;
-  min-height: 100%;
+  /* Scale large enough to cover viewport completely */
+  min-width: 100vw;
+  min-height: 100vh;
+  min-height: 100svh;
   object-fit: cover;
   object-position: center center; /* Ensure center of video stays centered */
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
   z-index: 600; /* Above intro overlay (500) to cover everything */
-  /* Force video to extend to absolute edges */
-  -webkit-transform: translateZ(0);
-  transform: translateZ(0);
+  /* Center video and force edge-to-edge coverage */
+  transform: translate(-50%, -50%);
+  -webkit-transform: translate(-50%, -50%);
 }
 
 .intro-video.playing {
@@ -2369,20 +2369,22 @@ body.intro-active .header-label {
     -moz-appearance: none !important;
     appearance: none !important;
 
-    /* Enhanced mobile centering - use small viewport for true fullscreen */
+    /* Enhanced mobile edge-to-edge coverage */
     width: 100vw;
-    height: 100svh; /* Small viewport height - includes Safari UI bars for full coverage */
+    height: 100svh;
+    /* Force minimum dimensions to ensure full coverage */
     min-width: 100vw;
     min-height: 100svh;
+    /* Scale slightly larger to ensure no gaps on any aspect ratio */
+    max-width: none;
+    max-height: none;
 
-    /* Use absolute positioning to ensure edge-to-edge coverage */
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    /* Force hardware acceleration */
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
+    /* Keep centering for proper object-fit: cover behavior */
+    top: 50%;
+    left: 50%;
+    /* Maintain center positioning with hardware acceleration */
+    -webkit-transform: translate(-50%, -50%) translateZ(0);
+    transform: translate(-50%, -50%) translateZ(0);
   }
 
   /* Mobile-specific WebKit control selectors */
