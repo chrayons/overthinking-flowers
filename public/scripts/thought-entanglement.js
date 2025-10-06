@@ -25,28 +25,28 @@ const FLOWER_POSITIONS = {
     'ID59': { x: 90, y: 73 }   // a tangled thread
   },
   mobile: {
-    'ID5': { x: 15, y: 20 },   // scribbles, messy, black/dark, cloudy
-    'ID8': { x: 44, y: 10 },   // scribbles, clouds, messy, gray
-    'ID15': { x: 45, y: 20 },  // Trying to find the right information in a messy library
-    'ID18': { x: 90, y: 25 },  // ball of yarn/thread except it’s alive
-    'ID22': { x: 25, y: 15 },  // Like messed up bottle of yarn!
-    'ID23': { x: 10, y: 65 },  // Its like those thought bubbles and all thats inside are scribbles
-    'ID27': { x: 12, y: 55 },  // unending scribbles
-    'ID29': { x: 75, y: 30 },  // A scribble , and just things moving around without anything clear just a string curing 
+    'ID5': { x: 90, y: 60 },   // scribbles, messy, black/dark, cloudy
+    'ID8': { x: 5, y: 15 },   // scribbles, clouds, messy, gray
+    'ID15': { x: 45, y: 40 },  // Trying to find the right information in a messy library
+    'ID18': { x: 95, y: 25 },  // ball of yarn/thread except it’s alive
+    'ID22': { x: 0, y: 85 },  // Like messed up bottle of yarn!
+    'ID23': { x: 5, y: 70 },  // Its like those thought bubbles and all thats inside are scribbles
+    'ID27': { x: 10, y: 62 },  // unending scribbles
+    'ID29': { x: 85, y: 35 },  // A scribble , and just things moving around without anything clear just a string curing 
     'ID32': { x: 15, y: 35 },  // It’s like a matter but it’s always shifting. Any time i think i can grasp it, it changes to something different.
-    'ID43': { x: 76, y: 55 },  // word cloud, labyrinth, drowning, freezing, being stuck
-    'ID46': { x: 21, y: 65 },  // Storm, tangle
-    'ID48': { x: 56, y: 65 },  // a knot, a racecar going around track at extremely high speeds, me running around a room restlessly
-    'ID51': { x: 85, y: 38 },  // sort of like a small central point (the initial thought) and then a larger chaotic spiky/scribbly/zigzag circle around it (the associated thought spiral)
-    'ID55': { x: 13, y: 25 },  // Scribbles / spiraling staircase leading downwards
-    'ID56': { x: 65, y: 20 },  // A ball of yarn. You know the beginning and the end are there somewhere, but getting there is frustrating and takes ages. Also, others just tell you to buy a new one
-    'ID57': { x: 50, y: 56 },  // I see problems as knots. Thinking would be the act of untying them in my head. Overthinking would be complicating the untying process, it may have been a simple fix or there was no solution, either way there is no need to keep trying to untie over and over
-    'ID59': { x: 40, y: 70 }   // a tangled thread
+    'ID43': { x: 90, y: 80 },  // word cloud, labyrinth, drowning, freezing, being stuck
+    'ID46': { x: 95, y: 50 },  // Storm, tangle
+    'ID48': { x: 35, y: 25 },  // a knot, a racecar going around track at extremely high speeds, me running around a room restlessly
+    'ID51': { x: 5, y: 45 },  // sort of like a small central point (the initial thought) and then a larger chaotic spiky/scribbly/zigzag circle around it (the associated thought spiral)
+    'ID55': { x: 60, y: 20 },  // Scribbles / spiraling staircase leading downwards
+    'ID56': { x: 60, y: 35 },  // A ball of yarn. You know the beginning and the end are there somewhere, but getting there is frustrating and takes ages. Also, others just tell you to buy a new one
+    'ID57': { x: 70, y: 65 },  // I see problems as knots. Thinking would be the act of untying them in my head. Overthinking would be complicating the untying process, it may have been a simple fix or there was no solution, either way there is no need to keep trying to untie over and over
+    'ID59': { x: 40, y: 75 }   // a tangled thread
   }
 };
 
 // Simple layout storage - one layout for all devices
-const TE_LAYOUT_KEY = 'te-simple-layout-v6';
+const TE_LAYOUT_KEY = 'te-simple-layout-v8';
 
 // Mobile detection and performance optimization
 function isMobileDevice() {

@@ -17,20 +17,20 @@ const FLOWER_POSITIONS = {
     'ID72': { x: 90, y: 64 }   // Like that scene in Harry Potter when he has to grab the right key...
   },
   mobile: {
-    'ID24': { x: 47, y: 62 },  // Maybe it's bc I have ADHD. I think of flashes of images in my head rapidly appearing...
-    'ID47': { x: 75, y: 10 },  // A heavy, buzzing cloud over my head throughout the day.
-    'ID49': { x: 15, y: 30 },  // The movie: anything everywhere all at once
-    'ID50': { x: 25, y: 60 },  // Racing ants
-    'ID61': { x: 80, y: 34 },  // network/electric movements, overlapping people talking
-    'ID62': { x: 10, y: 60 },  // Dark cloud, lots of tornados in my head
-    'ID63': { x: 37, y: 17 },  // a band with 100 instruments playing
-    'ID65': { x: 60, y: 25 },  // a swarm of bees that won't stop buzzing
-    'ID72': { x: 85, y: 58 }   // Like that scene in Harry Potter when he has to grab the right key...
+    'ID24': { x: 44, y: 65 },  // Maybe it's bc I have ADHD. I think of flashes of images in my head rapidly appearing...
+    'ID47': { x: 90, y: 75 },  // A heavy, buzzing cloud over my head throughout the day.
+    'ID49': { x: 15, y: 40 },  // The movie: anything everywhere all at once
+    'ID50': { x: 30, y: 70 },  // Racing ants
+    'ID61': { x: 80, y: 44 },  // network/electric movements, overlapping people talking
+    'ID62': { x: 10, y: 65 },  // Dark cloud, lots of tornados in my head
+    'ID63': { x: 30, y: 25 },  // a band with 100 instruments playing
+    'ID65': { x: 50, y: 40 },  // a swarm of bees that won't stop buzzing
+    'ID72': { x: 85, y: 60 }   // Like that scene in Harry Potter when he has to grab the right key...
   }
 };
 
 // Simple layout storage - one layout for all devices
-const SO_LAYOUT_KEY = 'so-simple-layout-v5';
+const SO_LAYOUT_KEY = 'so-simple-layout-v7';
 
 // Mobile detection and performance optimization
 function isMobileDevice() {

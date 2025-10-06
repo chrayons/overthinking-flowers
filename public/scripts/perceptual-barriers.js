@@ -16,19 +16,19 @@ const FLOWER_POSITIONS = {
     'ID66': { x: 24, y: 80 }   // Being lost in a big dark cloud or stuck in a maze that has no clear ending
   },
   mobile: {
-    'ID11': { x: 20, y: 35 },  // a big grey cloud or fog
-    'ID19': { x: 17, y: 56 },  // Impending doom or like a black cloud
-    'ID34': { x: 27, y: 18 },  // It feels like being in a smoky space, with many voices coming from my heart, but I can’t see my true desires and needs clearly.I will try to sort it all out until my vision becomes clear and I understand my guiding ideology. This is usually very energy consuming.
-    'ID39': { x: 79, y: 54 },  // Me surrounded by mist, with trains of thoughts whisking by and turning me around and around.
-    'ID44': { x: 74, y: 20 },  // a cloud
-    'ID45': { x: 80, y: 32 },  // thick fog but still kinda knowing your way?
-    'ID52': { x: 44, y: 14 },  // fog
-    'ID66': { x: 46, y: 66 }   // Being lost in a big dark cloud or stuck in a maze that has no clear ending
+    'ID11': { x: 10, y: 50 },  // a big grey cloud or fog
+    'ID19': { x: 15, y: 65 },  // Impending doom or like a black cloud
+    'ID34': { x: 46, y: 70 },  // It feels like being in a smoky space, with many voices coming from my heart, but I can’t see my true desires and needs clearly.I will try to sort it all out until my vision becomes clear and I understand my guiding ideology. This is usually very energy consuming.
+    'ID39': { x: 85, y: 65 },  // Me surrounded by mist, with trains of thoughts whisking by and turning me around and around.
+    'ID44': { x: 65, y: 40 },  // a cloud
+    'ID45': { x: 20, y: 40 },  // thick fog but still kinda knowing your way?
+    'ID52': { x: 80, y: 40 },  // fog
+    'ID66': { x: 40, y: 30 }   // Being lost in a big dark cloud or stuck in a maze that has no clear ending
   }
 };
 
 // Simple layout storage - one layout for all devices
-const PB_LAYOUT_KEY = 'pb-simple-layout-v5';
+const PB_LAYOUT_KEY = 'pb-simple-layout-v6';
 
 // Mobile detection and performance optimization
 function isMobileDevice() {

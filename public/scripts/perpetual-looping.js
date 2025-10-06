@@ -21,24 +21,24 @@ const FLOWER_POSITIONS = {
     'ID68': { x: 26, y: 67 }   // cycle – never ending, going round and round
   },
   mobile: {
-    'ID2': { x: 30, y: 15 },   // like a computer caught in an infinite loop
-    'ID4': { x: 55, y: 20 },   // like i'm running to a place where there's no end to
-    'ID6': { x: 39, y: 10 },   // kind of like being lost at sea - difficult to navigate through the waves...
-    'ID9': { x: 15, y: 35 },   // A toy train track where the train goes in circles constantly without ever getting anywhere.
-    'ID17': { x: 75, y: 30 },  // Like a hamster on a wheel? Or like I'm standing still but everyone around me...
-    'ID26': { x: 10, y: 30 },  // A circular amusement park ride that spins in a circle over and over
-    'ID37': { x: 60, y: 10 },  // Thoughts chasing each other, mouth to body mouth to body...
-    'ID41': { x: 65, y: 55 },  // Chains of predictions of events and possible solutions (flowchart-like)
-    'ID42': { x: 80, y: 60 },  // surges of negative overlooping energy
-    'ID54': { x: 45, y: 65 },  // I tend to replay different scenarios that could have happened...
-    'ID58': { x: 14, y: 70 },  // everytime i pick up something something else drops and i have my arms full of thoughts
-    'ID64': { x: 80, y: 65 },  // Hamster 🐹 Wheel
-    'ID68': { x: 27, y: 55 }   // cycle – never ending, going round and round
+    'ID2': { x: 60, y: 40 },   // like a computer caught in an infinite loop
+    'ID4': { x: 85, y: 50 },   // like i'm running to a place where there's no end to
+    'ID6': { x: 39, y: 30 },   // kind of like being lost at sea - difficult to navigate through the waves...
+    'ID9': { x: 10, y: 45 },   // A toy train track where the train goes in circles constantly without ever getting anywhere.
+    'ID17': { x: 90, y: 35 },  // Like a hamster on a wheel? Or like I'm standing still but everyone around me...
+    'ID26': { x: 5, y: 35 },  // A circular amusement park ride that spins in a circle over and over
+    'ID37': { x: 70, y: 25 },  // Thoughts chasing each other, mouth to body mouth to body...
+    'ID41': { x: 65, y: 65 },  // Chains of predictions of events and possible solutions (flowchart-like)
+    'ID42': { x: 90, y: 60 },  // surges of negative overlooping energy
+    'ID54': { x: 5, y: 60 },  // I tend to replay different scenarios that could have happened...
+    'ID58': { x: 10, y: 80 },  // everytime i pick up something something else drops and i have my arms full of thoughts
+    'ID64': { x: 80, y: 75 },  // Hamster 🐹 Wheel
+    'ID68': { x: 35, y: 75 }   // cycle – never ending, going round and round
   }
 };
 
 // Simple layout storage - one layout for all devices
-const PL_LAYOUT_KEY = 'pl-simple-layout-v4';
+const PL_LAYOUT_KEY = 'pl-simple-layout-v5';
 
 // Mobile detection and performance optimization
 function isMobileDevice() {
