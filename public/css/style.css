@@ -47,6 +47,7 @@
   --side-min: 32px;          /* min outer gutter */
   --side-max: 416px;         /* max outer gutter */
   --page-bg: #f4f6fb;
+  --sa-bg: #F8F8FF;          /* Safe area background fill */
 
   /* Universal color palette */
   --bg-primary: #F8F8FF;     /* Primary background (was white) */
@@ -89,6 +90,32 @@ body {
   width: 100%;
   overflow-x: hidden;
   display: block;
+}
+
+/* Safe area edge fills - top */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: env(safe-area-inset-top, 0px);
+  background: var(--sa-bg);
+  z-index: 9998; /* Below intro overlay but above content */
+  pointer-events: none;
+}
+
+/* Safe area edge fills - bottom */
+body::after {
+  content: '';
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: env(safe-area-inset-bottom, 0px);
+  background: var(--sa-bg);
+  z-index: 9998; /* Below intro overlay but above content */
+  pointer-events: none;
 }
 
 @media (min-width: 776px) {
@@ -625,6 +652,12 @@ body.intro-active {
   position: fixed; /* Lock position to prevent scroll-behind on mobile */
   width: 100%;
   height: 100dvh;
+}
+
+/* Hide safe area edges during intro */
+body.intro-active::before,
+body.intro-active::after {
+  display: none;
 }
 
 body.intro-active .wrapper {
