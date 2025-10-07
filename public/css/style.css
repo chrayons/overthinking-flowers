@@ -78,17 +78,7 @@ button, a, [role="button"], [tabindex] {
 html {
   margin: 0;
   padding: 0;
-  background: var(--page-bg);
-}
-
-/* Sync html background with intro overlay phases for Safari liquid glass */
-html:has(#intro-overlay:not(.video-phase):not(.completing):not(.hidden)) {
-  background: #2564AA; /* Blue during text phase */
-}
-
-html:has(#intro-overlay.video-phase),
-html:has(#intro-overlay.completing) {
-  background: var(--page-bg); /* Grey during video and completion phases */
+  background: var(--page-bg); /* Always grey - Safari under-chrome regions stay grey */
 }
 
 body {
