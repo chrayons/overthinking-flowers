@@ -82,6 +82,16 @@ html {
   transition: background-color 0.3s ease-out;
 }
 
+/* Sync html background with intro overlay phases for Safari liquid glass */
+html:has(#intro-overlay:not(.video-phase):not(.completing):not(.hidden)) {
+  background: #2564AA; /* Blue during text phase */
+}
+
+html:has(#intro-overlay.video-phase),
+html:has(#intro-overlay.completing) {
+  background: var(--page-bg); /* Grey during video and completion phases */
+}
+
 body {
   margin: 0;
   padding: 0;
