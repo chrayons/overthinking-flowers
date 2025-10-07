@@ -1142,6 +1142,9 @@ try {
       const positiveEmotions = EMOTION_GROUPS.positive;
       const negativeEmotions = EMOTION_GROUPS.negative;
 
+      // Get emotion values from the flower data
+      const emotions = flower.emotions || flower.metrics || flower.scores || {};
+
       Object.entries(emotionAngles).forEach(([emotion, angle]) => {
         const step =
           neutralEmotions.includes(emotion) ? 60 :
@@ -1157,6 +1160,7 @@ try {
         sector.setAttribute("opacity", "0");
         sector.setAttribute("pointer-events", "auto");
         sector.dataset.emotion = emotion;
+        sector.dataset.value = String(emotions[emotion] || 0); // Add emotion value
         sector.classList.add("mg-overlay-sector");
 
         overlaySvg.appendChild(sector);
