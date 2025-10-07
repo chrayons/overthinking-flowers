@@ -654,12 +654,6 @@ body.intro-active {
   height: 100dvh;
 }
 
-/* Hide safe area edges during intro */
-body.intro-active::before,
-body.intro-active::after {
-  display: none;
-}
-
 body.intro-active .wrapper {
   visibility: hidden;
 }
