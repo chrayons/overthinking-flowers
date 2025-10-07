@@ -101,7 +101,7 @@ body::before {
   right: 0;
   height: env(safe-area-inset-top, 0px);
   background: var(--sa-bg);
-  z-index: 9998; /* Below intro overlay but above content */
+  z-index: 2147483647; /* Above everything including intro overlay */
   pointer-events: none;
 }
 
@@ -114,7 +114,7 @@ body::after {
   right: 0;
   height: env(safe-area-inset-bottom, 0px);
   background: var(--sa-bg);
-  z-index: 9998; /* Below intro overlay but above content */
+  z-index: 2147483647; /* Above everything including intro overlay */
   pointer-events: none;
 }
 
@@ -360,7 +360,6 @@ body::after {
   margin: 0;
   padding: 0;
   transition: color 0.2s ease-out;
-  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8); /* Ensure readability on any background */
   /* Prevent flicker during page loads */
   opacity: 1;
   visibility: visible;
@@ -388,7 +387,6 @@ body::after {
   margin-left: auto; /* Push to the right edge for equal spacing */
   padding: 0;
   transition: color 0.2s ease-out;
-  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8); /* Ensure readability on any background */
   /* Prevent flicker during page loads */
   opacity: 1;
   visibility: visible;
@@ -589,7 +587,6 @@ body.intro-active .header-bar {
 body.intro-active .header-link,
 body.intro-active .header-label {
   color: #F8F8FF !important;
-  text-shadow: 0 1px 2px rgba(37, 100, 170, 0.3) !important;
 }
 
 .mobile-header-menu.active {
