@@ -273,8 +273,7 @@ class IntroAnimation {
       // Hide text and SVG
       this.textContainer.style.opacity = '0';
 
-      // Remove intro-active and add headers-faded to transition html background
-      document.body.classList.remove('intro-active');
+      // Add headers-faded during video phase
       document.body.classList.add('headers-faded');
 
       // Show video after short delay
@@ -296,7 +295,7 @@ class IntroAnimation {
     this.overlay.classList.remove('video-phase');
     this.overlay.classList.add('completing');
 
-    // 🔑 Remove intro-active NOW to stop html from being blue
+    // Remove intro-active to reveal content and allow scrolling
     document.body.classList.remove('intro-active');
 
     // Keep headers faded until overlay is hidden (prevents blue snap-back)
