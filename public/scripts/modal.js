@@ -1103,8 +1103,8 @@ try {
       overlayWrap.style.cssText = `
         position: absolute;
         inset: 0;
-        z-index: 8;
-        pointer-events: none;
+        z-index: 9;
+        pointer-events: auto;
         mix-blend-mode: multiply;
         display: grid;
         place-items: center;
@@ -1155,6 +1155,7 @@ try {
         sector.setAttribute("d", describeArc(centerX, centerY, overlayRadius, start, end));
         sector.setAttribute("fill", "transparent");
         sector.setAttribute("opacity", "0");
+        sector.setAttribute("pointer-events", "auto");
         sector.dataset.emotion = emotion;
         sector.classList.add("mg-overlay-sector");
 
@@ -1162,7 +1163,7 @@ try {
       });
 
       overlayWrap.appendChild(overlaySvg);
-      stage.insertBefore(overlayWrap, wrap);
+      stage.appendChild(overlayWrap); // On top of flower petals for better touch detection
       return overlayWrap;
     };
 
