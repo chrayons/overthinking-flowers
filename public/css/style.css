@@ -2160,7 +2160,7 @@ body.intro-active .header-label {
   width: 100vw;
   height: 100dvh; /* Dynamic viewport height to cover full screen including Safari chrome */
   background: #2564AA; /* Blue background for Phase 1 */
-  z-index: 2147483647; /* Maximum z-index to ensure overlay is above ALL content */
+  z-index: 999; /* Below headers (1000) during text phase */
   display: flex; /* Use flex instead of grid for better padding control */
   flex-direction: column;
   align-items: center;
@@ -2182,6 +2182,7 @@ body.intro-active .header-label {
 /* Background transitions during video phase */
 .intro-overlay.video-phase {
   background: var(--page-bg); /* Change to light grey during video to prevent blue showing in Safari chrome */
+  z-index: 2147483647; /* Above everything during video phase to hide headers on mobile */
 }
 
 .intro-overlay.completing {
