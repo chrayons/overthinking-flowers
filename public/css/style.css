@@ -618,6 +618,11 @@ body.intro-active .header-label {
   box-sizing: border-box; /* Include padding in width calculation */
 }
 
+/* Hide all content during intro on all screen sizes */
+body.intro-active .wrapper {
+  visibility: hidden;
+}
+
 
 /* eyebrow */
 .eyebrow{
@@ -865,11 +870,6 @@ body.intro-active .header-label {
   .wrapper {
     padding-top: 240px; /* Mobile content starts 240px from top */
     margin: 0 auto; /* Explicit centering for mobile without grid interference */
-  }
-
-  /* Hide mobile content during intro to prevent loading underneath */
-  body.intro-active .wrapper {
-    visibility: hidden;
   }
 
   /* Make shuffle button use mobile styling */
