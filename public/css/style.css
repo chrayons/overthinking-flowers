@@ -620,6 +620,13 @@ body.intro-active .header-label {
 }
 
 /* Hide all content during intro on all screen sizes */
+body.intro-active {
+  overflow: hidden; /* Prevent scrolling during intro */
+  position: fixed; /* Lock position to prevent scroll-behind on mobile */
+  width: 100%;
+  height: 100dvh;
+}
+
 body.intro-active .wrapper {
   visibility: hidden;
 }
@@ -2190,9 +2197,10 @@ body.intro-active .wrapper {
   transition: background-color 0.3s ease-out;
 }
 
-/* Change blue layer to grey during video and completion */
+/* Change blue layer to transparent during video, completion, and hidden states */
 .intro-overlay.video-phase::before,
-.intro-overlay.completing::before {
+.intro-overlay.completing::before,
+.intro-overlay.hidden::before {
   background: transparent;
 }
 
