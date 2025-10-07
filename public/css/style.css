@@ -2157,7 +2157,7 @@ body.intro-active .wrapper {
   inset: 0; /* Use inset shorthand for perfect edge coverage */
   width: 100vw;
   height: 100dvh; /* Dynamic viewport height to cover full screen including Safari chrome */
-  background: #2564AA; /* Blue background for Phase 1 */
+  background: var(--page-bg); /* Grey background - Safari under-chrome regions stay grey */
   z-index: 999; /* Below headers (1000) during text phase */
   display: flex; /* Use flex instead of grid for better padding control */
   flex-direction: column;
@@ -2166,7 +2166,7 @@ body.intro-active .wrapper {
   padding-top: 32px; /* Content padding - doesn't affect background */
   opacity: 1;
   visibility: visible;
-  transition: opacity 0.5s ease-out, visibility 0.5s ease-out, background-color 0.3s ease-out;
+  transition: opacity 0.5s ease-out, visibility 0.5s ease-out;
   /* Ensure no gaps at edges - extend to absolute viewport edges */
   margin: 0;
   overflow: hidden; /* Prevent any overflow that might create gaps */
@@ -2177,14 +2177,9 @@ body.intro-active .wrapper {
   transform: translateZ(0);
 }
 
-/* Background transitions during video phase */
+/* Increase z-index during video phase to hide headers on mobile */
 .intro-overlay.video-phase {
-  background: var(--page-bg); /* Change to light grey during video to prevent blue showing in Safari chrome */
   z-index: 2147483647; /* Above everything during video phase to hide headers on mobile */
-}
-
-.intro-overlay.completing {
-  background: var(--page-bg); /* Return to normal background when completing */
 }
 
 /* Hidden state for completed/skipped intro */
