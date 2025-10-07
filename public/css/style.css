@@ -2184,12 +2184,12 @@ body.intro-active .wrapper {
   transform: translateZ(0);
 }
 
-/* Blue content wrapper that respects safe areas */
+/* Blue content wrapper that fills entire screen including under-chrome regions */
 .intro-overlay::before {
   content: '';
   position: absolute;
-  top: env(safe-area-inset-top);
-  bottom: env(safe-area-inset-bottom);
+  top: 0;
+  bottom: 0;
   left: 0;
   right: 0;
   background: #2564AA; /* Blue background for intro text */
@@ -2223,6 +2223,9 @@ body.intro-active .wrapper {
   place-items: center;
   width: 100%;
   /* Remove height constraint to allow natural centering */
+  /* Padding to keep content out of safe areas (notch, home indicator) */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 /* Phase 1: Text and SVG Container */
