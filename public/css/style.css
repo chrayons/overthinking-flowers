@@ -874,6 +874,11 @@ body.intro-active .header-label {
     margin: 0 auto; /* Explicit centering for mobile without grid interference */
   }
 
+  /* Hide mobile content during intro to prevent loading underneath */
+  body.intro-active .wrapper {
+    visibility: hidden;
+  }
+
   /* Make shuffle button use mobile styling */
   #shuffle-btn {
     width: 155px;
