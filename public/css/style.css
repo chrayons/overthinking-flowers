@@ -2156,17 +2156,18 @@ body.intro-active .wrapper {
   position: fixed;
   inset: 0; /* Use inset shorthand for perfect edge coverage */
   width: 100vw;
-  height: 100dvh; /* Dynamic viewport height to cover full screen including Safari chrome */
-  background: var(--page-bg); /* Grey background - Safari under-chrome regions stay grey */
+  height: 100vh; /* Standard viewport height - doesn't extend into under-chrome regions */
+  background: #2564AA; /* Blue background for intro text */
   z-index: 999; /* Below headers (1000) during text phase */
   display: flex; /* Use flex instead of grid for better padding control */
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding-top: 32px; /* Content padding - doesn't affect background */
+  padding-top: env(safe-area-inset-top); /* Padding for safe area at top */
+  padding-bottom: env(safe-area-inset-bottom); /* Padding for safe area at bottom */
   opacity: 1;
   visibility: visible;
-  transition: opacity 0.5s ease-out, visibility 0.5s ease-out;
+  transition: opacity 0.5s ease-out, visibility 0.5s ease-out, background-color 0.3s ease-out;
   /* Ensure no gaps at edges - extend to absolute viewport edges */
   margin: 0;
   overflow: hidden; /* Prevent any overflow that might create gaps */
@@ -2177,9 +2178,14 @@ body.intro-active .wrapper {
   transform: translateZ(0);
 }
 
-/* Increase z-index during video phase to hide headers on mobile */
+/* Video phase - change to grey and increase z-index */
 .intro-overlay.video-phase {
+  background: var(--page-bg); /* Change to grey during video */
   z-index: 2147483647; /* Above everything during video phase to hide headers on mobile */
+}
+
+.intro-overlay.completing {
+  background: var(--page-bg); /* Grey during completion */
 }
 
 /* Hidden state for completed/skipped intro */
@@ -2460,11 +2466,11 @@ body.intro-active .mobile-header-menu {
 /* Mobile responsive design */
 @media (max-width: 775px) {
   .intro-overlay {
-    padding-top: 0; /* Remove top padding on mobile for true centering */
+    /* Use 100vh so overlay doesn't extend into under-chrome regions */
     height: 100vh;
-    height: 100dvh; /* Dynamic viewport height for full coverage */
-    min-height: 100vh;
-    min-height: 100dvh;
+    /* Safe area padding keeps blue content out of under-chrome regions */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
     /* Force full coverage on mobile to block underlying content */
     width: 100vw;
 
