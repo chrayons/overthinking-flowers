@@ -79,7 +79,6 @@ html {
   margin: 0;
   padding: 0;
   background: var(--page-bg);
-  transition: background-color 0.3s ease-out;
 }
 
 /* Sync html background with intro overlay phases for Safari liquid glass */
