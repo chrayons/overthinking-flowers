@@ -1362,6 +1362,25 @@ try {
         }
       };
 
+      // Desktop hover handlers - listen on overlay wrap for better performance
+      if (overlayWrap) {
+        overlayWrap.addEventListener("mouseenter", (e) => {
+          if (e.target.classList.contains("mg-overlay-sector")) {
+            const emotion = e.target.dataset.emotion;
+            const value = e.target.dataset.value || "0";
+
+            if (emotion) {
+              triggerHoverEffect(emotion, value);
+            }
+          }
+        }, true);
+
+        overlayWrap.addEventListener("mouseleave", () => {
+          clearHoverEffect();
+        });
+      }
+
+      // Fallback: also listen on original SVG for mg-sector and mg-petal
       svgEl.addEventListener("mouseenter", (e) => {
         if (e.target.classList.contains("mg-sector") || e.target.classList.contains("mg-petal")) {
           const emotion = e.target.dataset.emotion;
@@ -1377,7 +1396,36 @@ try {
         clearHoverEffect();
       });
 
-      // Mobile touch handlers for emotion sectors
+      // Mobile touch handlers - listen on overlay wrap for overlay sectors
+      if (overlayWrap) {
+        overlayWrap.addEventListener("touchstart", (e) => {
+          if (e.target.classList.contains("mg-overlay-sector")) {
+            const emotion = e.target.dataset.emotion;
+            const value = e.target.dataset.value || "0";
+
+            if (emotion) {
+              e.preventDefault(); // Prevent mouse events from firing
+
+              // Clear any existing timeout
+              if (mobileTimeout) {
+                clearTimeout(mobileTimeout);
+                mobileTimeout = null;
+              }
+
+              // Trigger the hover effect immediately
+              triggerHoverEffect(emotion, value);
+
+              // Set timeout to clear effect after 1 second
+              mobileTimeout = setTimeout(() => {
+                clearHoverEffect();
+                mobileTimeout = null;
+              }, 1000);
+            }
+          }
+        }, true);
+      }
+
+      // Fallback: touch handlers for original SVG sectors
       svgEl.addEventListener("touchstart", (e) => {
         if (e.target.classList.contains("mg-sector") || e.target.classList.contains("mg-petal")) {
           const emotion = e.target.dataset.emotion;
