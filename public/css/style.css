@@ -2158,12 +2158,9 @@ body.intro-active .header-label {
   position: fixed;
   inset: 0; /* Use inset shorthand for perfect edge coverage */
   width: 100vw;
-  height: 100vh;
-  height: 100dvh; /* Dynamic viewport height to cover full screen */
-  min-height: 100vh;
-  min-height: 100dvh;
+  height: 100dvh; /* Dynamic viewport height to cover full screen including Safari chrome */
   background: #2564AA; /* Blue background for Phase 1 */
-  z-index: 999; /* Above loader but below headers (1000) so headers are visible */
+  z-index: 2147483647; /* Maximum z-index to ensure overlay is above ALL content */
   display: flex; /* Use flex instead of grid for better padding control */
   flex-direction: column;
   align-items: center;
