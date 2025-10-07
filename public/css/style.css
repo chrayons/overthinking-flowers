@@ -2217,12 +2217,12 @@ body.intro-active .wrapper {
   transform: translateZ(0);
 }
 
-/* Blue content wrapper that fills entire screen including under-chrome regions */
+/* Blue content wrapper that respects safe area insets */
 .intro-overlay::before {
   content: '';
   position: absolute;
-  top: 0;
-  bottom: 0;
+  top: env(safe-area-inset-top);
+  bottom: env(safe-area-inset-bottom);
   left: 0;
   right: 0;
   background: #2564AA; /* Blue background for intro text */
