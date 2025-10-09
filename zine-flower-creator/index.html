@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zine Flower Creator - Private Export Tool</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Zine Flower Creator</h1>
+      <p class="subtitle">Private tool for exporting flower visualizations</p>
+    </header>
+
+    <div class="main-content">
+      <!-- Left Panel: Controls -->
+      <aside class="controls-panel">
+        <section class="control-group">
+          <h2>Image Settings</h2>
+
+          <label for="width">
+            Width (px)
+            <input type="number" id="width" value="1200" min="100" max="5000" step="10">
+          </label>
+
+          <label for="height">
+            Height (px)
+            <input type="number" id="height" value="1200" min="100" max="5000" step="10">
+          </label>
+
+          <label for="padding">
+            Padding (px)
+            <input type="number" id="padding" value="40" min="0" max="200" step="5">
+          </label>
+
+          <label class="checkbox-label">
+            <input type="checkbox" id="transparent" checked>
+            Transparent background (PNG only)
+          </label>
+
+          <label class="checkbox-label">
+            <input type="checkbox" id="show-labels" checked>
+            Show sector labels (1-11)
+          </label>
+        </section>
+
+        <section class="control-group">
+          <h2>Data Input</h2>
+
+          <label for="data-input">
+            Paste flower JSON data
+            <textarea id="data-input" rows="10" placeholder='{"MetaphorID": "sample1", "Metaphor": "...", "Fear": "6.07%", ...}'></textarea>
+          </label>
+
+          <button id="load-sample" class="btn-secondary">Load Sample Data</button>
+          <button id="refresh-preview" class="btn-primary">Update Preview</button>
+        </section>
+
+        <section class="control-group export-group">
+          <h2>Export</h2>
+
+          <div class="export-format">
+            <label class="radio-label">
+              <input type="radio" name="format" value="png" checked>
+              PNG
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="format" value="svg">
+              SVG
+            </label>
+          </div>
+
+          <button id="export-btn" class="btn-export">Export Image</button>
+        </section>
+      </aside>
+
+      <!-- Right Panel: Preview -->
+      <main class="preview-panel">
+        <h2>Preview</h2>
+        <div id="preview-container" class="preview-container">
+          <div id="preview-stage" class="preview-stage">
+            <!-- Preview will be rendered here -->
+          </div>
+        </div>
+        <p class="preview-note">Preview shows the flower with grid and labels (if enabled)</p>
+      </main>
+    </div>
+  </div>
+
+  <script src="flower-lib.js"></script>
+  <script src="flower-export.js"></script>
+</body>
+</html>
