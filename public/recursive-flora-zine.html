@@ -19,9 +19,23 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      text-align: center;
+    }
+
+    .pdf-loading-text {
       font: 500 14px/1.4 "Satoshi-Medium", sans-serif;
       color: var(--text-primary);
       opacity: 0.7;
+    }
+
+    .pdf-loading-percent {
+      font: 500 12px/1.4 "Satoshi-Medium", sans-serif;
+      color: var(--text-primary);
+      opacity: 0.6;
     }
 
     .pdf-controls {
@@ -363,8 +377,8 @@
         <div class="pdf-canvas-container">
           <canvas id="pdf-canvas"></canvas>
           <div class="pdf-loading" id="pdf-loading">
-            <div>Loading zine...</div>
-            <div id="loading-progress" style="margin-top: 8px; font-size: 12px; opacity: 0.7;"></div>
+            <div class="pdf-loading-text">Zine loading...</div>
+            <div id="loading-progress" class="pdf-loading-percent">0%</div>
           </div>
           <div class="pdf-error" id="pdf-error" style="display: none;">
             Error loading PDF. Please check that the file exists and try again.
@@ -412,8 +426,11 @@
         this.ctx = this.canvas.getContext('2d');
         this.isRendering = false;
 
-        // PDF path - update this to your actual PDF file
-        this.pdfPath = 'pdf/recursive-flora-zine.pdf';
+        // Detect mobile and load appropriate PDF
+        const isMobile = window.innerWidth <= 768;
+        this.pdfPath = isMobile
+          ? 'pdf/recursive-flora-zine-mobile.pdf'
+          : 'pdf/recursive-flora-zine.pdf';
 
         this.initializeElements();
         this.setupEventListeners();
@@ -488,7 +505,7 @@
               const percent = Math.round((progress.loaded / progress.total) * 100);
               const progressEl = document.getElementById('loading-progress');
               if (progressEl) {
-                progressEl.textContent = `Downloaded: ${percent}% (${(progress.loaded / 1024 / 1024).toFixed(1)}MB / ${(progress.total / 1024 / 1024).toFixed(1)}MB)`;
+                progressEl.textContent = `${percent}%`;
               }
             }
           };
@@ -536,14 +553,28 @@
             scale = this.scale;
           }
 
+          // Account for device pixel ratio for high-DPI displays (Retina, etc.)
+          const outputScale = window.devicePixelRatio || 1;
+
           const viewport = page.getViewport({ scale: scale });
 
-          this.canvas.height = viewport.height;
-          this.canvas.width = viewport.width;
+          // Set canvas size accounting for device pixel ratio
+          this.canvas.width = Math.floor(viewport.width * outputScale);
+          this.canvas.height = Math.floor(viewport.height * outputScale);
+
+          // Set CSS size to the viewport size (maintains proper display size)
+          this.canvas.style.width = Math.floor(viewport.width) + 'px';
+          this.canvas.style.height = Math.floor(viewport.height) + 'px';
+
+          // Scale the drawing context to match the device pixel ratio
+          const transform = outputScale !== 1
+            ? [outputScale, 0, 0, outputScale, 0, 0]
+            : null;
 
           const renderContext = {
             canvasContext: this.ctx,
-            viewport: viewport
+            viewport: viewport,
+            transform: transform
           };
 
           await page.render(renderContext).promise;
