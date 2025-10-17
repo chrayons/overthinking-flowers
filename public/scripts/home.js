@@ -60,6 +60,11 @@ function addFlowersToExistingCell(cell, categoryName, flowers) {
   // Make entire cell clickable - navigate to category page
   cell.style.cursor = 'pointer';
   cell.addEventListener('click', () => {
+    // Track theme click with Vercel Analytics
+    if (window.va) {
+      window.va.track('theme_clicked', { theme: categoryName });
+    }
+
     localStorage.setItem('lastVisitedCategory', categoryName);
     const filename = categoryToFilename(categoryName);
     window.location.href = filename;
@@ -311,6 +316,11 @@ function initMobileCarousel() {
     seeReflectionsBtn.addEventListener('click', () => {
       const categoryName = seeReflectionsBtn.dataset.category;
       if (categoryName) {
+        // Track theme click from mobile carousel with Vercel Analytics
+        if (window.va) {
+          window.va.track('theme_clicked', { theme: categoryName, source: 'mobile_carousel' });
+        }
+
         localStorage.setItem('lastVisitedCategory', categoryName);
         const filename = categoryToFilename(categoryName);
         window.location.href = filename;
