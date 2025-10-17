@@ -714,6 +714,13 @@ body.intro-active .wrapper {
   font-family: "junicoderegularcondensed", "junicoderegular", Georgia, serif;
   letter-spacing: 0.1em;
   z-index: 2;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+/* Dim other category labels when hovering on desktop */
+#category-grid.hovering .category-cell:not(:hover) .category-label {
+  opacity: 0.3;
 }
 .category-cell .flower{
     position:absolute;

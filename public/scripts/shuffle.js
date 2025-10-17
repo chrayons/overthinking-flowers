@@ -204,16 +204,6 @@
         card.style.cursor = "pointer";
         card.addEventListener("click", (e) => {
           e.preventDefault();
-
-          // Track metaphor card click with Vercel Analytics
-          if (window.va) {
-            window.va.track('metaphor_viewed', {
-              metaphor_id: f.id,
-              category: f.category,
-              text_preview: f.text.substring(0, 50)
-            });
-          }
-
           if (window.Modal) {
             Modal.openById(f.id);
           }
