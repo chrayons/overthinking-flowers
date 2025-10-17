@@ -425,6 +425,7 @@
         this.canvas = document.getElementById('pdf-canvas');
         this.ctx = this.canvas.getContext('2d');
         this.isRendering = false;
+        this.pageCache = {}; // Cache for preloaded page objects
 
         // Detect mobile and load appropriate PDF
         const isMobile = window.innerWidth <= 768;
@@ -514,6 +515,9 @@
           this.pageCount = this.pdfDoc.numPages;
           this.pageCountEl.textContent = this.pageCount;
 
+          // Preload all pages to prevent white flash
+          await this.preloadAllPages();
+
           this.showLoading(false);
           this.renderPage(1);
           this.updateControls();
@@ -524,13 +528,42 @@
         }
       }
 
+      async preloadAllPages() {
+        const progressEl = document.getElementById('loading-progress');
+        const loadingText = document.querySelector('.pdf-loading-text');
+
+        if (loadingText) {
+          loadingText.textContent = 'Preparing pages...';
+        }
+
+        // Preload all pages
+        for (let i = 1; i <= this.pageCount; i++) {
+          try {
+            this.pageCache[i] = await this.pdfDoc.getPage(i);
+
+            // Update progress
+            if (progressEl) {
+              const percent = Math.round((i / this.pageCount) * 100);
+              progressEl.textContent = `${percent}%`;
+            }
+          } catch (error) {
+            console.error(`Error preloading page ${i}:`, error);
+          }
+        }
+
+        if (loadingText) {
+          loadingText.textContent = 'Zine loading...';
+        }
+      }
+
       async renderPage(pageNum) {
         if (this.isRendering) return;
 
         this.isRendering = true;
 
         try {
-          const page = await this.pdfDoc.getPage(pageNum);
+          // Use cached page if available, otherwise fetch it
+          const page = this.pageCache[pageNum] || await this.pdfDoc.getPage(pageNum);
 
           // Calculate optimal scale based on viewport size and fullscreen state
           const isFullscreen = this.pdfReader.classList.contains('fullscreen');
