@@ -1468,21 +1468,22 @@ body.intro-active .wrapper {
 /* Hover and active states for shuffle cards */
 #shuffle-cards .card {
   cursor: pointer;
-  transition: color 0.2s ease;
+  transition: opacity 0.3s ease;
   color: #101720; /* Default state - dark grey */
+  opacity: 1;
 }
 
-/* When any card is hovered, make other cards inactive (light grey) */
+/* When any card is hovered, dim other cards to 30% opacity */
 #shuffle-cards:hover .card {
-  color: #AFBCC7; /* All cards become light grey on container hover */
+  opacity: 0.3; /* All cards become 30% opacity on container hover */
 }
 
 #shuffle-cards:hover .card:hover {
-  color: #101720; /* But the hovered card stays dark grey */
+  opacity: 1; /* But the hovered card stays at full opacity */
 }
 
 #shuffle-cards .card:active {
-  color: #101720; /* Dark grey on tap/click */
+  opacity: 1; /* Full opacity on tap/click */
 }
 
 /* Responsive card visibility: 3→2→1 cards */
