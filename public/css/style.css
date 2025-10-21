@@ -2763,7 +2763,7 @@ body.intro-active .mobile-header-menu {
   font-weight: 400;
   line-height: 1.6;
   color: var(--text-primary);
-  text-align: center;
+  text-align: justify;
   margin: 0;
   max-width: 800px; /* Match PDF controls max-width */
   padding: 0 20px;
