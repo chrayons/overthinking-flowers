@@ -2785,4 +2785,23 @@ body.intro-active .mobile-header-menu {
   object-fit: contain;
 }
 
+/* Copyright Footer */
+.footer-bar {
+  width: 100%;
+  padding: 0 32px;
+  box-sizing: border-box;
+  background: transparent;
+}
+
+.footer-copyright {
+  font-family: "Satoshi-Light", system-ui;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: normal;
+  color: var(--text-primary);
+  opacity: 0.3;
+  padding: 32px 0;
+  margin: 0;
+}
+
 
