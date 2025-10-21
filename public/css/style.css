@@ -2804,4 +2804,16 @@ body.intro-active .mobile-header-menu {
   margin: 0;
 }
 
+/* Sticky footer for category pages */
+.category-page .footer-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  z-index: 50;
+}
+
+.category-page .footer-copyright {
+  padding: 16px 0;
+}
+
 
