@@ -106,6 +106,17 @@
                     this.hide();
                 }
             });
+
+            // Dismiss when any flower is clicked
+            document.addEventListener('click', (e) => {
+                if (this.isVisible && !this.isDismissing) {
+                    // Check if click is on a flower (SVG or within flower container)
+                    const flower = e.target.closest('.flower, svg, #flower-container path, #flower-container g');
+                    if (flower) {
+                        this.dismiss();
+                    }
+                }
+            });
         }
 
         show() {

@@ -2849,7 +2849,7 @@ body.intro-active .mobile-header-menu {
   .footer-copyright {
     font-size: 12px;
     text-align: center;
-    padding: 32px 0 48px 0; /* Extra bottom padding for mobile browser UI */
+    padding: 32px 0 128px 0; /* Extra bottom padding for mobile browser UI (128px to clear Chrome UI) */
   }
 
   .category-page .footer-copyright {
