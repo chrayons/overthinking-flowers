@@ -2821,4 +2821,17 @@ body.intro-active .mobile-header-menu {
   padding: 16px 0;
 }
 
+/* Mobile footer adjustments */
+@media (max-width: 775px) {
+  .footer-copyright {
+    font-size: 12px;
+    padding: 32px 0 48px 0; /* Extra bottom padding for mobile browser UI */
+  }
+
+  .category-page .footer-copyright {
+    font-size: 12px;
+    /* Keep original padding: 16px 0 */
+  }
+}
+
 
