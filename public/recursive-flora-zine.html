@@ -40,16 +40,13 @@
     }
 
     .pdf-controls {
-      position: fixed;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 75%;
+      position: static;
+      width: 100%;
       max-width: 800px;
+      margin: 0 auto;
       background: transparent;
       border-top: none;
-      padding: 12px 20px 32px 20px;
-      z-index: 100;
+      padding: 20px 20px 32px 20px;
       display: flex;
       flex-direction: column;
       gap: 8px;
@@ -157,22 +154,19 @@
       }
 
       .pdf-canvas-container {
-        padding: 0px 10px 80px 10px;
+        padding: 0 10px;
+        margin-bottom: 32px;
       }
 
       #pdf-canvas {
         max-width: calc(100vw - 20px);
-        max-height: calc(100vh - 120px);
+        width: 100%;
+        height: auto;
       }
 
       .pdf-controls {
-        padding: 8px 16px;
-        min-height: 50px;
-      }
-
-      .pdf-controls {
-        padding: 8px 16px 32px 16px;
-        width: 85%; /* Slightly wider on mobile for usability */
+        padding: 12px 16px 16px 16px;
+        width: 100%;
       }
 
       .pdf-progress-container {
@@ -302,8 +296,8 @@
     /* Very small screens */
     @media (max-width: 480px) {
       .pdf-controls {
-        padding: 6px 12px 32px 12px;
-        width: 90%; /* Even wider on very small screens */
+        padding: 12px 12px 16px 12px;
+        width: 100%;
       }
 
       .pdf-progress-container {
@@ -341,9 +335,9 @@
         padding: 64px 20px 20px !important;
       }
       .zine-container {
-        height: calc(100vh - 60px) !important;
+        height: auto !important;
         margin-top: 60px !important; /* Account for mobile header */
-        padding-bottom: 0 !important; /* Fixed controls handle spacing */
+        padding-bottom: 0 !important;
       }
     }
   </style>
@@ -373,6 +367,9 @@
     <div class="zine-center">
       <!-- Zine Title -->
       <h1 class="zine-title">Recursive Flora</h1>
+
+      <!-- Zine Description -->
+      <p class="zine-description">Ever wonder what overthinking looks or feels like? This zine turns research and real experiences into visual stories that uncover how our thoughts loop, feel, and connect.</p>
 
       <div class="pdf-reader">
         <div class="pdf-canvas-container">
@@ -587,18 +584,24 @@
             scale = this.scale;
           }
 
+          // Apply CSS class for cover pages BEFORE rendering (first and last page)
+          const isCoverPage = pageNum === 1 || pageNum === this.pageCount;
+          if (isCoverPage) {
+            this.canvas.classList.add('cover-page');
+          } else {
+            this.canvas.classList.remove('cover-page');
+          }
+
           // Account for device pixel ratio for high-DPI displays (Retina, etc.)
           const outputScale = window.devicePixelRatio || 1;
 
           const viewport = page.getViewport({ scale: scale });
 
-          // Set canvas size accounting for device pixel ratio
+          // Set canvas internal resolution accounting for device pixel ratio
           this.canvas.width = Math.floor(viewport.width * outputScale);
           this.canvas.height = Math.floor(viewport.height * outputScale);
 
-          // Set CSS size to the viewport size (maintains proper display size)
-          this.canvas.style.width = Math.floor(viewport.width) + 'px';
-          this.canvas.style.height = Math.floor(viewport.height) + 'px';
+          // Don't set inline CSS styles - let CSS handle sizing with auto and max-width
 
           // Scale the drawing context to match the device pixel ratio
           const transform = outputScale !== 1

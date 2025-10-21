@@ -2724,13 +2724,12 @@ body.intro-active .mobile-header-menu {
    Zine Page Styles
    ================================ */
 
-/* Zine page - vertically and horizontally center content */
+/* Zine page - natural stacking layout */
 .zine-page .wrapper {
-  padding-top: 96px; /* Keep space for fixed header */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-block-size: calc(100dvh - 96px); /* Dynamic viewport height for Safari */
+  padding-top: 128px; /* 96px header + 32px spacing */
+  padding-bottom: 0;
+  display: block;
+  width: 100%;
 }
 
 /* Center container for title + reader */
@@ -2738,9 +2737,10 @@ body.intro-active .mobile-header-menu {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px; /* Spacing between title and reader */
+  gap: 32px; /* 32px spacing between title and PDF */
   width: 100%;
   max-width: 100%;
+  padding-bottom: 40px; /* Space before footer */
 }
 
 /* Zine Title */
@@ -2756,33 +2756,56 @@ body.intro-active .mobile-header-menu {
   flex-shrink: 0;
 }
 
+/* Zine Description */
+.zine-description {
+  font-family: "Satoshi-Light", system-ui;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.6;
+  color: var(--text-primary);
+  text-align: center;
+  margin: 0;
+  max-width: 800px; /* Match PDF controls max-width */
+  padding: 0 20px;
+}
+
 /* PDF reader */
 .pdf-reader {
   position: relative;
-  flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 0;
+  width: 100%;
 }
 
-/* PDF canvas container - align to top, not center */
+/* PDF canvas container */
 .pdf-canvas-container {
   position: relative;
   display: flex;
   justify-content: center;
-  align-items: flex-start; /* Align to top instead of center */
-  flex: 1;
+  align-items: center;
   background: transparent;
-  padding: 8px 20px 80px 20px;
+  padding: 0;
+  margin-bottom: 32px; /* 32px spacing between PDF and controls */
 }
 
 #pdf-canvas {
-  max-width: calc(100vw - 40px);
-  max-block-size: calc(100dvh - 120px); /* Dynamic viewport height for Safari */
-  width: auto;
-  height: auto;
+  max-width: 100%;
+  width: auto !important;
+  height: auto !important;
   display: block;
   object-fit: contain;
+}
+
+/* Desktop and tablet - limit PDF width to 50% of viewport */
+@media (min-width: 776px) {
+  #pdf-canvas {
+    max-width: 50vw;
+  }
+
+  /* Cover pages (first and last) should be half the width of spreads */
+  #pdf-canvas.cover-page {
+    max-width: 25vw;
+  }
 }
 
 /* Copyright Footer */
@@ -2825,12 +2848,14 @@ body.intro-active .mobile-header-menu {
 @media (max-width: 775px) {
   .footer-copyright {
     font-size: 12px;
+    text-align: center;
     padding: 32px 0 48px 0; /* Extra bottom padding for mobile browser UI */
   }
 
   .category-page .footer-copyright {
     font-size: 12px;
-    /* Keep original padding: 16px 0 */
+    text-align: center;
+    padding: 16px 0 48px 0; /* Extra bottom padding for mobile browser UI on category pages */
   }
 }
 
