@@ -148,7 +148,7 @@
 
 
     /* Responsive Design */
-    @media (max-width: 768px) {
+    @media (max-width: 775px) {
       .zine-container {
         height: 100vh;
         padding: 0;
@@ -427,7 +427,7 @@
         this.pageCache = {}; // Cache for preloaded page objects
 
         // Detect mobile and load appropriate PDF
-        const isMobile = window.innerWidth <= 768;
+        const isMobile = window.innerWidth <= 775;
         this.pdfPath = isMobile
           ? 'pdf/recursive-flora-zine-mobile.pdf'
           : 'pdf/recursive-flora-zine.pdf';
@@ -488,6 +488,37 @@
         document.addEventListener('fullscreenchange', () => this.handleFullscreenChange());
         document.addEventListener('webkitfullscreenchange', () => this.handleFullscreenChange());
         document.addEventListener('msfullscreenchange', () => this.handleFullscreenChange());
+
+        // Handle window resize to switch between mobile and desktop PDFs
+        let resizeTimeout;
+        let lastIsMobile = window.innerWidth <= 775;
+
+        window.addEventListener('resize', () => {
+          clearTimeout(resizeTimeout);
+          resizeTimeout = setTimeout(() => {
+            const currentIsMobile = window.innerWidth <= 775;
+
+            // Only reload if we've crossed the mobile/desktop breakpoint
+            if (currentIsMobile !== lastIsMobile) {
+              lastIsMobile = currentIsMobile;
+              const currentPage = this.pageNum; // Remember current page
+
+              // Update PDF path
+              this.pdfPath = currentIsMobile
+                ? 'pdf/recursive-flora-zine-mobile.pdf'
+                : 'pdf/recursive-flora-zine.pdf';
+
+              // Clear cache and reload PDF
+              this.pageCache = {};
+              this.loadPDF().then(() => {
+                // Try to go back to the same page if it exists
+                if (currentPage <= this.pageCount) {
+                  this.renderPage(currentPage);
+                }
+              });
+            }
+          }, 300); // Debounce resize events
+        });
       }
 
       async loadPDF() {
@@ -566,7 +597,7 @@
 
           // Calculate optimal scale based on viewport size and fullscreen state
           const isFullscreen = this.pdfReader.classList.contains('fullscreen');
-          const isMobile = window.innerWidth <= 768;
+          const isMobile = window.innerWidth <= 775;
 
           let scale;
           if (isFullscreen && !isMobile) {
@@ -671,7 +702,7 @@
 
       toggleFullscreen() {
         // Disable fullscreen on mobile
-        const isMobile = window.innerWidth <= 768;
+        const isMobile = window.innerWidth <= 775;
         if (isMobile) return;
 
         if (this.pdfReader.classList.contains('fullscreen')) {
@@ -683,7 +714,7 @@
 
       enterFullscreen() {
         // Desktop only
-        const isMobile = window.innerWidth <= 768;
+        const isMobile = window.innerWidth <= 775;
         if (isMobile) return;
 
         this.pdfReader.classList.add('fullscreen');
@@ -703,7 +734,7 @@
 
       exitFullscreen() {
         // Desktop only
-        const isMobile = window.innerWidth <= 768;
+        const isMobile = window.innerWidth <= 775;
         if (isMobile) return;
 
         this.pdfReader.classList.remove('fullscreen');
