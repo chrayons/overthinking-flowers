@@ -1216,7 +1216,7 @@ body.intro-active .wrapper {
     width: 155px; /* Match mobile button width */
     /* Ensure button is visible and positioned absolutely at bottom */
     position: fixed;
-    bottom: 50px;
+    bottom: 100px; /* Increased to prevent overlap with footer (footer ~76px + safety margin) */
     left: 50%;
     transform: translateX(-50%);
   }
