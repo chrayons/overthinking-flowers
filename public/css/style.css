@@ -52,7 +52,8 @@
   /* Universal color palette */
   --bg-primary: #F8F8FF;     /* Primary background (was white) */
   --text-primary: #101720;   /* Primary text (was black) */
-  --text-secondary: #AFBCC7; /* Dark grey text */
+  --text-secondary: #AFBCC7; /* Dark grey text (decorative only) */
+  --text-secondary-accessible: #6B7A85; /* Accessible grey text (WCAG AA compliant) */
   --bg-secondary: #E5EAEE;   /* Light grey backgrounds */
 
   /* cell + grid sizing (fixed so flowers/text never scale) */
@@ -381,7 +382,7 @@ body::after {
   font-style: normal;
   font-weight: 400;
   line-height: normal;
-  color: #AFBCC7;
+  color: var(--text-secondary-accessible);
   cursor: pointer;
   margin: 0;
   margin-left: auto; /* Push to the right edge for equal spacing */
@@ -2084,7 +2085,7 @@ body.intro-active .wrapper {
   line-height: 1;
   letter-spacing: .08em;
   text-transform: uppercase;
-  fill: #afbcc7;
+  fill: #6B7A85;
   opacity: .9;
   cursor: pointer;
   /* font-size set dynamically in JS using pxToSvg() */
@@ -2821,8 +2822,7 @@ body.intro-active .mobile-header-menu {
   font-size: 14px;
   font-weight: 400;
   line-height: normal;
-  color: var(--text-primary);
-  opacity: 0.3;
+  color: var(--text-secondary-accessible);
   padding: 32px 0;
   margin: 0;
 }
