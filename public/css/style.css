@@ -2489,7 +2489,6 @@ body.intro-active .header-label {
 body.intro-active .header-link:hover,
 body.intro-active .header-label:hover {
   color: #F8F8FF !important;
-  opacity: 0.8 !important;
   text-decoration: underline !important;
   background: none !important;
   background-color: transparent !important;
