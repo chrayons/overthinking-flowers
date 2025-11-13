@@ -53,7 +53,7 @@
   --bg-primary: #F8F8FF;     /* Primary background (was white) */
   --text-primary: #101720;   /* Primary text (was black) */
   --text-secondary: #AFBCC7; /* Dark grey text (decorative only) */
-  --text-secondary-accessible: #6B7A85; /* Accessible grey text (WCAG AA compliant) */
+  --text-secondary-accessible: #6E707C; /* Accessible grey text (WCAG AA compliant) */
   --bg-secondary: #E5EAEE;   /* Light grey backgrounds */
 
   /* cell + grid sizing (fixed so flowers/text never scale) */
@@ -2086,7 +2086,7 @@ body.intro-active .wrapper {
   line-height: 1;
   letter-spacing: .08em;
   text-transform: uppercase;
-  fill: #6B7A85;
+  fill: #6E707C;
   opacity: .9;
   cursor: pointer;
   /* font-size set dynamically in JS using pxToSvg() */
