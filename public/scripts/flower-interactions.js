@@ -20,10 +20,10 @@ const FlowerInteractions = {
   CONFIG: {
     THROTTLE_DELAY: 16,
     TOUCH_TIMEOUT: 4000,
-    DOUBLE_TAP_WINDOW: 1000,
+    DOUBLE_TAP_WINDOW: 800,  // Reduced from 1000ms for faster response
     MOBILE_BREAKPOINT: 1160,
-    NAVIGATION_COOLDOWN: 300,   // Reduced from 1000ms to 300ms
-    MODAL_CLOSE_COOLDOWN: 200   // Reduced from 500ms to 200ms
+    NAVIGATION_COOLDOWN: 200,   // Reduced from 300ms to 200ms
+    MODAL_CLOSE_COOLDOWN: 150   // Reduced from 200ms to 150ms
   },
 
   // Utility functions
@@ -267,6 +267,13 @@ const FlowerInteractions = {
     let touchTimeout = null;
     let lastTouchTime = 0;
     let lastTouchedFlower = null;
+    let isTouchDevice = false;
+    let recentTouchEvent = false;
+    
+    // Detect touch device
+    if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+      isTouchDevice = true;
+    }
 
     // Throttled mousemove
     let throttleTimeout = null;
@@ -308,8 +315,14 @@ const FlowerInteractions = {
       }, this.CONFIG.THROTTLE_DELAY);
     };
 
-    // Click handler
+    // Click handler (desktop only - mobile uses two-tap flow)
     const onClick = (e) => {
+      // Skip click handler on touch devices - let touch handlers manage the flow
+      if (isTouchDevice && recentTouchEvent) {
+        recentTouchEvent = false;
+        return;
+      }
+      
       if (e.target.matches('a, button, .btn-return-home, .btn-return-home-white')) {
         return;
       }
@@ -329,6 +342,11 @@ const FlowerInteractions = {
         return;
       }
 
+      // Only use click handler on desktop (non-touch devices)
+      if (isTouchDevice) {
+        return;
+      }
+
       const clickedFlower = this.getFlowerAtPosition(e);
       if (clickedFlower) {
         e.preventDefault();
@@ -341,7 +359,15 @@ const FlowerInteractions = {
 
     // Touch handlers
     const onTouchStart = (e) => {
-      if (e.target.matches('a, button, .btn-return-home, .btn-return-home-white')) {
+      // Mark that we just had a touch event to prevent click handler from firing
+      recentTouchEvent = true;
+      // Clear the flag after a short delay to allow subsequent mouse clicks
+      setTimeout(() => {
+        recentTouchEvent = false;
+      }, 300);
+      
+      // Skip if touching navigation or interactive elements
+      if (e.target.matches('a, button, .btn-return-home, .btn-return-home-white, .category-nav-arrow, .carousel-arrow, .carousel-dot, .dot')) {
         return;
       }
 
@@ -361,6 +387,8 @@ const FlowerInteractions = {
       }
 
       const touch = e.touches[0];
+      if (!touch) return;
+      
       const touchEvent = {
         clientX: touch.clientX,
         clientY: touch.clientY,
@@ -380,6 +408,12 @@ const FlowerInteractions = {
 
           e.preventDefault();
           e.stopPropagation();
+          
+          // Prevent click event from firing after this touch
+          recentTouchEvent = true;
+          setTimeout(() => {
+            recentTouchEvent = false;
+          }, 300);
 
           if (touchTimeout) {
             clearTimeout(touchTimeout);
@@ -402,6 +436,15 @@ const FlowerInteractions = {
 
         } else {
           // First tap — show tooltip & fade others
+          e.preventDefault();
+          e.stopPropagation();
+          
+          // Prevent click event from firing after this touch
+          recentTouchEvent = true;
+          setTimeout(() => {
+            recentTouchEvent = false;
+          }, 300);
+          
           if (touchTimeout) {
             clearTimeout(touchTimeout);
             touchTimeout = null;
@@ -466,8 +509,16 @@ const FlowerInteractions = {
       if (e.target.matches('a, button, .btn-return-home, .btn-return-home-white')) {
         return;
       }
-      if (this.currentHoveredFlower) {
+      
+      // Prevent click event from firing after touch on mobile
+      // This ensures the two-tap flow works correctly
+      if (this.currentHoveredFlower || lastTouchedFlower) {
         e.preventDefault();
+        // Keep the flag set to prevent click handler
+        recentTouchEvent = true;
+        setTimeout(() => {
+          recentTouchEvent = false;
+        }, 300);
       }
     };
 
@@ -488,11 +539,12 @@ const FlowerInteractions = {
     };
 
     // Attach event listeners
+    // Use capture phase for touch events to handle them before other handlers
     document.addEventListener('mousemove', onMouseMove, { passive: true });
     document.addEventListener('click', onClick, { passive: false });
-    document.addEventListener('touchstart', onTouchStart, { passive: false });
-    document.addEventListener('touchend', onTouchEnd, { passive: false });
-    document.addEventListener('touchcancel', onTouchCancel, { passive: true });
+    document.addEventListener('touchstart', onTouchStart, { passive: false, capture: true });
+    document.addEventListener('touchend', onTouchEnd, { passive: false, capture: true });
+    document.addEventListener('touchcancel', onTouchCancel, { passive: true, capture: true });
   },
 
   // Create tooltip element

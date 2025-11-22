@@ -63,13 +63,30 @@ const CategoryNavigation = {
     const prevButton = document.querySelector('.category-prev');
     const nextButton = document.querySelector('.category-next');
 
+    const clearFocusAfterInteraction = (button) => {
+      // Clear focus state immediately after interaction to prevent grey shadow
+      button.addEventListener('touchend', () => {
+        setTimeout(() => {
+          button.blur();
+        }, 100);
+      }, { passive: true });
+      
+      button.addEventListener('click', () => {
+        setTimeout(() => {
+          button.blur();
+        }, 100);
+      });
+    };
+
     if (prevButton) {
+      clearFocusAfterInteraction(prevButton);
       prevButton.addEventListener('click', () => {
         this.navigatePrevious();
       });
     }
 
     if (nextButton) {
+      clearFocusAfterInteraction(nextButton);
       nextButton.addEventListener('click', () => {
         this.navigateNext();
       });

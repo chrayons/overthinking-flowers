@@ -46,31 +46,32 @@
         }
 
         setupEventListeners() {
-            // Click to dismiss
+            // Click/tap to dismiss - make it very easy
             this.banner.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 this.dismiss();
             });
 
-            // Touch events for swipe detection
+            // Touch events for swipe detection and tap-to-dismiss
             this.banner.addEventListener('touchstart', (e) => {
                 e.stopPropagation();
-                this.touchStartY = e.touches[0].clientY;
+                if (e.touches && e.touches[0]) {
+                    this.touchStartY = e.touches[0].clientY;
+                }
             }, { passive: false });
 
             this.banner.addEventListener('touchmove', (e) => {
                 if (this.isDismissing) return;
 
                 e.stopPropagation();
+                if (!e.touches || !e.touches[0]) return;
+                
                 const touchY = e.touches[0].clientY;
                 const deltaY = touchY - this.touchStartY;
 
-                console.log('Touch move - deltaY:', deltaY, 'threshold:', SWIPE_THRESHOLD);
-
                 // Swipe down detection
                 if (deltaY > SWIPE_THRESHOLD) {
-                    console.log('Swipe threshold reached, dismissing');
                     e.preventDefault();
                     this.dismiss();
                 }
@@ -80,16 +81,24 @@
                 if (this.isDismissing) return;
 
                 e.stopPropagation();
-                const touchY = e.changedTouches[0].clientY;
-                const deltaY = touchY - this.touchStartY;
+                
+                // If touch didn't move much, treat as tap - dismiss immediately
+                if (e.changedTouches && e.changedTouches[0]) {
+                    const touchY = e.changedTouches[0].clientY;
+                    const deltaY = Math.abs(touchY - this.touchStartY);
+                    
+                    // Quick tap (minimal movement) - dismiss immediately
+                    if (deltaY < 10) {
+                        e.preventDefault();
+                        this.dismiss();
+                        return;
+                    }
 
-                console.log('Touch end - deltaY:', deltaY, 'threshold:', SWIPE_THRESHOLD);
-
-                // Check for swipe down on touchend as well (for quick swipes)
-                if (deltaY > SWIPE_THRESHOLD) {
-                    console.log('Swipe detected on touchend, dismissing');
-                    e.preventDefault();
-                    this.dismiss();
+                    // Check for swipe down
+                    if (deltaY > SWIPE_THRESHOLD && touchY > this.touchStartY) {
+                        e.preventDefault();
+                        this.dismiss();
+                    }
                 }
             }, { passive: false });
 
@@ -107,16 +116,26 @@
                 }
             });
 
-            // Dismiss when any flower is clicked
-            document.addEventListener('click', (e) => {
+            // Dismiss when user taps anywhere on the page (except banner itself) - makes it easy to clear
+            const dismissOnPageInteraction = (e) => {
                 if (this.isVisible && !this.isDismissing) {
-                    // Check if click is on a flower (SVG or within flower container)
-                    const flower = e.target.closest('.flower, svg, #flower-container path, #flower-container g');
-                    if (flower) {
+                    // Check if interaction is on the banner itself - if so, let banner handle it
+                    const isOnBanner = e.target.closest('#instructional-banner');
+                    if (!isOnBanner) {
+                        // Any tap/click outside the banner dismisses it
+                        // This includes flowers, navigation, or just tapping anywhere
                         this.dismiss();
                     }
                 }
-            });
+            };
+            
+            // Only add global dismiss handlers on mobile
+            const isMobile = window.innerWidth <= 1160;
+            if (isMobile) {
+                // Use capture phase to catch events early
+                document.addEventListener('click', dismissOnPageInteraction, { passive: true, capture: true });
+                document.addEventListener('touchstart', dismissOnPageInteraction, { passive: true, capture: true });
+            }
         }
 
         show() {

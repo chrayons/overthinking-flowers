@@ -1067,6 +1067,13 @@ body.intro-active .wrapper {
   transition: all 0.3s ease;
   pointer-events: auto; /* Enable arrow clicking */
   opacity: 0.7;
+  /* Prevent unwanted focus states on mobile touch */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  outline: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .category-nav-arrow.prev {
@@ -1080,6 +1087,32 @@ body.intro-active .wrapper {
 .category-nav-arrow:hover {
   opacity: 1;
   transform: scale(1.1);
+}
+
+/* Remove focus outline and prevent grey shadow on mobile */
+.category-nav-arrow:focus {
+  outline: none;
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.category-nav-arrow:active {
+  outline: none;
+  opacity: 0.8;
+  transform: scale(1.05);
+}
+
+/* Clear focus state immediately after touch on mobile */
+@media (hover: none) and (pointer: coarse) {
+  .category-nav-arrow:focus {
+    opacity: 0.7;
+    transform: none;
+  }
+  
+  .category-nav-arrow:active {
+    opacity: 1;
+    transform: scale(1.1);
+  }
 }
 
 /* Category name styling with responsive font sizes */
@@ -1335,15 +1368,46 @@ body.intro-active .wrapper {
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
+  /* Prevent unwanted focus states on mobile touch */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  outline: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .carousel-arrow:hover:not(:disabled) {
   opacity: 0.7;
 }
 
+/* Remove focus outline and prevent grey shadow on mobile */
+.carousel-arrow:focus {
+  outline: none;
+}
+
+.carousel-arrow:active:not(:disabled) {
+  outline: none;
+  opacity: 0.8;
+  transform: scale(0.95);
+}
+
 .carousel-arrow:disabled {
   opacity: 0.3;
   cursor: not-allowed;
+}
+
+/* Clear focus state immediately after touch on mobile */
+@media (hover: none) and (pointer: coarse) {
+  .carousel-arrow:focus {
+    opacity: 1;
+    transform: none;
+  }
+  
+  .carousel-arrow:active:not(:disabled) {
+    opacity: 0.7;
+    transform: scale(0.9);
+  }
 }
 
 /* Dots indicator */

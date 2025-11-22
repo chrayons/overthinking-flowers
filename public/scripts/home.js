@@ -318,8 +318,24 @@ function initMobileCarousel() {
     });
   }
 
+  // Clear focus after interaction to prevent grey shadow
+  const clearFocusAfterInteraction = (button) => {
+    button.addEventListener('touchend', () => {
+      setTimeout(() => {
+        button.blur();
+      }, 100);
+    }, { passive: true });
+    
+    button.addEventListener('click', () => {
+      setTimeout(() => {
+        button.blur();
+      }, 100);
+    });
+  };
+
   // Simple navigation using modular arithmetic
   if (prevBtn) {
+    clearFocusAfterInteraction(prevBtn);
     prevBtn.addEventListener('click', () => {
       if (_mobileCount === 0) return;
       currentMobileIndex = (currentMobileIndex - 1 + _mobileCount) % _mobileCount;
@@ -328,6 +344,7 @@ function initMobileCarousel() {
   }
 
   if (nextBtn) {
+    clearFocusAfterInteraction(nextBtn);
     nextBtn.addEventListener('click', () => {
       if (_mobileCount === 0) return;
       currentMobileIndex = (currentMobileIndex + 1) % _mobileCount;
