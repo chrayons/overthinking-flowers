@@ -44,7 +44,7 @@ function isMobileDevice() {
 }
 
 function getOptimalStaggerDelay() {
-  return isMobileDevice() ? 25 : 30; // Smoother, faster stagger for desktop
+  return isMobileDevice() ? 60 : 30; // Smoother stagger on mobile to avoid jagged animation
 }
 
 function saveLayout(placed, isMobile) {

@@ -43,7 +43,7 @@ function isMobileDevice() {
 }
 
 function getOptimalStaggerDelay() {
-  return isMobileDevice() ? 25 : 50; // Faster stagger on mobile for better perceived performance
+  return isMobileDevice() ? 60 : 50; // Smoother stagger on mobile to avoid jagged animation
 }
 // Set to true to ignore cache and always use fresh positions (for experimentation)
 const IGNORE_CACHE = false;
