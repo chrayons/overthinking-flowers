@@ -1,9 +1,9 @@
 /* Instructional Banner Styles */
 #instructional-banner {
     position: fixed;
-    bottom: 180px; /* Position higher on mobile to avoid footer overlap */
+    bottom: 200px; /* Position above Return to Home button */
     left: 50%;
-    transform: translateX(-50%) translateY(100px) scale(0.8);
+    transform: translateX(-50%) translateY(20px); /* Subtle initial offset */
     z-index: 99999;
     opacity: 0;
     pointer-events: auto;
@@ -12,7 +12,7 @@
     background: rgba(255, 255, 255, 0.6);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    will-change: backdrop-filter;
+    will-change: backdrop-filter, transform, opacity;
     isolation: isolate;
     border: 0.5px solid #F8F8FF;
     border-radius: 5px; /* Match flower tooltip corners */
@@ -31,40 +31,39 @@
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
 
-    /* Transition properties for animations */
-    transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-                opacity 0.4s ease-out;
+    /* Smoother, faster transition */
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+                opacity 0.3s ease-out;
 }
 
-/* Show state */
+/* Show state - smooth fade and slide up */
 #instructional-banner.show {
     opacity: 1;
-    transform: translateX(-50%) translateY(0) scale(1);
+    transform: translateX(-50%) translateY(0);
 }
 
-/* Bounce animation keyframes */
-@keyframes gentle-bounce {
-    0%, 20%, 50%, 80%, 100% {
-        transform: translateX(-50%) translateY(0) scale(1);
+/* Subtle pulse animation instead of bounce */
+@keyframes subtle-pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
     }
-    40% {
-        transform: translateX(-50%) translateY(4px) scale(1);
-    }
-    60% {
-        transform: translateX(-50%) translateY(2px) scale(1);
+    50% {
+        opacity: 0.85;
+        transform: translateX(-50%) translateY(-2px);
     }
 }
 
-/* Bounce animation class */
-#instructional-banner.bounce {
-    animation: gentle-bounce 3s ease-in-out infinite;
+/* Pulse animation class - more subtle than bounce */
+#instructional-banner.pulse {
+    animation: subtle-pulse 2.5s ease-in-out infinite;
 }
 
-/* Dismiss animation */
+/* Dismiss animation - smooth fade out */
 #instructional-banner.dismissing {
     opacity: 0;
-    transform: translateX(-50%) translateY(80px) scale(0.9);
-    transition: transform 0.3s ease-in, opacity 0.3s ease-in;
+    transform: translateX(-50%) translateY(10px);
+    transition: transform 0.25s ease-out, opacity 0.25s ease-out;
 }
 
 /* Reduced motion support */
@@ -77,15 +76,8 @@
         transform: translateX(-50%) translateY(0) scale(1);
     }
 
-    #instructional-banner.bounce {
+    #instructional-banner.pulse {
         animation: none;
-    }
-
-    @keyframes gentle-bounce {
-        /* Disable bounce animation */
-        0%, 100% {
-            transform: translateX(-50%) translateY(0) scale(1);
-        }
     }
 }
 

@@ -32,6 +32,7 @@
             this.isVisible = false;
             this.touchStartY = 0;
             this.isDismissing = false;
+            this.autoDismissTimeout = null;
 
             this.init();
         }
@@ -146,38 +147,59 @@
             this.banner.style.display = 'block';
             this.isVisible = true;
 
-            // Delay entrance animation
-            setTimeout(() => {
-                this.banner.classList.add('show');
+            // Faster, smoother entrance - trigger animation on next frame
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    this.banner.classList.add('show');
 
-                // Add bounce animation if motion not reduced
-                const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-                if (!prefersReducedMotion) {
-                    setTimeout(() => {
-                        this.banner.classList.add('bounce');
-                    }, 400); // Start bounce after entrance animation
-                }
-            }, 600);
+                    // Add subtle pulse animation if motion not reduced
+                    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                    if (!prefersReducedMotion) {
+                        setTimeout(() => {
+                            this.banner.classList.add('pulse');
+                        }, 300); // Start pulse after entrance animation
+                    }
+
+                    // Auto-dismiss after 5 seconds if user hasn't interacted
+                    this.autoDismissTimeout = setTimeout(() => {
+                        if (this.isVisible && !this.isDismissing) {
+                            this.dismiss();
+                        }
+                    }, 5000);
+                });
+            });
         }
 
         dismiss() {
             if (this.isDismissing) return;
 
+            // Clear auto-dismiss timeout if it exists
+            if (this.autoDismissTimeout) {
+                clearTimeout(this.autoDismissTimeout);
+                this.autoDismissTimeout = null;
+            }
+
             this.isDismissing = true;
-            this.banner.classList.remove('bounce');
+            this.banner.classList.remove('pulse');
             this.banner.classList.add('dismissing');
 
             // Hide after animation completes
             setTimeout(() => {
                 this.hide();
-            }, 300);
+            }, 250);
         }
 
         hide() {
+            // Clear auto-dismiss timeout if it exists
+            if (this.autoDismissTimeout) {
+                clearTimeout(this.autoDismissTimeout);
+                this.autoDismissTimeout = null;
+            }
+
             this.banner.style.display = 'none';
             this.isVisible = false;
             this.isDismissing = false;
-            this.banner.classList.remove('show', 'bounce', 'dismissing');
+            this.banner.classList.remove('show', 'pulse', 'dismissing');
         }
     }
 
