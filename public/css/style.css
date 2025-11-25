@@ -1866,8 +1866,8 @@ body.intro-active .wrapper {
   padding: 4px 0; /* Minimal vertical padding to prevent clipping */
 }
 
-.mg-category{ font: 400 24px/1.2 "junicoderegularcondensed", serif; letter-spacing: 2.4px; text-align: justify; color: var(--text-primary); opacity: .8; margin-bottom: 8px; white-space: nowrap; }
-.mg-quote{ font: italic 36px/1.2 "Satoshi-Italic", system-ui; margin: 10px 0 22px; color: var(--text-primary); }
+.mg-category{ font: 400 24px/1.2 "junicoderegularcondensed", serif; letter-spacing: 2.4px; text-align: justify; color: var(--text-primary); opacity: .8; margin-bottom: 8px; white-space: nowrap; transition: opacity 0.2s ease-out; }
+.mg-quote{ font: italic 36px/1.2 "Satoshi-Italic", system-ui; margin: 10px 0 22px; color: var(--text-primary); transition: opacity 0.2s ease-out; }
 .mg-stats{ list-style: none; padding: 0; margin: 8px 0 18px; }
 .mg-stats .label{ display: block; font: 400 12px/1.2 "junicoderegularcondensed", serif; letter-spacing: .1em; color: var(--text-primary); }
 .mg-stats .value{ font: 400 16px/1.4 "Satoshi-Light", system-ui; color: var(--text-primary); }

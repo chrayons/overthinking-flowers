@@ -975,10 +975,15 @@ try {
       }
 
       // fill right panel
-      overlay.querySelector("#mg-category").textContent = flower.category || "";
-
+      const categoryElement = overlay.querySelector("#mg-category");
+      categoryElement.textContent = flower.category || "";
+      
       const quoteElement = overlay.querySelector("#mg-quote");
       quoteElement.textContent = `"${flower.text}"`;
+      
+      // Hide text initially to prevent font flash
+      categoryElement.style.opacity = "0";
+      quoteElement.style.opacity = "0";
 
       // Populate desktop stats
       overlay.querySelector("#mg-intensity").textContent =
@@ -1021,6 +1026,34 @@ try {
   // 2) prepare overlay for measurement (hidden initially)
   overlay.style.display = "flex";
   overlay.style.visibility = "hidden"; // Hidden but in layout for measurements
+
+  // Wait for fonts to load before showing text
+  const waitForFonts = async () => {
+    const categoryElement = overlay.querySelector("#mg-category");
+    const quoteElement = overlay.querySelector("#mg-quote");
+    
+    try {
+      // Use Font Loading API if available
+      if ('fonts' in document) {
+        // Load fonts used in modal
+        await Promise.all([
+          document.fonts.load('400 24px "junicoderegularcondensed"'),
+          document.fonts.load('italic 36px "Satoshi-Italic"'),
+          document.fonts.load('italic 24px "Satoshi-Italic"') // Mobile size
+        ].map(p => p.catch(() => {}))); // Ignore errors
+      } else {
+        // Fallback: wait a short time for fonts to load
+        await new Promise(resolve => setTimeout(resolve, 150));
+      }
+    } catch (e) {
+      console.warn('Font loading check failed:', e);
+      // Still show text even if font check fails
+    }
+    
+    // Show text after fonts are loaded (or after timeout)
+    if (categoryElement) categoryElement.style.opacity = "1";
+    if (quoteElement) quoteElement.style.opacity = "1";
+  };
 
   // Prepare font sizing function (will be called later with flower positioning)
   const setupFontSizing = () => {
@@ -1489,7 +1522,10 @@ try {
       wrap.style.setProperty("--flower-ty", `${dy}px`);
     };
 
-    requestAnimationFrame(() => {
+    requestAnimationFrame(async () => {
+      // Wait for fonts to load before showing text
+      await waitForFonts();
+      
       // Do ALL positioning and sizing in one frame
       setupFontSizing(); // Font sizing first
       alignFlowerToBase(); // Then flower positioning
@@ -1514,7 +1550,10 @@ try {
     wrap.innerHTML = "<p style='opacity:.7'>Flower renderer not loaded.</p>";
 
     // Show overlay even if flower fails (but still do font sizing)
-    requestAnimationFrame(() => {
+    requestAnimationFrame(async () => {
+      // Wait for fonts to load before showing text
+      await waitForFonts();
+      
       setupFontSizing(); // Do font sizing even without flower
       overlay.style.visibility = "visible";
       overlay.classList.add("open");
@@ -1528,7 +1567,10 @@ try {
   host.innerHTML = "<p style='opacity:.7'>Could not render flower.</p>";
 
   // Show overlay even if flower fails (but still do font sizing)
-  requestAnimationFrame(() => {
+  requestAnimationFrame(async () => {
+    // Wait for fonts to load before showing text
+    await waitForFonts();
+    
     setupFontSizing(); // Do font sizing even without flower
     overlay.style.visibility = "visible";
     overlay.classList.add("open");
