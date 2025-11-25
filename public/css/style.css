@@ -98,7 +98,8 @@ body.category-page {
   background: var(--page-bg);
 }
 
-/* Safe area edge fills - top */
+/* Safe area edge fills - transparent to let page backgrounds show through */
+/* Intro overlay and page backgrounds handle their own safe area coverage */
 body::before {
   content: '';
   position: fixed;
@@ -106,7 +107,7 @@ body::before {
   left: 0;
   right: 0;
   height: env(safe-area-inset-top, 0px);
-  background: var(--sa-bg);
+  background: transparent; /* Transparent - let page backgrounds show through */
   z-index: 2147483647; /* Above everything including intro overlay */
   pointer-events: none;
 }
@@ -119,15 +120,9 @@ body::after {
   left: 0;
   right: 0;
   height: env(safe-area-inset-bottom, 0px);
-  background: var(--sa-bg);
+  background: transparent; /* Transparent - let page backgrounds show through */
   z-index: 2147483647; /* Above everything including intro overlay */
   pointer-events: none;
-}
-
-/* On category pages, make safe area match page background instead of white */
-body.category-page::before,
-body.category-page::after {
-  background: var(--page-bg); /* Match category page background instead of white */
 }
 
 @media (min-width: 776px) {
@@ -2341,12 +2336,12 @@ body.intro-active .wrapper {
   transform: translateZ(0);
 }
 
-/* Blue content wrapper that respects safe area insets */
+/* Blue content wrapper that extends to full edges including safe areas */
 .intro-overlay::before {
   content: '';
   position: absolute;
-  top: env(safe-area-inset-top);
-  bottom: env(safe-area-inset-bottom);
+  top: 0; /* Extend to very top including safe area */
+  bottom: 0; /* Extend to very bottom including safe area */
   left: 0;
   right: 0;
   background: #2564AA; /* Blue background for intro text */
