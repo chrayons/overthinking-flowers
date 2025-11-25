@@ -1259,9 +1259,10 @@ body.intro-active .wrapper {
     width: 155px; /* Match mobile button width */
     /* Ensure button is visible and positioned absolutely at bottom */
     position: fixed;
-    bottom: 100px; /* Increased to prevent overlap with footer (footer ~76px + safety margin) */
+    bottom: 120px; /* Position above footer - footer is at bottom:0 with 16px padding, so button needs to be higher */
     left: 50%;
     transform: translateX(-50%);
+    z-index: 9999; /* Ensure button is above footer (footer z-index: 50) */
   }
 }
 
@@ -1269,14 +1270,14 @@ body.intro-active .wrapper {
 /* Footer is ~60px tall (16px padding + text + 16px padding), so button needs to be above that */
 @media (max-height: 700px) {
   .category-overlay .btn-return-home {
-    bottom: 75px; /* Ensure button stays above footer with adequate spacing */
+    bottom: 90px; /* Ensure button stays above footer with adequate spacing */
   }
 }
 
 /* Further adjustment for very short viewports */
 @media (max-height: 600px) {
   .category-overlay .btn-return-home {
-    bottom: 70px; /* Tighter spacing for very short viewports while still clearing footer */
+    bottom: 85px; /* Tighter spacing for very short viewports while still clearing footer */
   }
 }
 
@@ -1287,7 +1288,7 @@ body.intro-active .wrapper {
   }
   
   .category-overlay .btn-return-home {
-    bottom: 65px; /* Minimum spacing to prevent overlap */
+    bottom: 80px; /* Minimum spacing to prevent overlap */
   }
 }
 
