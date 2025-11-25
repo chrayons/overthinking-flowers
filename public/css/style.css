@@ -1284,11 +1284,24 @@ body.intro-active .wrapper {
 /* Ensure footer text doesn't overlap button on very short viewports */
 @media (max-height: 500px) {
   .category-page .footer-copyright {
-    padding: 12px 0; /* Reduce footer padding on very short viewports */
+    padding: 12px 0 100px 0; /* Bottom padding to clear button (button at 80px + 20px gap) */
   }
   
   .category-overlay .btn-return-home {
     bottom: 80px; /* Minimum spacing to prevent overlap */
+  }
+}
+
+/* Additional spacing adjustments for medium-height viewports */
+@media (max-height: 700px) {
+  .category-page .footer-copyright {
+    padding: 16px 0 120px 0; /* Bottom padding to clear button (button at 90px + 30px gap) */
+  }
+}
+
+@media (max-height: 600px) {
+  .category-page .footer-copyright {
+    padding: 16px 0 110px 0; /* Bottom padding to clear button (button at 85px + 25px gap) */
   }
 }
 
@@ -2954,7 +2967,7 @@ body.intro-active .mobile-header-menu {
   .category-page .footer-copyright {
     font-size: 12px;
     text-align: center;
-    padding: 16px 0 48px 0; /* Extra bottom padding for mobile browser UI on category pages */
+    padding: 16px 0 140px 0; /* Increased bottom padding to push text below Return to Home button (button at 120px + 20px gap) */
   }
 }
 
