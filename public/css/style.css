@@ -1284,7 +1284,7 @@ body.intro-active .wrapper {
 /* Ensure footer text doesn't overlap button on very short viewports */
 @media (max-height: 500px) {
   .category-page .footer-copyright {
-    padding: 12px 0 100px 0; /* Bottom padding to clear button (button at 80px + 20px gap) */
+    padding: 12px 0 60px 0; /* Bottom padding to position text below button (button at 80px, text at ~60px) */
   }
   
   .category-overlay .btn-return-home {
@@ -1295,13 +1295,13 @@ body.intro-active .wrapper {
 /* Additional spacing adjustments for medium-height viewports */
 @media (max-height: 700px) {
   .category-page .footer-copyright {
-    padding: 16px 0 120px 0; /* Bottom padding to clear button (button at 90px + 30px gap) */
+    padding: 16px 0 70px 0; /* Bottom padding to position text below button (button at 90px, text at ~70px) */
   }
 }
 
 @media (max-height: 600px) {
   .category-page .footer-copyright {
-    padding: 16px 0 110px 0; /* Bottom padding to clear button (button at 85px + 25px gap) */
+    padding: 16px 0 65px 0; /* Bottom padding to position text below button (button at 85px, text at ~65px) */
   }
 }
 
@@ -2967,7 +2967,7 @@ body.intro-active .mobile-header-menu {
   .category-page .footer-copyright {
     font-size: 12px;
     text-align: center;
-    padding: 16px 0 140px 0; /* Increased bottom padding to push text below Return to Home button (button at 120px + 20px gap) */
+    padding: 16px 0 90px 0; /* Bottom padding to position text below Return to Home button (button at 120px, text starts at ~90px from bottom) */
   }
 }
 
