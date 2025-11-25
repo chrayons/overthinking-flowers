@@ -2978,6 +2978,8 @@ body.intro-active .mobile-header-menu {
   padding: 0 32px;
   box-sizing: border-box;
   background: transparent;
+  /* Prevent layout shift */
+  min-height: 0;
 }
 
 .footer-copyright {
@@ -2988,6 +2990,9 @@ body.intro-active .mobile-header-menu {
   color: var(--text-secondary-accessible);
   padding: 32px 0;
   margin: 0;
+  /* Prevent layout shift */
+  min-height: 0;
+  box-sizing: border-box;
 }
 
 .footer-copyright a {
@@ -3000,11 +3005,19 @@ body.intro-active .mobile-header-menu {
   position: fixed;
   bottom: 0;
   left: 0;
+  right: 0;
+  width: 100%;
   z-index: 50;
+  /* Prevent layout shift - ensure footer is positioned correctly from start */
+  transform: translateZ(0);
+  will-change: auto;
 }
 
 .category-page .footer-copyright {
   padding: 16px 0;
+  /* Prevent layout shift */
+  min-height: 0;
+  box-sizing: border-box;
 }
 
 /* Disable transitions on mobile for footer */
@@ -3027,6 +3040,11 @@ body.intro-active .mobile-header-menu {
     font-size: 12px;
     text-align: center;
     padding: 16px 0 20px 0; /* Minimal bottom padding - text should be close to bottom, well below button at 120px */
+    /* Prevent layout shift - ensure consistent height */
+    min-height: 0;
+    box-sizing: border-box;
+    /* Force layout calculation from start */
+    transform: translateZ(0);
   }
 }
 
