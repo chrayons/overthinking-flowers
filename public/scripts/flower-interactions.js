@@ -577,9 +577,35 @@ const FlowerInteractions = {
     tooltip.style.whiteSpace = 'normal';
     tooltip.style.overflowWrap = 'break-word';
     tooltip.style.lineHeight = '1.3';
+    
+    // Hide initially to prevent font flash
+    tooltip.style.opacity = '0';
+    tooltip.style.transition = 'opacity 0.2s ease-out';
 
     this.updateTooltipPosition(tooltip, mouseEvent);
+    
+    // Wait for font to load before showing tooltip
+    this.waitForTooltipFont(tooltip);
+    
     return tooltip;
+  },
+  
+  // Wait for tooltip font to load before showing
+  waitForTooltipFont: async function(tooltip) {
+    try {
+      // Use Font Loading API if available
+      if ('fonts' in document) {
+        await document.fonts.load('italic 12px "Satoshi-Italic"').catch(() => {});
+      } else {
+        // Fallback: wait a short time for fonts to load
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+    } catch (e) {
+      // Ignore errors, still show tooltip
+    }
+    
+    // Show tooltip after font is loaded
+    tooltip.style.opacity = '1';
   },
 
   // Update tooltip position with smart viewport-aware positioning
