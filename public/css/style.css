@@ -1265,6 +1265,32 @@ body.intro-active .wrapper {
   }
 }
 
+/* Adjust button position for shorter viewport heights (e.g., X/Twitter embeds) */
+/* Footer is ~60px tall (16px padding + text + 16px padding), so button needs to be above that */
+@media (max-height: 700px) {
+  .category-overlay .btn-return-home {
+    bottom: 75px; /* Ensure button stays above footer with adequate spacing */
+  }
+}
+
+/* Further adjustment for very short viewports */
+@media (max-height: 600px) {
+  .category-overlay .btn-return-home {
+    bottom: 70px; /* Tighter spacing for very short viewports while still clearing footer */
+  }
+}
+
+/* Ensure footer text doesn't overlap button on very short viewports */
+@media (max-height: 500px) {
+  .category-page .footer-copyright {
+    padding: 12px 0; /* Reduce footer padding on very short viewports */
+  }
+  
+  .category-overlay .btn-return-home {
+    bottom: 65px; /* Minimum spacing to prevent overlap */
+  }
+}
+
 /* Enhanced mobile positioning for very small screens */
 @media (max-width: 775px) {
   .category-overlay {
