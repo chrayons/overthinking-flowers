@@ -1118,6 +1118,11 @@ body.intro-active .wrapper {
 
 /* Clear focus state immediately after touch on mobile */
 @media (hover: none) and (pointer: coarse) {
+  .category-nav-arrow {
+    transition: none !important; /* Disable transitions on mobile */
+    view-transition-name: none !important; /* Disable view transitions on mobile */
+  }
+  
   .category-nav-arrow:focus {
     opacity: 0.7;
     transform: none;
@@ -1165,6 +1170,22 @@ body.intro-active .wrapper {
   view-transition-name: dots-tracker; /* Enable cross-page transitions */
 }
 
+/* Disable view transitions on mobile */
+@media (max-width: 1160px) {
+  .category-nav-dots {
+    view-transition-name: none !important;
+  }
+  
+  .category-nav-arrow.prev,
+  .category-nav-arrow.next {
+    view-transition-name: none !important;
+  }
+  
+  .category-overlay .category-name {
+    view-transition-name: none !important;
+  }
+}
+
 .category-nav-dot {
   width: 8px;
   height: 8px;
@@ -1175,6 +1196,13 @@ body.intro-active .wrapper {
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* Smooth material design easing */
   transform: scale(1);
   pointer-events: auto; /* Enable dot clicking */
+}
+
+/* Disable transitions on mobile for dots */
+@media (max-width: 1160px) {
+  .category-nav-dot {
+    transition: none !important;
+  }
 }
 
 .category-nav-dot.active {
@@ -1269,6 +1297,7 @@ body.intro-active .wrapper {
     left: 50%;
     transform: translateX(-50%);
     z-index: 9999; /* Ensure button is above footer (footer z-index: 50) */
+    transition: none !important; /* Disable transitions on mobile */
   }
 }
 
@@ -1779,6 +1808,13 @@ body.intro-active .wrapper {
   transform: translateX(-50%);
 }
 
+/* Disable transitions on mobile for return home button */
+@media (max-width: 1160px) {
+  .btn-return-home {
+    transition: none !important;
+  }
+}
+
 
 .btn-return-home:hover {
   background: #2259A1;
@@ -2141,6 +2177,15 @@ body.intro-active .wrapper {
 ::view-transition-new(dots-tracker) {
   animation-duration: 350ms;
   animation-timing-function: ease-out;
+}
+
+/* Disable View Transitions on mobile for instant navigation */
+@media (max-width: 1160px) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
 }
 
 /* Accessibility support - respect user's motion preferences */
@@ -2960,6 +3005,14 @@ body.intro-active .mobile-header-menu {
 
 .category-page .footer-copyright {
   padding: 16px 0;
+}
+
+/* Disable transitions on mobile for footer */
+@media (max-width: 1160px) {
+  .category-page .footer-bar,
+  .category-page .footer-copyright {
+    transition: none !important;
+  }
 }
 
 /* Mobile footer adjustments */
