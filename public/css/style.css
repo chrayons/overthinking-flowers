@@ -93,6 +93,11 @@ body {
   display: block;
 }
 
+/* Ensure category pages have consistent background color throughout */
+body.category-page {
+  background: var(--page-bg);
+}
+
 /* Safe area edge fills - top */
 body::before {
   content: '';
@@ -117,6 +122,12 @@ body::after {
   background: var(--sa-bg);
   z-index: 2147483647; /* Above everything including intro overlay */
   pointer-events: none;
+}
+
+/* On category pages, make safe area match page background instead of white */
+body.category-page::before,
+body.category-page::after {
+  background: var(--page-bg); /* Match category page background instead of white */
 }
 
 @media (min-width: 776px) {
