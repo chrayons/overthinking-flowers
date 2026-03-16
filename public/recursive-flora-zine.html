@@ -439,11 +439,8 @@
         this.isRendering = false;
         this.pageCache = {}; // Cache for preloaded page objects
 
-        // Detect mobile and load appropriate PDF
-        const isMobile = window.innerWidth <= 775;
-        this.pdfPath = isMobile
-          ? 'pdf/recursive-flora-zine-mobile.pdf'
-          : 'pdf/recursive-flora-zine.pdf';
+        // Use a single PDF for both mobile and desktop
+        this.pdfPath = 'pdf/recursive-flora-zine.pdf';
 
         this.initializeElements();
         this.setupEventListeners();
@@ -502,7 +499,7 @@
         document.addEventListener('webkitfullscreenchange', () => this.handleFullscreenChange());
         document.addEventListener('msfullscreenchange', () => this.handleFullscreenChange());
 
-        // Handle window resize to switch between mobile and desktop PDFs
+        // Handle window resize (no longer switches PDFs, but reserved for future responsive behavior)
         let resizeTimeout;
         let lastIsMobile = window.innerWidth <= 775;
 
@@ -510,25 +507,9 @@
           clearTimeout(resizeTimeout);
           resizeTimeout = setTimeout(() => {
             const currentIsMobile = window.innerWidth <= 775;
-
-            // Only reload if we've crossed the mobile/desktop breakpoint
             if (currentIsMobile !== lastIsMobile) {
               lastIsMobile = currentIsMobile;
-              const currentPage = this.pageNum; // Remember current page
-
-              // Update PDF path
-              this.pdfPath = currentIsMobile
-                ? 'pdf/recursive-flora-zine-mobile.pdf'
-                : 'pdf/recursive-flora-zine.pdf';
-
-              // Clear cache and reload PDF
-              this.pageCache = {};
-              this.loadPDF().then(() => {
-                // Try to go back to the same page if it exists
-                if (currentPage <= this.pageCount) {
-                  this.renderPage(currentPage);
-                }
-              });
+              // Currently no PDF swap needed; keep hook in case future behavior is added.
             }
           }, 300); // Debounce resize events
         });
