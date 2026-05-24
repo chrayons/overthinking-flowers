@@ -3060,6 +3060,11 @@ body.intro-active .mobile-header-menu {
   box-sizing: border-box;
 }
 
+/* Match footer-case-study padding to footer-copyright on category pages */
+.category-page .footer-case-study {
+  padding: 16px 0;
+}
+
 /* Disable transitions on mobile for footer */
 @media (max-width: 1160px) {
   .category-page .footer-bar,
@@ -3076,15 +3081,27 @@ body.intro-active .mobile-header-menu {
     padding: 32px 0 128px 0; /* Extra bottom padding for mobile browser UI (128px to clear Chrome UI) */
   }
 
+  /* Category pages: stack footer, tight padding, 12px to match copyright */
+  .category-page .zine-footer {
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+
   .category-page .footer-copyright {
     font-size: 12px;
     text-align: center;
-    padding: 16px 0 20px 0; /* Minimal bottom padding - text should be close to bottom, well below button at 120px */
-    /* Prevent layout shift - ensure consistent height */
+    padding: 12px 0 0;
     min-height: 0;
     box-sizing: border-box;
-    /* Force layout calculation from start */
     transform: translateZ(0);
+  }
+
+  .category-page .footer-case-study {
+    font-size: 12px;
+    text-align: center;
+    padding: 0 0 12px;
+    white-space: normal;
   }
 }
 
