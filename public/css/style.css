@@ -3010,15 +3010,15 @@ body.intro-active .mobile-header-menu {
 
   .zine-footer .footer-copyright {
     padding: 16px 0 0; /* collapse the 32px bottom padding */
-    font-size: 14px;
     text-align: center;
+    /* font-size inherited from 775px rule (12px) — don't override here */
   }
 
   .footer-case-study {
     padding: 0 0 16px; /* only bottom breathing room */
-    font-size: 14px;   /* match copyright */
     white-space: normal;
     text-align: center;
+    /* font-size inherited from 775px rule (12px) — don't override here */
   }
 }
 
@@ -3079,6 +3079,11 @@ body.intro-active .mobile-header-menu {
     font-size: 12px;
     text-align: center;
     padding: 32px 0 128px 0; /* Extra bottom padding for mobile browser UI (128px to clear Chrome UI) */
+  }
+
+  /* Match footer-case-study to footer-copyright size at this breakpoint */
+  .footer-case-study {
+    font-size: 12px;
   }
 
   /* Category pages: stack footer, tight padding, 12px to match copyright */
