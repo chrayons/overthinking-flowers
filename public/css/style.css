@@ -2907,13 +2907,13 @@ body.intro-active .mobile-header-menu {
   padding-bottom: 40px;
 }
 
-/* Zine Description — quiet colophon below the reader */
+/* Zine Description — colophon below the reader, matches shuffle card body text */
 .zine-description {
   font-family: "Satoshi-Light", system-ui;
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 400;
   line-height: 1.6;
-  color: var(--text-secondary-accessible); /* muted grey — secondary to the zine */
+  color: var(--text-primary); /* #101720 — same as shuffle card body text */
   text-align: center;
   margin: 0;
   max-width: 560px;
@@ -3000,16 +3000,23 @@ body.intro-active .mobile-header-menu {
   color: #2259A1;
 }
 
-/* On narrow screens, stack them */
+/* On narrow screens, stack centered with tight spacing */
 @media (max-width: 600px) {
   .zine-footer {
     flex-direction: column;
     align-items: center;
-    gap: 0;
+    gap: 4px;
+  }
+
+  .zine-footer .footer-copyright {
+    padding: 16px 0 0; /* collapse the 32px bottom padding */
+    font-size: 14px;
+    text-align: center;
   }
 
   .footer-case-study {
-    padding-top: 0;
+    padding: 0 0 16px; /* only bottom breathing room */
+    font-size: 14px;   /* match copyright */
     white-space: normal;
     text-align: center;
   }
