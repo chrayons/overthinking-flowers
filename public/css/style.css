@@ -2888,49 +2888,36 @@ body.intro-active .mobile-header-menu {
    Zine Page Styles
    ================================ */
 
-/* Zine page - natural stacking layout */
+/* Zine page */
 .zine-page .wrapper {
   padding-top: 128px; /* 96px header + 32px spacing */
+  padding-inline: 32px; /* flat padding — zine needs full width of wrapper */
   padding-bottom: 0;
   display: block;
   width: 100%;
 }
 
-/* Center container for title + reader */
+/* Centered column: zine as hero, description as colophon below */
 .zine-center {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 32px; /* 32px spacing between title and PDF */
+  gap: 24px;
   width: 100%;
-  max-width: 100%;
-  padding-bottom: 40px; /* Space before footer */
+  padding-bottom: 40px;
 }
 
-/* Zine Title */
-.zine-title {
-  font-family: "junicoderegularcondensed", "junicoderegular", Georgia, serif;
-  font-size: 48px;
-  font-weight: 400;
-  letter-spacing: 0.1em;
-  color: var(--text-primary);
-  text-align: center;
-  margin: 0;
-  line-height: 1.2;
-  flex-shrink: 0;
-}
-
-/* Zine Description */
+/* Zine Description — quiet colophon below the reader */
 .zine-description {
   font-family: "Satoshi-Light", system-ui;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 400;
   line-height: 1.6;
-  color: var(--text-primary);
-  text-align: left;
+  color: var(--text-secondary-accessible); /* muted grey — secondary to the zine */
+  text-align: center;
   margin: 0;
-  max-width: 800px; /* Match PDF controls max-width */
-  padding: 0 20px;
+  max-width: 560px;
+  padding: 0;
 }
 
 /* PDF reader */
@@ -2949,7 +2936,7 @@ body.intro-active .mobile-header-menu {
   align-items: center;
   background: transparent;
   padding: 0;
-  margin-bottom: 32px; /* 32px spacing between PDF and controls */
+  margin-bottom: 32px; /* spacing between PDF and controls */
 }
 
 #pdf-canvas {
@@ -2960,13 +2947,13 @@ body.intro-active .mobile-header-menu {
   object-fit: contain;
 }
 
-/* Desktop and tablet - limit PDF width to 50% of viewport */
+/* Desktop: constrain PDF to readable size */
 @media (min-width: 776px) {
   #pdf-canvas {
     max-width: 50vw;
   }
 
-  /* Cover pages (first and last) should be half the width of spreads */
+  /* Cover pages are single-page width, not a spread */
   #pdf-canvas.cover-page {
     max-width: 25vw;
   }
@@ -2980,6 +2967,52 @@ body.intro-active .mobile-header-menu {
   background: transparent;
   /* Prevent layout shift */
   min-height: 0;
+}
+
+/* Zine page footer — space-between to mirror the header */
+.zine-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 24px;
+}
+
+/* Case study link — same weight/color as copyright */
+.footer-case-study {
+  font-family: "Satoshi-Light", system-ui;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: normal;
+  color: var(--text-secondary-accessible);
+  padding: 32px 0;
+  margin: 0;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.footer-case-study a {
+  color: inherit;
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.footer-case-study a:hover {
+  color: #2259A1;
+}
+
+/* On narrow screens, stack them */
+@media (max-width: 600px) {
+  .zine-footer {
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+
+  .footer-case-study {
+    padding-top: 0;
+    white-space: normal;
+    text-align: center;
+  }
 }
 
 .footer-copyright {
