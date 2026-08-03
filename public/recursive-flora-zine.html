@@ -69,6 +69,27 @@
       height: 2px;
       margin: 0 20px;
       position: relative;
+      cursor: pointer;
+      touch-action: none;
+    }
+
+    /* Invisible, taller grab area so the 2px bar is easy to hit and drag */
+    .pdf-progress-hit {
+      position: absolute;
+      top: -14px;
+      bottom: -14px;
+      left: 0;
+      right: 0;
+      touch-action: none;
+    }
+
+    /* While dragging, the fill should track the pointer with no easing lag */
+    .pdf-progress-container.dragging {
+      cursor: grabbing;
+    }
+
+    .pdf-progress-container.dragging::after {
+      transition: none;
     }
 
     .pdf-nav-right {
@@ -382,7 +403,10 @@
       <!-- Zine viewer -->
       <div class="pdf-reader">
         <div class="pdf-canvas-container">
-          <canvas id="pdf-canvas"></canvas>
+          <!-- Frame shrink-wraps the canvas so the spine shadow can sit exactly over the spread -->
+          <div class="pdf-canvas-frame" id="pdf-canvas-frame">
+            <canvas id="pdf-canvas"></canvas>
+          </div>
           <div class="pdf-loading" id="pdf-loading">
             <div class="pdf-loading-text">Zine loading...</div>
             <div id="loading-progress" class="pdf-loading-percent">0%</div>
@@ -399,7 +423,10 @@
                 <path d="M12.4219 15.8438L8.20312 11.625L12.4219 7.40625" stroke="currentColor" stroke-width="1.40625" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
             </button>
-            <div class="pdf-progress-container"></div>
+            <div class="pdf-progress-container" id="progress-bar" role="slider" tabindex="0"
+                 aria-label="Page position" aria-valuemin="1" aria-valuenow="1" aria-valuemax="1">
+              <div class="pdf-progress-hit"></div>
+            </div>
             <div class="pdf-nav-right">
               <button class="pdf-nav-button" id="next-page" aria-label="Go to next page" disabled>
                 <svg width="23" height="23" viewBox="0 0 23 23" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -433,8 +460,10 @@
         this.pageCount = 0;
         this.scale = 0.75;
         this.canvas = document.getElementById('pdf-canvas');
+        this.canvasFrame = document.getElementById('pdf-canvas-frame');
         this.ctx = this.canvas.getContext('2d');
         this.isRendering = false;
+        this.pendingPage = null; // Last page requested while a render was in flight
         this.pageCache = {}; // Cache for preloaded page objects
 
         // Use a single PDF for both mobile and desktop
@@ -456,6 +485,7 @@
         this.fullscreenBtn = document.getElementById('fullscreen-btn');
         this.pdfReader = document.querySelector('.pdf-reader');
         this.controlsEl = document.querySelector('.pdf-controls');
+        this.progressEl = document.getElementById('progress-bar');
       }
 
       setupEventListeners() {
@@ -463,6 +493,8 @@
         this.prevBtn.addEventListener('click', () => this.goToPrevPage());
         this.nextBtn.addEventListener('click', () => this.goToNextPage());
 
+        // Scrubbing: click or drag anywhere along the progress bar to jump pages
+        this.setupProgressScrubbing();
 
         // Fullscreen control (desktop only)
         this.fullscreenBtn.addEventListener('click', () => this.toggleFullscreen());
@@ -579,7 +611,12 @@
       }
 
       async renderPage(pageNum) {
-        if (this.isRendering) return;
+        // Queue instead of dropping, so fast page-flipping always lands on the
+        // last page asked for rather than silently ignoring the click.
+        if (this.isRendering) {
+          this.pendingPage = pageNum;
+          return;
+        }
 
         this.isRendering = true;
 
@@ -608,37 +645,43 @@
             scale = this.scale;
           }
 
-          // Apply CSS class for cover pages BEFORE rendering (first and last page)
-          const isCoverPage = pageNum === 1 || pageNum === this.pageCount;
-          if (isCoverPage) {
-            this.canvas.classList.add('cover-page');
-          } else {
-            this.canvas.classList.remove('cover-page');
-          }
-
           // Account for device pixel ratio for high-DPI displays (Retina, etc.)
           const outputScale = window.devicePixelRatio || 1;
 
           const viewport = page.getViewport({ scale: scale });
-
-          // Set canvas internal resolution accounting for device pixel ratio
-          this.canvas.width = Math.floor(viewport.width * outputScale);
-          this.canvas.height = Math.floor(viewport.height * outputScale);
-
-          // Don't set inline CSS styles - let CSS handle sizing with auto and max-width
+          const width = Math.floor(viewport.width * outputScale);
+          const height = Math.floor(viewport.height * outputScale);
 
           // Scale the drawing context to match the device pixel ratio
           const transform = outputScale !== 1
             ? [outputScale, 0, 0, outputScale, 0, 0]
             : null;
 
-          const renderContext = {
-            canvasContext: this.ctx,
+          // Paint offscreen first so the visible canvas is never blank mid-flip —
+          // the old page stays up until the new one is ready to swap in whole.
+          const buffer = document.createElement('canvas');
+          buffer.width = width;
+          buffer.height = height;
+
+          await page.render({
+            canvasContext: buffer.getContext('2d'),
             viewport: viewport,
             transform: transform
-          };
+          }).promise;
 
-          await page.render(renderContext).promise;
+          // Swap in a single frame: resize + blit happen back to back, so the
+          // clear that comes with setting canvas.width is never painted.
+          this.canvas.width = width;
+          this.canvas.height = height;
+          this.ctx.drawImage(buffer, 0, 0);
+
+          // Cover pages are a single page, not a spread — sized and bound differently
+          const isCoverPage = pageNum === 1 || pageNum === this.pageCount;
+          this.canvas.classList.toggle('cover-page', isCoverPage);
+          this.canvasFrame.classList.toggle('spread', !isCoverPage);
+          this.canvasFrame.classList.toggle('cover-front', pageNum === 1);
+          this.canvasFrame.classList.toggle('cover-back', isCoverPage && pageNum !== 1);
+
           this.pageNum = pageNum;
           this.updateControls();
 
@@ -648,12 +691,94 @@
         }
 
         this.isRendering = false;
+
+        if (this.pendingPage != null && this.pendingPage !== this.pageNum) {
+          const next = this.pendingPage;
+          this.pendingPage = null;
+          this.renderPage(next);
+        } else {
+          this.pendingPage = null;
+        }
       }
 
       goToPage(pageNum) {
-        if (pageNum >= 1 && pageNum <= this.pageCount && pageNum !== this.pageNum) {
-          this.renderPage(pageNum);
-        }
+        if (pageNum < 1 || pageNum > this.pageCount) return;
+        // Compare against the page actually being rendered, not just the one on
+        // screen — during a fast scrub the in-flight page is ahead of pageNum.
+        const inFlight = this.pendingPage != null ? this.pendingPage : this.pageNum;
+        if (pageNum === inFlight) return;
+        this.renderPage(pageNum);
+      }
+
+      // Map a pointer x position on the progress bar to a page number
+      pageFromClientX(clientX) {
+        const rect = this.progressEl.getBoundingClientRect();
+        if (!rect.width || !this.pageCount) return 1;
+        const ratio = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+        return Math.min(this.pageCount, Math.max(1, Math.ceil(ratio * this.pageCount)));
+      }
+
+      setupProgressScrubbing() {
+        const bar = this.progressEl;
+        let dragging = false;
+
+        const scrubTo = (clientX) => {
+          if (!this.pageCount) return;
+          this.goToPage(this.pageFromClientX(clientX));
+        };
+
+        bar.addEventListener('pointerdown', (e) => {
+          if (!this.pageCount || e.button !== 0) return;
+          dragging = true;
+          bar.classList.add('dragging');
+          bar.setPointerCapture(e.pointerId);
+          e.preventDefault();
+          scrubTo(e.clientX);
+        });
+
+        bar.addEventListener('pointermove', (e) => {
+          if (!dragging) return;
+          e.preventDefault();
+          scrubTo(e.clientX);
+        });
+
+        const endDrag = (e) => {
+          if (!dragging) return;
+          dragging = false;
+          bar.classList.remove('dragging');
+          if (bar.hasPointerCapture(e.pointerId)) bar.releasePointerCapture(e.pointerId);
+        };
+
+        bar.addEventListener('pointerup', endDrag);
+        bar.addEventListener('pointercancel', endDrag);
+
+        // Keyboard support while the bar is focused
+        bar.addEventListener('keydown', (e) => {
+          // Keep the document-level shortcut handler from also firing
+          if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key)) {
+            e.stopPropagation();
+          }
+          switch (e.key) {
+            case 'ArrowLeft':
+            case 'ArrowDown':
+              e.preventDefault();
+              this.goToPrevPage();
+              break;
+            case 'ArrowRight':
+            case 'ArrowUp':
+              e.preventDefault();
+              this.goToNextPage();
+              break;
+            case 'Home':
+              e.preventDefault();
+              this.goToPage(1);
+              break;
+            case 'End':
+              e.preventDefault();
+              this.goToPage(this.pageCount);
+              break;
+          }
+        });
       }
 
       goToPrevPage() {
@@ -677,17 +802,23 @@
         // Update progress indicator
         const progress = (this.pageNum / this.pageCount) * 100;
         this.controlsEl.style.setProperty('--progress-width', `${progress}%`);
+
+        if (this.progressEl) {
+          this.progressEl.setAttribute('aria-valuemax', this.pageCount || 1);
+          this.progressEl.setAttribute('aria-valuenow', this.pageNum);
+          this.progressEl.setAttribute('aria-valuetext', `Page ${this.pageNum} of ${this.pageCount}`);
+        }
       }
 
 
       showLoading(show) {
         this.loadingEl.style.display = show ? 'block' : 'none';
-        this.canvas.style.display = show ? 'none' : 'block';
+        this.canvasFrame.style.display = show ? 'none' : 'block';
       }
 
       showError(message) {
         this.loadingEl.style.display = 'none';
-        this.canvas.style.display = 'none';
+        this.canvasFrame.style.display = 'none';
         this.errorEl.style.display = 'block';
         this.errorEl.textContent = message;
       }

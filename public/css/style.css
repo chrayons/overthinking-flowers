@@ -2939,12 +2939,91 @@ body.intro-active .mobile-header-menu {
   margin-bottom: 32px; /* spacing between PDF and controls */
 }
 
+/* Frame shrink-wraps the canvas so the spine shadow tracks the spread exactly.
+   The drop shadow gives the near-white paper an edge against the near-white
+   page background — without it the fold reads as a mark on the artwork rather
+   than a book sitting on a surface. */
+.pdf-canvas-frame {
+  position: relative;
+  display: block;
+  max-width: 100%;
+  line-height: 0;
+  box-shadow:
+    0 2px 10px rgba(34, 60, 110, 0.10),
+    0 12px 34px rgba(34, 60, 110, 0.10);
+}
+
 #pdf-canvas {
   max-width: 100%;
   width: auto !important;
   height: auto !important;
   display: block;
   object-fit: contain;
+}
+
+/* ---- Spine shadow ----------------------------------------------------
+   Kept deliberately narrow. The pages are near-white, so any wide gradient
+   reads as a tinted column down the middle of the artwork rather than a
+   fold — width is what makes a gutter look dirty, not opacity. A single
+   smooth valley about 3.5% of the spread is enough to say "bound book"
+   and narrow enough to stay out of the illustration's way.
+
+   The shading is a cool blue pulled from the zine's own ink (#2259A1
+   family). Neutral black over near-white paper turns flat grey and reads
+   as a printing defect. */
+.pdf-canvas-frame::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+  opacity: 0;
+  transition: opacity 240ms ease;
+}
+
+/* Inner spreads — crease down the centre fold */
+.pdf-canvas-frame.spread::after {
+  opacity: 1;
+  left: 50%;
+  width: 3.5%;
+  transform: translateX(-50%);
+  background: linear-gradient(to right,
+    rgba(40, 64, 112, 0)    0%,
+    rgba(40, 64, 112, 0.06) 28%,
+    rgba(40, 64, 112, 0.15) 42%,
+    rgba(40, 64, 112, 0.22) 50%,  /* the fold itself */
+    rgba(40, 64, 112, 0.15) 58%,
+    rgba(40, 64, 112, 0.06) 72%,
+    rgba(40, 64, 112, 0)    100%);
+}
+
+/* Front cover — bound edge sits on the left */
+.pdf-canvas-frame.cover-front::after {
+  opacity: 1;
+  left: 0;
+  width: 3.5%;
+  background: linear-gradient(to right,
+    rgba(40, 64, 112, 0.13) 0%,
+    rgba(40, 64, 112, 0.07) 30%,
+    rgba(40, 64, 112, 0)    100%);
+}
+
+/* Back cover — bound edge sits on the right */
+.pdf-canvas-frame.cover-back::after {
+  opacity: 1;
+  right: 0;
+  width: 3.5%;
+  background: linear-gradient(to left,
+    rgba(40, 64, 112, 0.13) 0%,
+    rgba(40, 64, 112, 0.07) 30%,
+    rgba(40, 64, 112, 0)    100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pdf-canvas-frame::after {
+    transition: none;
+  }
 }
 
 /* Desktop: constrain PDF to readable size */
