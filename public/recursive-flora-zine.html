@@ -463,8 +463,12 @@
         this.canvasFrame = document.getElementById('pdf-canvas-frame');
         this.ctx = this.canvas.getContext('2d');
         this.isRendering = false;
-        this.pendingPage = null; // Last page requested while a render was in flight
+        this.isScrubbing = false; // True while the progress bar is being dragged
+        this.holdFill = false; // Leave the fill where a drag dropped it
+        this.targetPage = 1; // Page most recently requested (may still be rendering)
         this.pageCache = {}; // Cache for preloaded page objects
+        this.bitmapCache = new Map(); // LRU of rendered canvases, keyed page@layout
+        this.bitmapCacheLimit = 8;
 
         // Use a single PDF for both mobile and desktop
         this.pdfPath = 'pdf/recursive-flora-zine.pdf';
@@ -610,13 +614,65 @@
         }
       }
 
+      // Signature for the current layout — a cached bitmap is only reusable while
+      // fullscreen state, viewport and pixel ratio are unchanged.
+      layoutKey() {
+        const isFullscreen = this.pdfReader.classList.contains('fullscreen');
+        const parent = this.canvas.parentElement;
+        return [
+          isFullscreen,
+          window.innerWidth <= 775,
+          window.devicePixelRatio || 1,
+          parent.clientWidth,
+          parent.clientHeight
+        ].join('|');
+      }
+
+      // Blit an already-rendered buffer onto the visible canvas. Synchronous, so
+      // revisiting a page during a scrub is instant.
+      paintBuffer(buffer, pageNum) {
+        this.canvas.width = buffer.width;
+        this.canvas.height = buffer.height;
+        this.ctx.drawImage(buffer, 0, 0);
+
+        // Cover pages are a single page, not a spread — sized and bound differently
+        const isCoverPage = pageNum === 1 || pageNum === this.pageCount;
+        this.canvas.classList.toggle('cover-page', isCoverPage);
+        this.canvasFrame.classList.toggle('spread', !isCoverPage);
+        this.canvasFrame.classList.toggle('cover-front', pageNum === 1);
+        this.canvasFrame.classList.toggle('cover-back', isCoverPage && pageNum !== 1);
+
+        this.pageNum = pageNum;
+        this.updateControls();
+      }
+
+      cacheBuffer(key, buffer) {
+        this.bitmapCache.set(key, buffer);
+        // Bounded LRU — full spreads at device pixel ratio are megabytes each
+        while (this.bitmapCache.size > this.bitmapCacheLimit) {
+          this.bitmapCache.delete(this.bitmapCache.keys().next().value);
+        }
+      }
+
       async renderPage(pageNum) {
-        // Queue instead of dropping, so fast page-flipping always lands on the
-        // last page asked for rather than silently ignoring the click.
-        if (this.isRendering) {
-          this.pendingPage = pageNum;
+        // The controls track the page that was *asked* for, so the bar never
+        // rewinds to the last fully-rendered page mid-scrub.
+        this.targetPage = pageNum;
+
+        // Already drawn at this size? Swap it in this frame, no async work.
+        const cacheKey = `${pageNum}@${this.layoutKey()}`;
+        const cached = this.bitmapCache.get(cacheKey);
+        if (cached) {
+          this.bitmapCache.delete(cacheKey);
+          this.bitmapCache.set(cacheKey, cached); // refresh LRU position
+          this.paintBuffer(cached, pageNum);
           return;
         }
+
+        // Queue instead of dropping: targetPage holds the request and the render
+        // in flight picks it up when it finishes, so fast flipping always lands
+        // on the last page asked for rather than silently ignoring the click.
+        if (this.isRendering) return;
 
         this.isRendering = true;
 
@@ -669,21 +725,15 @@
             transform: transform
           }).promise;
 
-          // Swap in a single frame: resize + blit happen back to back, so the
-          // clear that comes with setting canvas.width is never painted.
-          this.canvas.width = width;
-          this.canvas.height = height;
-          this.ctx.drawImage(buffer, 0, 0);
+          this.cacheBuffer(cacheKey, buffer);
 
-          // Cover pages are a single page, not a spread — sized and bound differently
-          const isCoverPage = pageNum === 1 || pageNum === this.pageCount;
-          this.canvas.classList.toggle('cover-page', isCoverPage);
-          this.canvasFrame.classList.toggle('spread', !isCoverPage);
-          this.canvasFrame.classList.toggle('cover-front', pageNum === 1);
-          this.canvasFrame.classList.toggle('cover-back', isCoverPage && pageNum !== 1);
-
-          this.pageNum = pageNum;
-          this.updateControls();
+          // A scrub may have moved on while this was rendering — keep the bitmap,
+          // but don't flash a page the reader has already dragged past.
+          if (this.targetPage === pageNum) {
+            // Swap in a single frame: resize + blit happen back to back, so the
+            // clear that comes with setting canvas.width is never painted.
+            this.paintBuffer(buffer, pageNum);
+          }
 
         } catch (error) {
           console.error('Error rendering page:', error);
@@ -692,48 +742,86 @@
 
         this.isRendering = false;
 
-        if (this.pendingPage != null && this.pendingPage !== this.pageNum) {
-          const next = this.pendingPage;
-          this.pendingPage = null;
-          this.renderPage(next);
-        } else {
-          this.pendingPage = null;
+        // A newer page was asked for while this one rendered — chase it. The
+        // second check stops a failed render from retrying itself forever.
+        if (this.targetPage !== this.pageNum && this.targetPage !== pageNum) {
+          this.renderPage(this.targetPage);
         }
       }
 
       goToPage(pageNum) {
         if (pageNum < 1 || pageNum > this.pageCount) return;
-        // Compare against the page actually being rendered, not just the one on
-        // screen — during a fast scrub the in-flight page is ahead of pageNum.
-        const inFlight = this.pendingPage != null ? this.pendingPage : this.pageNum;
-        if (pageNum === inFlight) return;
+        // Any page change outside a scrub puts the fill back under our control
+        if (!this.isScrubbing) this.holdFill = false;
+        // Compare against the page last requested, not the one on screen — during
+        // a fast scrub the requested page runs ahead of the rendered one.
+        if (pageNum === this.targetPage) return;
         this.renderPage(pageNum);
       }
 
-      // Map a pointer x position on the progress bar to a page number
-      pageFromClientX(clientX) {
+      goToPrevPage() {
+        this.goToPage(this.targetPage - 1);
+      }
+
+      goToNextPage() {
+        this.goToPage(this.targetPage + 1);
+      }
+
+      // Map a pointer x position on the progress bar to a 0..1 ratio
+      ratioFromClientX(clientX) {
         const rect = this.progressEl.getBoundingClientRect();
-        if (!rect.width || !this.pageCount) return 1;
-        const ratio = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+        if (!rect.width) return 0;
+        return Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+      }
+
+      pageFromRatio(ratio) {
         return Math.min(this.pageCount, Math.max(1, Math.ceil(ratio * this.pageCount)));
       }
 
       setupProgressScrubbing() {
         const bar = this.progressEl;
         let dragging = false;
+        let pendingX = null;   // Latest pointer x, consumed on the next frame
+        let frame = null;
+
+        // Paint the bar + page number straight from the pointer, independent of
+        // rendering — the fill must never wait on a canvas paint to catch up.
+        const paint = (ratio, page) => {
+          this.controlsEl.style.setProperty('--progress-width', `${ratio * 100}%`);
+          this.currentPageEl.textContent = page;
+        };
+
+        const flush = () => {
+          frame = null;
+          if (pendingX == null) return;
+          const x = pendingX;
+          pendingX = null;
+
+          const ratio = this.ratioFromClientX(x);
+          const page = this.pageFromRatio(ratio);
+          paint(ratio, page);
+          this.goToPage(page); // render trails behind; visuals already moved
+        };
 
         const scrubTo = (clientX) => {
           if (!this.pageCount) return;
-          this.goToPage(this.pageFromClientX(clientX));
+          pendingX = clientX;
+          // One update per frame max, so a slow page render can't back up the drag
+          if (frame == null) frame = requestAnimationFrame(flush);
         };
 
         bar.addEventListener('pointerdown', (e) => {
           if (!this.pageCount || e.button !== 0) return;
           dragging = true;
+          this.isScrubbing = true;
           bar.classList.add('dragging');
           bar.setPointerCapture(e.pointerId);
           e.preventDefault();
-          scrubTo(e.clientX);
+          // Paint synchronously on press so the first click feels instant
+          const ratio = this.ratioFromClientX(e.clientX);
+          const page = this.pageFromRatio(ratio);
+          paint(ratio, page);
+          this.goToPage(page);
         });
 
         bar.addEventListener('pointermove', (e) => {
@@ -745,8 +833,22 @@
         const endDrag = (e) => {
           if (!dragging) return;
           dragging = false;
+          if (frame != null) { cancelAnimationFrame(frame); frame = null; }
+          if (pendingX != null) {
+            const ratio = this.ratioFromClientX(pendingX);
+            const page = this.pageFromRatio(ratio);
+            pendingX = null;
+            paint(ratio, page);
+            this.goToPage(page);
+          }
+          this.isScrubbing = false;
+          // The fill stays exactly where it was dropped: snapping it to the page
+          // boundary here would read as the bar twitching on release. The next
+          // deliberate page change re-syncs it.
+          this.holdFill = true;
           bar.classList.remove('dragging');
           if (bar.hasPointerCapture(e.pointerId)) bar.releasePointerCapture(e.pointerId);
+          this.updateControls();
         };
 
         bar.addEventListener('pointerup', endDrag);
@@ -781,32 +883,28 @@
         });
       }
 
-      goToPrevPage() {
-        if (this.pageNum > 1) {
-          this.goToPage(this.pageNum - 1);
-        }
-      }
-
-      goToNextPage() {
-        if (this.pageNum < this.pageCount) {
-          this.goToPage(this.pageNum + 1);
-        }
-      }
-
-
       updateControls() {
-        this.prevBtn.disabled = this.pageNum <= 1;
-        this.nextBtn.disabled = this.pageNum >= this.pageCount;
-        this.currentPageEl.textContent = this.pageNum;
+        // Everything the reader sees in the controls reflects the requested page,
+        // so a slow render never makes the bar or counter step backwards.
+        const page = this.targetPage || this.pageNum;
 
-        // Update progress indicator
-        const progress = (this.pageNum / this.pageCount) * 100;
-        this.controlsEl.style.setProperty('--progress-width', `${progress}%`);
+        this.prevBtn.disabled = page <= 1;
+        this.nextBtn.disabled = page >= this.pageCount;
+
+        // While scrubbing, the pointer owns the fill and the page number — a
+        // render finishing mid-drag must not yank them back to the rendered page.
+        if (!this.isScrubbing) {
+          this.currentPageEl.textContent = page;
+          if (!this.holdFill) {
+            const progress = (page / this.pageCount) * 100;
+            this.controlsEl.style.setProperty('--progress-width', `${progress}%`);
+          }
+        }
 
         if (this.progressEl) {
           this.progressEl.setAttribute('aria-valuemax', this.pageCount || 1);
-          this.progressEl.setAttribute('aria-valuenow', this.pageNum);
-          this.progressEl.setAttribute('aria-valuetext', `Page ${this.pageNum} of ${this.pageCount}`);
+          this.progressEl.setAttribute('aria-valuenow', page);
+          this.progressEl.setAttribute('aria-valuetext', `Page ${page} of ${this.pageCount}`);
         }
       }
 
@@ -852,7 +950,7 @@
         } else if (this.pdfReader.msRequestFullscreen) {
           this.pdfReader.msRequestFullscreen();
         }
-        this.renderPage(this.pageNum);
+        this.renderPage(this.targetPage);
       }
 
       exitFullscreen() {
@@ -871,7 +969,7 @@
           document.msExitFullscreen();
         }
 
-        this.renderPage(this.pageNum);
+        this.renderPage(this.targetPage);
 
         this.fullscreenBtn.textContent = '⛶'; // Enter fullscreen icon
         this.fullscreenBtn.title = 'Fullscreen';
@@ -888,7 +986,7 @@
           this.pdfReader.classList.remove('fullscreen');
           this.fullscreenBtn.textContent = '⛶'; // Enter fullscreen icon
           this.fullscreenBtn.title = 'Fullscreen';
-          this.renderPage(this.pageNum);
+          this.renderPage(this.targetPage);
         }
       }
 
