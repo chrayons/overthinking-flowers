@@ -3032,9 +3032,14 @@ body.intro-active .mobile-header-menu {
     max-width: 50vw;
   }
 
-  /* Cover pages are single-page width, not a spread */
+  /* Cover pages are single pages, not spreads. Constrained by HEIGHT, not
+     width: the front cover's sheet in the PDF is 1298x1816pt against the back
+     cover's 1250x1776, so a shared width cap would squeeze the front cover
+     ~4% smaller than every other page. Matching the spread height (50vw of
+     2500x1776 = 35.52vw) puts both covers at exactly the same size. */
   #pdf-canvas.cover-page {
-    max-width: 25vw;
+    max-width: none;
+    max-height: 35.52vw;
   }
 }
 
