@@ -185,12 +185,6 @@
         margin-bottom: 32px;
       }
 
-      #pdf-canvas {
-        max-width: calc(100vw - 20px);
-        width: 100%;
-        height: auto;
-      }
-
       .pdf-controls {
         padding: 12px 16px 16px 16px;
         width: 100%;
@@ -266,12 +260,15 @@
         padding-bottom: 120px;
       }
 
-      .pdf-reader.fullscreen #pdf-canvas {
-        max-height: calc(100vh - 180px);
+      .pdf-reader.fullscreen .flipbook-stage {
         max-width: calc(100vw - 40px);
         width: 100%;
         height: 100%;
-        object-fit: contain;
+        align-items: center;
+      }
+
+      .pdf-reader.fullscreen .flipbook {
+        --page-w: min(45vw, calc((100vh - 180px) * 0.704));
       }
 
       .pdf-reader.fullscreen .pdf-controls {
@@ -403,16 +400,15 @@
       <!-- Zine viewer -->
       <div class="pdf-reader">
         <div class="pdf-canvas-container">
-          <!-- Frame shrink-wraps the canvas so the spine shadow can sit exactly over the spread -->
-          <div class="pdf-canvas-frame" id="pdf-canvas-frame">
-            <canvas id="pdf-canvas"></canvas>
+          <div class="flipbook-stage">
+            <div class="flipbook" id="flipbook"></div>
           </div>
           <div class="pdf-loading" id="pdf-loading">
             <div class="pdf-loading-text">Zine loading...</div>
             <div id="loading-progress" class="pdf-loading-percent">0%</div>
           </div>
           <div class="pdf-error" id="pdf-error" style="display: none;">
-            Error loading PDF. Please check that the file exists and try again.
+            Error loading the zine pages. Please check that the files exist and try again.
           </div>
         </div>
 
@@ -448,35 +444,76 @@
     </div>
   </div>
 
-  <!-- PDF.js Library -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-
   <script>
-    // PDF Reader Implementation
-    class PDFReader {
+    // Flip-book Reader Implementation
+    class FlipBook {
       constructor() {
-        this.pdfDoc = null;
-        this.pageNum = 1;
-        this.pageCount = 0;
-        this.scale = 0.75;
-        this.canvas = document.getElementById('pdf-canvas');
-        this.canvasFrame = document.getElementById('pdf-canvas-frame');
-        this.ctx = this.canvas.getContext('2d');
-        this.isRendering = false;
-        this.isScrubbing = false; // True while the progress bar is being dragged
-        this.holdFill = false; // Leave the fill where a drag dropped it
-        this.targetPage = 1; // Page most recently requested (may still be rendering)
-        this.pageCache = {}; // Cache for preloaded page objects
-        this.bitmapCache = new Map(); // LRU of rendered canvases, keyed page@layout
-        this.bitmapCacheLimit = 8;
+        this.pageCount = 62;
+        this.vellumPages = new Set([13, 20, 43, 50]);
+        this.imageDir = 'zine-pages';
+        this.pageAspect = 1267 / 1800; // interior page width/height, used for the spread ratio
 
-        // Use a single PDF for both mobile and desktop
-        this.pdfPath = 'pdf/recursive-flora-zine.pdf';
+        this.isScrubbing = false;
+        this.holdFill = false;
+        this.currentLeaf = 0; // index of the leaf currently occupying the right-hand slot
+
+        this.leaves = this.buildLeaves();
+        this.pageToState = this.buildPageIndex();
 
         this.initializeElements();
+        this.showLoading(true);
+        this.renderLeafElements();
         this.setupEventListeners();
-        this.setupTouchNavigation();
-        this.loadPDF();
+        this.setupClickNavigation();
+        this.preloadImages();
+      }
+
+      pagePath(n) {
+        return `${this.imageDir}/page${String(n).padStart(2, '0')}.webp`;
+      }
+
+      // Page 1's leaf pairs it with page 2 as its back (the inside front
+      // cover, revealed the moment the book is opened), and pairing continues
+      // the same way to the end, so the very last leaf pairs page 61 with
+      // page 62 (the back cover) as its back. A vellum page always stands
+      // alone as its own leaf; a normal page only stands alone if pairing it
+      // would swallow a vellum page or run past the end.
+      buildLeaves() {
+        const leaves = [];
+        let i = 1;
+        while (i <= this.pageCount) {
+          if (this.vellumPages.has(i)) {
+            leaves.push({ front: i, back: 'vellum' });
+            i += 1;
+          } else if (i === this.pageCount || this.vellumPages.has(i + 1)) {
+            leaves.push({ front: i, back: null });
+            i += 1;
+          } else {
+            leaves.push({ front: i, back: i + 1 });
+            i += 2;
+          }
+        }
+        return leaves;
+      }
+
+      // Maps every page number to the leaf that shows it, and whether it shows
+      // up as that leaf's front (right-hand slot) or back (left-hand slot) —
+      // used to jump straight to a page from the progress bar.
+      buildPageIndex() {
+        const index = {};
+        this.leaves.forEach((leaf, i) => {
+          index[leaf.front] = { leafIndex: i, asBack: false };
+          if (typeof leaf.back === 'number') {
+            index[leaf.back] = { leafIndex: i, asBack: true };
+          }
+        });
+        return index;
+      }
+
+      leafIndexForPage(page) {
+        const state = this.pageToState[page];
+        if (!state) return null;
+        return state.asBack ? state.leafIndex + 1 : state.leafIndex;
       }
 
       initializeElements() {
@@ -490,24 +527,103 @@
         this.pdfReader = document.querySelector('.pdf-reader');
         this.controlsEl = document.querySelector('.pdf-controls');
         this.progressEl = document.getElementById('progress-bar');
+        this.flipbookEl = document.getElementById('flipbook');
+        this.flipbookStage = document.querySelector('.flipbook-stage');
+
+        this.pageCountEl.textContent = this.pageCount;
+        this.flipbookStage.style.setProperty('--flipbook-page-ratio', this.pageAspect);
+      }
+
+      renderLeafElements() {
+        this.leafEls = this.leaves.map((leaf, i) => {
+          const el = document.createElement('div');
+          el.className = 'leaf';
+
+          const front = document.createElement('div');
+          front.className = 'leaf-face leaf-front' + (leaf.back === 'vellum' ? ' leaf-front--vellum' : '');
+          const frontImg = document.createElement('img');
+          frontImg.alt = `Page ${leaf.front}`;
+          front.appendChild(frontImg);
+          el.appendChild(front);
+
+          const back = document.createElement('div');
+          if (leaf.back === 'vellum') {
+            back.className = 'leaf-face leaf-back leaf-back--vellum';
+            const backImg = document.createElement('img');
+            backImg.alt = `Page ${leaf.front}, reverse`;
+            back.appendChild(backImg);
+          } else if (typeof leaf.back === 'number') {
+            back.className = 'leaf-face leaf-back';
+            const backImg = document.createElement('img');
+            backImg.alt = `Page ${leaf.back}`;
+            back.appendChild(backImg);
+          } else {
+            back.className = 'leaf-face leaf-back leaf-back--blank';
+          }
+          el.appendChild(back);
+
+          this.flipbookEl.appendChild(el);
+          return el;
+        });
+
+        this.updateZIndices();
+      }
+
+      preloadImages() {
+        const uniquePages = new Set();
+        this.leaves.forEach((leaf) => {
+          uniquePages.add(leaf.front);
+          if (typeof leaf.back === 'number') uniquePages.add(leaf.back);
+        });
+
+        let loaded = 0;
+        const total = uniquePages.size;
+        const urls = new Map();
+
+        const loadOne = (page) => new Promise((resolve) => {
+          const img = new Image();
+          img.onload = img.onerror = () => {
+            loaded += 1;
+            const percent = Math.round((loaded / total) * 100);
+            const progressEl = document.getElementById('loading-progress');
+            if (progressEl) progressEl.textContent = `${percent}%`;
+            resolve();
+          };
+          img.src = this.pagePath(page);
+          urls.set(page, img.src);
+        });
+
+        Promise.all(Array.from(uniquePages).map(loadOne)).then(() => {
+          // Assign the (now cached) URLs into the actual leaf <img> elements
+          this.leaves.forEach((leaf, i) => {
+            const el = this.leafEls[i];
+            el.querySelector('.leaf-front img').src = urls.get(leaf.front);
+            const backImg = el.querySelector('.leaf-back img');
+            if (backImg) {
+              backImg.src = leaf.back === 'vellum' ? urls.get(leaf.front) : urls.get(leaf.back);
+            }
+          });
+
+          this.showLoading(false);
+          this.goToLeaf(0, { instant: true });
+        }).catch((error) => {
+          console.error('Error loading zine pages:', error);
+          this.showError('Failed to load the zine pages.');
+        });
       }
 
       setupEventListeners() {
-        // Navigation buttons
         this.prevBtn.addEventListener('click', () => this.goToPrevPage());
         this.nextBtn.addEventListener('click', () => this.goToNextPage());
 
-        // Scrubbing: click or drag anywhere along the progress bar to jump pages
         this.setupProgressScrubbing();
 
-        // Fullscreen control (desktop only)
         this.fullscreenBtn.addEventListener('click', () => this.toggleFullscreen());
 
-        // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
           if (e.target.tagName === 'INPUT') return;
 
-          switch(e.key) {
+          switch (e.key) {
             case 'ArrowLeft':
               e.preventDefault();
               this.goToPrevPage();
@@ -528,246 +644,115 @@
           }
         });
 
-        // Handle fullscreen changes (when user exits via ESC or browser controls)
         document.addEventListener('fullscreenchange', () => this.handleFullscreenChange());
         document.addEventListener('webkitfullscreenchange', () => this.handleFullscreenChange());
         document.addEventListener('msfullscreenchange', () => this.handleFullscreenChange());
+      }
 
-        // Handle window resize (no longer switches PDFs, but reserved for future responsive behavior)
-        let resizeTimeout;
-        let lastIsMobile = window.innerWidth <= 775;
+      // Click the right half of the book to advance, the left half to go back —
+      // mirrors turning a physical page with your hand. The flipbook element
+      // is only ever one page wide; once it's shifted open, the visible
+      // spread actually extends half a page further to its left (that's
+      // where the turned-open leaves overflow to), so the hit-test region is
+      // widened to match rather than using the element's own narrow box.
+      setupClickNavigation() {
+        this.flipbookStage.addEventListener('click', (e) => {
+          // Closed on either cover — any click just opens the book.
+          if (this.currentLeaf <= 0) { this.goToNextPage(); return; }
+          if (this.currentLeaf >= this.leaves.length) { this.goToPrevPage(); return; }
 
-        window.addEventListener('resize', () => {
-          clearTimeout(resizeTimeout);
-          resizeTimeout = setTimeout(() => {
-            const currentIsMobile = window.innerWidth <= 775;
-            if (currentIsMobile !== lastIsMobile) {
-              lastIsMobile = currentIsMobile;
-              // Currently no PDF swap needed; keep hook in case future behavior is added.
-            }
-          }, 300); // Debounce resize events
+          const rect = this.flipbookEl.getBoundingClientRect();
+          const left = rect.left - rect.width / 2;
+          const width = rect.width * 2;
+          const ratio = (e.clientX - left) / width;
+          if (ratio < 0.5) {
+            this.goToPrevPage();
+          } else {
+            this.goToNextPage();
+          }
         });
       }
 
-      async loadPDF() {
-        try {
-          this.showLoading(true);
-
-          // Configure PDF.js worker
-          pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-
-          const loadingTask = pdfjsLib.getDocument(this.pdfPath);
-
-          // Show download progress
-          loadingTask.onProgress = (progress) => {
-            if (progress.total) {
-              const percent = Math.round((progress.loaded / progress.total) * 100);
-              const progressEl = document.getElementById('loading-progress');
-              if (progressEl) {
-                progressEl.textContent = `${percent}%`;
-              }
-            }
-          };
-
-          this.pdfDoc = await loadingTask.promise;
-          this.pageCount = this.pdfDoc.numPages;
-          this.pageCountEl.textContent = this.pageCount;
-
-          // Preload all pages to prevent white flash
-          await this.preloadAllPages();
-
-          this.showLoading(false);
-          this.renderPage(1);
-          this.updateControls();
-
-        } catch (error) {
-          console.error('Error loading PDF:', error);
-          this.showError('Failed to load PDF. Please check the file path.');
-        }
-      }
-
-      async preloadAllPages() {
-        const progressEl = document.getElementById('loading-progress');
-        const loadingText = document.querySelector('.pdf-loading-text');
-
-        if (loadingText) {
-          loadingText.textContent = 'Preparing pages...';
-        }
-
-        // Preload all pages
-        for (let i = 1; i <= this.pageCount; i++) {
-          try {
-            this.pageCache[i] = await this.pdfDoc.getPage(i);
-
-            // Update progress
-            if (progressEl) {
-              const percent = Math.round((i / this.pageCount) * 100);
-              progressEl.textContent = `${percent}%`;
-            }
-          } catch (error) {
-            console.error(`Error preloading page ${i}:`, error);
+      // Recompute stacking order: flipped leaves stack ascending (most recently
+      // turned on top, in the left slot); unflipped leaves stack descending
+      // (soonest-to-read on top, in the right slot).
+      updateZIndices() {
+        const total = this.leaves.length;
+        this.leafEls.forEach((el, i) => {
+          if (i < this.currentLeaf) {
+            el.style.zIndex = 1000 + i;
+          } else {
+            el.style.zIndex = 500 + (total - i);
           }
-        }
-
-        if (loadingText) {
-          loadingText.textContent = 'Zine loading...';
-        }
+        });
       }
 
-      // Signature for the current layout — a cached bitmap is only reusable while
-      // fullscreen state, viewport and pixel ratio are unchanged.
-      layoutKey() {
-        const isFullscreen = this.pdfReader.classList.contains('fullscreen');
-        const parent = this.canvas.parentElement;
-        return [
-          isFullscreen,
-          window.innerWidth <= 775,
-          window.devicePixelRatio || 1,
-          parent.clientWidth,
-          parent.clientHeight
-        ].join('|');
-      }
+      // Move to the leaf at the given index. Flips everything before it,
+      // unflips everything from it onward. Index can go one past the last
+      // leaf, meaning every leaf has been turned (the back cover is showing
+      // on the left with nothing left on the right). `instant` skips the CSS
+      // transition — used for the very first paint and for scrubbing across
+      // many leaves.
+      goToLeaf(index, { instant = false } = {}) {
+        index = Math.min(this.leaves.length, Math.max(0, index));
 
-      // Blit an already-rendered buffer onto the visible canvas. Synchronous, so
-      // revisiting a page during a scrub is instant.
-      paintBuffer(buffer, pageNum) {
-        this.canvas.width = buffer.width;
-        this.canvas.height = buffer.height;
-        this.ctx.drawImage(buffer, 0, 0);
+        const jumpDistance = Math.abs(index - this.currentLeaf);
+        const useInstant = instant || jumpDistance > 1;
 
-        // Cover pages are a single page, not a spread — sized and bound differently
-        const isCoverPage = pageNum === 1 || pageNum === this.pageCount;
-        this.canvas.classList.toggle('cover-page', isCoverPage);
-        this.canvasFrame.classList.toggle('spread', !isCoverPage);
-        this.canvasFrame.classList.toggle('cover-front', pageNum === 1);
-        this.canvasFrame.classList.toggle('cover-back', isCoverPage && pageNum !== 1);
+        this.currentLeaf = index;
 
-        this.pageNum = pageNum;
+        this.flipbookEl.classList.toggle('no-anim', useInstant);
+        this.leafEls.forEach((el, i) => {
+          el.classList.toggle('no-anim', useInstant);
+          el.classList.toggle('flipped', i < index);
+        });
+
+        // Partway through, the book shifts right by half a page width so the
+        // open spread recenters where the closed cover used to sit. Once
+        // every leaf has been turned there's no second page anymore — the
+        // back cover needs a full page width of shift to land back in that
+        // exact same spot, reading as a single closed page again.
+        const isFullyFlipped = index >= this.leaves.length;
+        this.flipbookEl.classList.toggle('shifted', index > 0 && !isFullyFlipped);
+        this.flipbookEl.classList.toggle('closed-end', isFullyFlipped);
+
+        if (useInstant) {
+          // Force layout so the transition-less state is committed before we
+          // (potentially) re-enable transitions on the next call.
+          void this.flipbookEl.offsetHeight;
+          this.flipbookEl.classList.remove('no-anim');
+          this.leafEls.forEach((el) => el.classList.remove('no-anim'));
+        }
+
+        this.updateZIndices();
         this.updateControls();
       }
 
-      cacheBuffer(key, buffer) {
-        this.bitmapCache.set(key, buffer);
-        // Bounded LRU — full spreads at device pixel ratio are megabytes each
-        while (this.bitmapCache.size > this.bitmapCacheLimit) {
-          this.bitmapCache.delete(this.bitmapCache.keys().next().value);
-        }
-      }
-
-      async renderPage(pageNum) {
-        // The controls track the page that was *asked* for, so the bar never
-        // rewinds to the last fully-rendered page mid-scrub.
-        this.targetPage = pageNum;
-
-        // Already drawn at this size? Swap it in this frame, no async work.
-        const cacheKey = `${pageNum}@${this.layoutKey()}`;
-        const cached = this.bitmapCache.get(cacheKey);
-        if (cached) {
-          this.bitmapCache.delete(cacheKey);
-          this.bitmapCache.set(cacheKey, cached); // refresh LRU position
-          this.paintBuffer(cached, pageNum);
-          return;
-        }
-
-        // Queue instead of dropping: targetPage holds the request and the render
-        // in flight picks it up when it finishes, so fast flipping always lands
-        // on the last page asked for rather than silently ignoring the click.
-        if (this.isRendering) return;
-
-        this.isRendering = true;
-
-        try {
-          // Use cached page if available, otherwise fetch it
-          const page = this.pageCache[pageNum] || await this.pdfDoc.getPage(pageNum);
-
-          // Calculate optimal scale based on viewport size and fullscreen state
-          const isFullscreen = this.pdfReader.classList.contains('fullscreen');
-          const isMobile = window.innerWidth <= 775;
-
-          let scale;
-          if (isFullscreen && !isMobile) {
-            // Desktop fullscreen: scale to fill available space
-            const containerWidth = this.canvas.parentElement.clientWidth;
-            const containerHeight = this.canvas.parentElement.clientHeight;
-
-            const baseViewport = page.getViewport({ scale: 1.0 });
-            const scaleX = containerWidth / baseViewport.width;
-            const scaleY = containerHeight / baseViewport.height;
-
-            // Use the smaller scale to fit within bounds
-            scale = Math.min(scaleX, scaleY) * 0.95; // 95% to add small margin
-          } else {
-            // Normal view or mobile: use default scale
-            scale = this.scale;
-          }
-
-          // Account for device pixel ratio for high-DPI displays (Retina, etc.)
-          const outputScale = window.devicePixelRatio || 1;
-
-          const viewport = page.getViewport({ scale: scale });
-          const width = Math.floor(viewport.width * outputScale);
-          const height = Math.floor(viewport.height * outputScale);
-
-          // Scale the drawing context to match the device pixel ratio
-          const transform = outputScale !== 1
-            ? [outputScale, 0, 0, outputScale, 0, 0]
-            : null;
-
-          // Paint offscreen first so the visible canvas is never blank mid-flip —
-          // the old page stays up until the new one is ready to swap in whole.
-          const buffer = document.createElement('canvas');
-          buffer.width = width;
-          buffer.height = height;
-
-          await page.render({
-            canvasContext: buffer.getContext('2d'),
-            viewport: viewport,
-            transform: transform
-          }).promise;
-
-          this.cacheBuffer(cacheKey, buffer);
-
-          // A scrub may have moved on while this was rendering — keep the bitmap,
-          // but don't flash a page the reader has already dragged past.
-          if (this.targetPage === pageNum) {
-            // Swap in a single frame: resize + blit happen back to back, so the
-            // clear that comes with setting canvas.width is never painted.
-            this.paintBuffer(buffer, pageNum);
-          }
-
-        } catch (error) {
-          console.error('Error rendering page:', error);
-          this.showError('Error rendering page ' + pageNum);
-        }
-
-        this.isRendering = false;
-
-        // A newer page was asked for while this one rendered — chase it. The
-        // second check stops a failed render from retrying itself forever.
-        if (this.targetPage !== this.pageNum && this.targetPage !== pageNum) {
-          this.renderPage(this.targetPage);
-        }
-      }
-
-      goToPage(pageNum) {
-        if (pageNum < 1 || pageNum > this.pageCount) return;
-        // Any page change outside a scrub puts the fill back under our control
+      goToPage(page) {
+        const leafIndex = this.leafIndexForPage(page);
+        if (leafIndex === null || leafIndex === this.currentLeaf) return;
         if (!this.isScrubbing) this.holdFill = false;
-        // Compare against the page last requested, not the one on screen — during
-        // a fast scrub the requested page runs ahead of the rendered one.
-        if (pageNum === this.targetPage) return;
-        this.renderPage(pageNum);
+        this.goToLeaf(leafIndex);
       }
 
       goToPrevPage() {
-        this.goToPage(this.targetPage - 1);
+        if (this.currentLeaf <= 0) return;
+        this.holdFill = false;
+        this.goToLeaf(this.currentLeaf - 1);
       }
 
       goToNextPage() {
-        this.goToPage(this.targetPage + 1);
+        if (this.currentLeaf >= this.leaves.length) return;
+        this.holdFill = false;
+        this.goToLeaf(this.currentLeaf + 1);
       }
 
-      // Map a pointer x position on the progress bar to a 0..1 ratio
+      get displayedPage() {
+        return this.currentLeaf < this.leaves.length
+          ? this.leaves[this.currentLeaf].front
+          : this.leaves[this.leaves.length - 1].back;
+      }
+
       ratioFromClientX(clientX) {
         const rect = this.progressEl.getBoundingClientRect();
         if (!rect.width) return 0;
@@ -781,11 +766,9 @@
       setupProgressScrubbing() {
         const bar = this.progressEl;
         let dragging = false;
-        let pendingX = null;   // Latest pointer x, consumed on the next frame
+        let pendingX = null;
         let frame = null;
 
-        // Paint the bar + page number straight from the pointer, independent of
-        // rendering — the fill must never wait on a canvas paint to catch up.
         const paint = (ratio, page) => {
           this.controlsEl.style.setProperty('--progress-width', `${ratio * 100}%`);
           this.currentPageEl.textContent = page;
@@ -800,24 +783,21 @@
           const ratio = this.ratioFromClientX(x);
           const page = this.pageFromRatio(ratio);
           paint(ratio, page);
-          this.goToPage(page); // render trails behind; visuals already moved
+          this.goToPage(page);
         };
 
         const scrubTo = (clientX) => {
-          if (!this.pageCount) return;
           pendingX = clientX;
-          // One update per frame max, so a slow page render can't back up the drag
           if (frame == null) frame = requestAnimationFrame(flush);
         };
 
         bar.addEventListener('pointerdown', (e) => {
-          if (!this.pageCount || e.button !== 0) return;
+          if (e.button !== 0) return;
           dragging = true;
           this.isScrubbing = true;
           bar.classList.add('dragging');
           bar.setPointerCapture(e.pointerId);
           e.preventDefault();
-          // Paint synchronously on press so the first click feels instant
           const ratio = this.ratioFromClientX(e.clientX);
           const page = this.pageFromRatio(ratio);
           paint(ratio, page);
@@ -842,9 +822,6 @@
             this.goToPage(page);
           }
           this.isScrubbing = false;
-          // The fill stays exactly where it was dropped: snapping it to the page
-          // boundary here would read as the bar twitching on release. The next
-          // deliberate page change re-syncs it.
           this.holdFill = true;
           bar.classList.remove('dragging');
           if (bar.hasPointerCapture(e.pointerId)) bar.releasePointerCapture(e.pointerId);
@@ -854,9 +831,7 @@
         bar.addEventListener('pointerup', endDrag);
         bar.addEventListener('pointercancel', endDrag);
 
-        // Keyboard support while the bar is focused
         bar.addEventListener('keydown', (e) => {
-          // Keep the document-level shortcut handler from also firing
           if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key)) {
             e.stopPropagation();
           }
@@ -873,26 +848,22 @@
               break;
             case 'Home':
               e.preventDefault();
-              this.goToPage(1);
+              this.goToLeaf(0);
               break;
             case 'End':
               e.preventDefault();
-              this.goToPage(this.pageCount);
+              this.goToLeaf(this.leaves.length);
               break;
           }
         });
       }
 
       updateControls() {
-        // Everything the reader sees in the controls reflects the requested page,
-        // so a slow render never makes the bar or counter step backwards.
-        const page = this.targetPage || this.pageNum;
+        const page = this.displayedPage;
 
-        this.prevBtn.disabled = page <= 1;
-        this.nextBtn.disabled = page >= this.pageCount;
+        this.prevBtn.disabled = this.currentLeaf <= 0;
+        this.nextBtn.disabled = this.currentLeaf >= this.leaves.length;
 
-        // While scrubbing, the pointer owns the fill and the page number — a
-        // render finishing mid-drag must not yank them back to the rendered page.
         if (!this.isScrubbing) {
           this.currentPageEl.textContent = page;
           if (!this.holdFill) {
@@ -908,21 +879,23 @@
         }
       }
 
-
       showLoading(show) {
         this.loadingEl.style.display = show ? 'block' : 'none';
-        this.canvasFrame.style.display = show ? 'none' : 'block';
+        // Keep the stage in the layout (so the page-shaped loading placeholder
+        // holds its size) but invisible, rather than removing it — that also
+        // hides the not-yet-loaded <img> elements' broken-image icons and alt
+        // text instead of flashing them before the loading overlay paints.
+        this.flipbookStage.style.visibility = show ? 'hidden' : 'visible';
       }
 
       showError(message) {
         this.loadingEl.style.display = 'none';
-        this.canvasFrame.style.display = 'none';
+        this.flipbookStage.style.display = 'none';
         this.errorEl.style.display = 'block';
         this.errorEl.textContent = message;
       }
 
       toggleFullscreen() {
-        // Disable fullscreen on mobile
         const isMobile = window.innerWidth <= 775;
         if (isMobile) return;
 
@@ -934,15 +907,13 @@
       }
 
       enterFullscreen() {
-        // Desktop only
         const isMobile = window.innerWidth <= 775;
         if (isMobile) return;
 
         this.pdfReader.classList.add('fullscreen');
-        this.fullscreenBtn.textContent = '⛉'; // Exit fullscreen icon
+        this.fullscreenBtn.textContent = '⛉';
         this.fullscreenBtn.title = 'Exit Fullscreen';
 
-        // Desktop: try browser fullscreen
         if (this.pdfReader.requestFullscreen) {
           this.pdfReader.requestFullscreen();
         } else if (this.pdfReader.webkitRequestFullscreen) {
@@ -950,17 +921,14 @@
         } else if (this.pdfReader.msRequestFullscreen) {
           this.pdfReader.msRequestFullscreen();
         }
-        this.renderPage(this.targetPage);
       }
 
       exitFullscreen() {
-        // Desktop only
         const isMobile = window.innerWidth <= 775;
         if (isMobile) return;
 
         this.pdfReader.classList.remove('fullscreen');
 
-        // Exit browser fullscreen
         if (document.exitFullscreen) {
           document.exitFullscreen();
         } else if (document.webkitExitFullscreen) {
@@ -969,77 +937,26 @@
           document.msExitFullscreen();
         }
 
-        this.renderPage(this.targetPage);
-
-        this.fullscreenBtn.textContent = '⛶'; // Enter fullscreen icon
+        this.fullscreenBtn.textContent = '⛶';
         this.fullscreenBtn.title = 'Fullscreen';
       }
 
       handleFullscreenChange() {
-        // Check if we're no longer in browser fullscreen
         const isInFullscreen = document.fullscreenElement ||
                               document.webkitFullscreenElement ||
                               document.msFullscreenElement;
 
         if (!isInFullscreen && this.pdfReader.classList.contains('fullscreen')) {
-          // User exited fullscreen via ESC or browser controls, update our state
           this.pdfReader.classList.remove('fullscreen');
-          this.fullscreenBtn.textContent = '⛶'; // Enter fullscreen icon
+          this.fullscreenBtn.textContent = '⛶';
           this.fullscreenBtn.title = 'Fullscreen';
-          this.renderPage(this.targetPage);
         }
-      }
-
-
-      setupTouchNavigation() {
-        this.touchHandler = (e) => {
-          const rect = this.canvas.getBoundingClientRect();
-          const x = e.clientX - rect.left;
-          const canvasWidth = rect.width;
-
-          // Divide canvas into thirds
-          const leftThird = canvasWidth / 3;
-          const rightThird = canvasWidth * 2 / 3;
-
-          if (x < leftThird) {
-            // Left third - previous page
-            this.goToPrevPage();
-          } else if (x > rightThird) {
-            // Right third - next page
-            this.goToNextPage();
-          }
-          // Middle third - do nothing (allows for other interactions)
-        };
-
-        this.touchEndHandler = (e) => {
-          e.preventDefault(); // Prevent double-firing with click
-
-          const touch = e.changedTouches[0];
-          const rect = this.canvas.getBoundingClientRect();
-          const x = touch.clientX - rect.left;
-          const canvasWidth = rect.width;
-
-          // Divide canvas into thirds
-          const leftThird = canvasWidth / 3;
-          const rightThird = canvasWidth * 2 / 3;
-
-          if (x < leftThird) {
-            // Left third - previous page
-            this.goToPrevPage();
-          } else if (x > rightThird) {
-            // Right third - next page
-            this.goToNextPage();
-          }
-        };
-
-        this.canvas.addEventListener('click', this.touchHandler);
-        this.canvas.addEventListener('touchend', this.touchEndHandler);
       }
     }
 
-    // Initialize PDF Reader when page loads
+    // Initialize the flip-book when the page loads
     document.addEventListener('DOMContentLoaded', () => {
-      new PDFReader();
+      new FlipBook();
     });
   </script>
 

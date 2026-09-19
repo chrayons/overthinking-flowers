@@ -2939,107 +2939,158 @@ body.intro-active .mobile-header-menu {
   margin-bottom: 32px; /* spacing between PDF and controls */
 }
 
-/* Frame shrink-wraps the canvas so the spine shadow tracks the spread exactly.
-   The drop shadow gives the near-white paper an edge against the near-white
-   page background — without it the fold reads as a mark on the artwork rather
-   than a book sitting on a surface. */
-.pdf-canvas-frame {
+/* ================================
+   Flip-book reader
+   ================================
+   A real page turn, not a canvas swap: each leaf is a div with a front and
+   back face (backface-visibility hidden) that rotates open around its spine
+   edge. Unflipped leaves sit stacked in the right-hand slot (soonest-to-read
+   on top); flipped leaves stack in the left-hand slot (most recently turned
+   on top). z-index is recalculated in JS whenever the current leaf changes. */
+
+.flipbook-stage {
   position: relative;
-  display: block;
-  max-width: 100%;
-  line-height: 0;
-  box-shadow:
-    0 2px 10px rgba(34, 60, 110, 0.10),
-    0 12px 34px rgba(34, 60, 110, 0.10);
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  perspective: 2400px;
 }
 
-#pdf-canvas {
-  max-width: 100%;
-  width: auto !important;
-  height: auto !important;
-  display: block;
-  object-fit: contain;
+/* The book is always exactly one page wide — never a two-page spread box.
+   Each leaf is full-size and stacked on the same spot, so with nothing
+   flipped it simply reads as a closed cover. Flipping a leaf swings it open
+   around its own left edge into the space immediately to the left, which is
+   allowed to overflow (nothing here clips it) rather than being revealed by
+   resizing a viewport — a real hinge, not two animations chasing each other.
+   Once anything has been turned, the whole book slides right by half a page
+   width so that newly-opened spread recenters exactly where the closed cover
+   used to sit; the same shift, run in reverse, is what makes the fully
+   turned end state read as a single centered back cover again. */
+.flipbook {
+  --page-w: min(45vw, 410px);
+  position: relative;
+  width: var(--page-w);
+  aspect-ratio: var(--flipbook-page-ratio, 0.704);
+  transform: translateX(0);
+  transition: transform 700ms cubic-bezier(0.45, 0.05, 0.15, 1);
+  filter: drop-shadow(0 2px 10px rgba(34, 60, 110, 0.10))
+          drop-shadow(0 12px 34px rgba(34, 60, 110, 0.10));
 }
 
-/* ---- Spine shadow ----------------------------------------------------
-   Kept deliberately narrow. The pages are near-white, so any wide gradient
-   reads as a tinted column down the middle of the artwork rather than a
-   fold — width is what makes a gutter look dirty, not opacity. A single
-   smooth valley about 3.5% of the spread is enough to say "bound book"
-   and narrow enough to stay out of the illustration's way.
+.flipbook.shifted {
+  transform: translateX(calc(var(--page-w) / 2));
+}
 
-   The shading is a cool blue pulled from the zine's own ink (#2259A1
-   family). Neutral black over near-white paper turns flat grey and reads
-   as a printing defect. */
-.pdf-canvas-frame::after {
+/* Once every leaf has flipped, the back cover is sitting a full page width
+   to the left of where the flipbook itself is laid out — shifting by a full
+   page width (not half) brings it back to exactly the same screen position
+   the front cover started at, so the book reads as closed again. */
+.flipbook.closed-end {
+  transform: translateX(var(--page-w));
+}
+
+.flipbook.no-anim {
+  transition: none;
+}
+
+/* Spine crease — sits exactly on the flipbook's own left edge, which is
+   where the turned-open leaves meet the leaf still to come. Only relevant
+   once the book is actually open to a spread. */
+.flipbook::after {
   content: '';
   position: absolute;
   top: 0;
   bottom: 0;
+  left: 0;
+  width: 6%;
+  transform: translateX(-50%);
   pointer-events: none;
+  z-index: 2000; /* above every leaf's own z-index, so the shadow reads on the paper */
   mix-blend-mode: multiply;
   opacity: 0;
-  transition: opacity 240ms ease;
-}
-
-/* Inner spreads — crease down the centre fold */
-.pdf-canvas-frame.spread::after {
-  opacity: 1;
-  left: 50%;
-  width: 3.5%;
-  transform: translateX(-50%);
+  transition: opacity 300ms ease;
   background: linear-gradient(to right,
     rgba(40, 64, 112, 0)    0%,
-    rgba(40, 64, 112, 0.06) 28%,
-    rgba(40, 64, 112, 0.15) 42%,
-    rgba(40, 64, 112, 0.22) 50%,  /* the fold itself */
-    rgba(40, 64, 112, 0.15) 58%,
-    rgba(40, 64, 112, 0.06) 72%,
+    rgba(40, 64, 112, 0.08) 30%,
+    rgba(40, 64, 112, 0.18) 50%,
+    rgba(40, 64, 112, 0.08) 70%,
     rgba(40, 64, 112, 0)    100%);
 }
 
-/* Front cover — bound edge sits on the left */
-.pdf-canvas-frame.cover-front::after {
+.flipbook.shifted::after {
   opacity: 1;
-  left: 0;
-  width: 3.5%;
-  background: linear-gradient(to right,
-    rgba(40, 64, 112, 0.13) 0%,
-    rgba(40, 64, 112, 0.07) 30%,
-    rgba(40, 64, 112, 0)    100%);
 }
 
-/* Back cover — bound edge sits on the right */
-.pdf-canvas-frame.cover-back::after {
-  opacity: 1;
-  right: 0;
-  width: 3.5%;
-  background: linear-gradient(to left,
-    rgba(40, 64, 112, 0.13) 0%,
-    rgba(40, 64, 112, 0.07) 30%,
-    rgba(40, 64, 112, 0)    100%);
+.leaf {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transform-origin: left center;
+  transform: rotateY(0deg);
+  transition: transform 700ms cubic-bezier(0.45, 0.05, 0.15, 1);
+}
+
+.leaf.flipped {
+  transform: rotateY(-180deg);
+}
+
+.leaf.no-anim {
+  transition: none;
+}
+
+.leaf-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  background: #fff;
+  overflow: hidden;
+}
+
+.leaf-front {
+  border-radius: 0 3px 3px 0;
+}
+
+.leaf-back {
+  transform: rotateY(180deg);
+  border-radius: 3px 0 0 3px;
+}
+
+.leaf-face img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+}
+
+/* Vellum is translucent on both faces — it's the same physical sheet either
+   way, just seen from the front (reading orientation, still legible) or
+   through the back (mirrored). The face's own background has to go
+   transparent too, or its opaque white would block the leaf stacked
+   underneath regardless of the image's opacity, and it'd just look like a
+   faded image rather than something you can see through. */
+.leaf-front--vellum,
+.leaf-back--vellum {
+  background: transparent;
+}
+
+.leaf-front--vellum img {
+  opacity: 0.82;
+}
+
+.leaf-back--vellum img {
+  transform: scaleX(-1);
+  opacity: 0.5;
+}
+
+.leaf-back--blank {
+  background: #fbfaf7;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .pdf-canvas-frame::after {
+  .leaf,
+  .flipbook {
     transition: none;
-  }
-}
-
-/* Desktop: constrain PDF to readable size */
-@media (min-width: 776px) {
-  #pdf-canvas {
-    max-width: 50vw;
-  }
-
-  /* Cover pages are single pages, not spreads. Constrained by HEIGHT, not
-     width: the front cover's sheet in the PDF is 1298x1816pt against the back
-     cover's 1250x1776, so a shared width cap would squeeze the front cover
-     ~4% smaller than every other page. Matching the spread height (50vw of
-     2500x1776 = 35.52vw) puts both covers at exactly the same size. */
-  #pdf-canvas.cover-page {
-    max-width: none;
-    max-height: 35.52vw;
   }
 }
 
