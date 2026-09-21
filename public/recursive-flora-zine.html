@@ -613,8 +613,18 @@
       }
 
       setupEventListeners() {
-        this.prevBtn.addEventListener('click', () => this.goToPrevPage());
-        this.nextBtn.addEventListener('click', () => this.goToNextPage());
+        // Blur before navigating: if this tap lands on the last/first page,
+        // the button becomes disabled while still focused, and mobile
+        // browsers respond to a focused element going disabled by nudging
+        // the viewport/layout to relocate focus — a visible little jump.
+        this.prevBtn.addEventListener('click', () => {
+          this.prevBtn.blur();
+          this.goToPrevPage();
+        });
+        this.nextBtn.addEventListener('click', () => {
+          this.nextBtn.blur();
+          this.goToNextPage();
+        });
 
         this.setupProgressScrubbing();
 
@@ -696,7 +706,8 @@
       goToLeaf(index, { instant = false } = {}) {
         index = Math.min(this.leaves.length, Math.max(0, index));
 
-        const jumpDistance = Math.abs(index - this.currentLeaf);
+        const oldIndex = this.currentLeaf;
+        const jumpDistance = Math.abs(index - oldIndex);
         const useInstant = instant || jumpDistance > 1;
 
         this.currentLeaf = index;
@@ -725,6 +736,34 @@
         }
 
         this.updateZIndices();
+
+        // The leaf actually turning needs to stay above BOTH stacks for the
+        // whole 700ms it's in flight, not just once it settles. updateZIndices
+        // sorts leaves into their resting tiers, which is correct once a flip
+        // is done, but mid-flip that resting tier can be the WRONG side to be
+        // on: e.g. flipping backward, the leaf's resting tier drops it below
+        // the rest of the left-hand pile immediately, so it disappears behind
+        // that pile at the very start of the animation and only reappears
+        // once it's rotated into the right-hand footprint — i.e. the pile
+        // looks fully settled before the turning page has visibly turned.
+        if (!useInstant && jumpDistance === 1) {
+          const flippingIndex = index > oldIndex ? oldIndex : index;
+          const el = this.leafEls[flippingIndex];
+          if (el) {
+            el.style.zIndex = 2000;
+            if (this._flippingEl && this._flippingEl !== el) {
+              this._flippingEl.removeEventListener('transitionend', this._flippingSettle);
+            }
+            this._flippingEl = el;
+            this._flippingSettle = () => {
+              el.removeEventListener('transitionend', this._flippingSettle);
+              if (this._flippingEl === el) this._flippingEl = null;
+              this.updateZIndices();
+            };
+            el.addEventListener('transitionend', this._flippingSettle);
+          }
+        }
+
         this.updateControls();
       }
 
