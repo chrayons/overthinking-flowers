@@ -465,6 +465,7 @@
         this.renderLeafElements();
         this.setupEventListeners();
         this.setupClickNavigation();
+        this.setupViewportGuard();
         this.preloadImages();
       }
 
@@ -683,6 +684,34 @@
         });
       }
 
+      clearFlipSettle() {
+        if (this._flippingTimer != null) {
+          clearTimeout(this._flippingTimer);
+          this._flippingTimer = null;
+        }
+        if (this._flippingEl) {
+          this._flippingEl.removeEventListener('transitionend', this._flippingSettle);
+          this._flippingEl = null;
+          this._flippingSettle = null;
+        }
+      }
+
+      // If a real device's chrome (e.g. Safari's URL bar) collapses or
+      // expands mid-flip, that resize can cut the in-flight CSS transition
+      // short without ever firing 'transitionend', leaving the book's shift
+      // and z-indices stuck between two states. Snapping to an instant
+      // re-application of the current leaf's resting state on any viewport
+      // change self-heals that without disturbing an in-progress flip that's
+      // still running normally.
+      setupViewportGuard() {
+        const viewport = window.visualViewport;
+        const target = viewport || window;
+        target.addEventListener('resize', () => {
+          this.clearFlipSettle();
+          this.goToLeaf(this.currentLeaf, { instant: true });
+        });
+      }
+
       // Recompute stacking order: flipped leaves stack ascending (most recently
       // turned on top, in the left slot); unflipped leaves stack descending
       // (soonest-to-read on top, in the right slot).
@@ -750,17 +779,22 @@
           const flippingIndex = index > oldIndex ? oldIndex : index;
           const el = this.leafEls[flippingIndex];
           if (el) {
+            this.clearFlipSettle();
             el.style.zIndex = 2000;
-            if (this._flippingEl && this._flippingEl !== el) {
-              this._flippingEl.removeEventListener('transitionend', this._flippingSettle);
-            }
-            this._flippingEl = el;
-            this._flippingSettle = () => {
-              el.removeEventListener('transitionend', this._flippingSettle);
-              if (this._flippingEl === el) this._flippingEl = null;
+            const settle = () => {
+              if (this._flippingEl !== el) return;
+              this.clearFlipSettle();
               this.updateZIndices();
             };
-            el.addEventListener('transitionend', this._flippingSettle);
+            this._flippingEl = el;
+            this._flippingSettle = settle;
+            el.addEventListener('transitionend', settle);
+            // Belt-and-braces: on a real device a transition can get cut
+            // short mid-flight (e.g. Safari's toolbar collapsing/expanding
+            // right as the last flip animates), which drops 'transitionend'
+            // entirely and leaves this leaf's elevated z-index — and the
+            // book's shift — stuck. This timer guarantees cleanup even then.
+            this._flippingTimer = setTimeout(settle, 900);
           }
         }
 
