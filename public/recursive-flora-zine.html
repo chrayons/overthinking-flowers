@@ -448,8 +448,8 @@
     // Flip-book Reader Implementation
     class FlipBook {
       constructor() {
-        this.pageCount = 62;
-        this.vellumPages = new Set([13, 20, 43, 50]);
+        this.pageCount = 64;
+        this.vellumPages = new Set([13, 20, 45, 52]);
         this.imageDir = 'zine-pages';
         this.pageAspect = 1267 / 1800; // interior page width/height, used for the spread ratio
 
@@ -475,8 +475,8 @@
 
       // Page 1's leaf pairs it with page 2 as its back (the inside front
       // cover, revealed the moment the book is opened), and pairing continues
-      // the same way to the end, so the very last leaf pairs page 61 with
-      // page 62 (the back cover) as its back. A vellum page always stands
+      // the same way to the end, so the very last leaf pairs page 63 with
+      // page 64 (the back cover) as its back. A vellum page always stands
       // alone as its own leaf; a normal page only stands alone if pairing it
       // would swallow a vellum page or run past the end.
       buildLeaves() {

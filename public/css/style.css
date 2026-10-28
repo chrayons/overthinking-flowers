@@ -351,11 +351,8 @@ body::after {
   align-items: center;
   padding: 0 32px;
   box-sizing: border-box; /* Include padding in width calculation */
-  background: transparent; /* Start transparent */
-  backdrop-filter: none;
-  transition: background-color 0.2s ease, backdrop-filter 0.2s ease;
+  background: transparent; /* Frosting comes from .header-blur */
   pointer-events: none; /* Allow clicks through transparent header */
-  will-change: background-color, backdrop-filter; /* GPU acceleration */
   transform: translateZ(0); /* Force hardware acceleration */
 }
 
@@ -420,26 +417,104 @@ body::after {
 
 /* Scrolled state - frosted glass effect for entire header bar */
 .header-scrolled .header-bar {
-  background: rgba(244, 246, 251, 0.85); /* Slightly more opaque for better performance */
-  backdrop-filter: blur(8px) saturate(110%); /* Reduced blur for better performance */
   pointer-events: auto; /* Header becomes interactive when scrolled */
+}
 
-  /* Soft gradient fade at bottom edge */
+/* Progressive frosted backdrop. adaptive-header.js injects .header-blur as
+   the bar's first child: a stack of layers whose blur halves as they go down,
+   each masked to its own band, so the blur itself tapers instead of a single
+   blur being faded out (which leaves a visible seam). The stack is 80px tall,
+   a bit shorter than the 96px bar. The tint is its own layer (::before): 100% -> 68% over the first
+   1/12, then a cubic ease-out from 68% to 0% for a long feathered tail.
+   Nothing on .header-blur may set mask/opacity/filter, or it becomes a
+   backdrop root and the layers stop seeing the page behind them. */
+.header-blur {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.header-blur::before,
+.header-blur > * {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.header-blur::before {
+  content: '';
+  background: rgba(244, 246, 251, 0.85);
   mask-image: linear-gradient(to bottom,
     rgba(0,0,0,1) 0%,
-    rgba(0,0,0,1) 70%,
-    rgba(0,0,0,0.8) 85%,
-    rgba(0,0,0,0.3) 95%,
+    rgba(0,0,0,0.68) 8.3%,
+    rgba(0,0,0,0.496) 17.5%,
+    rgba(0,0,0,0.348) 26.7%,
+    rgba(0,0,0,0.233) 35.8%,
+    rgba(0,0,0,0.147) 45%,
+    rgba(0,0,0,0.085) 54.2%,
+    rgba(0,0,0,0.044) 63.3%,
+    rgba(0,0,0,0.018) 72.5%,
+    rgba(0,0,0,0.005) 81.7%,
     rgba(0,0,0,0) 100%);
   -webkit-mask-image: linear-gradient(to bottom,
     rgba(0,0,0,1) 0%,
-    rgba(0,0,0,1) 70%,
-    rgba(0,0,0,0.8) 85%,
-    rgba(0,0,0,0.3) 95%,
+    rgba(0,0,0,0.68) 8.3%,
+    rgba(0,0,0,0.496) 17.5%,
+    rgba(0,0,0,0.348) 26.7%,
+    rgba(0,0,0,0.233) 35.8%,
+    rgba(0,0,0,0.147) 45%,
+    rgba(0,0,0,0.085) 54.2%,
+    rgba(0,0,0,0.044) 63.3%,
+    rgba(0,0,0,0.018) 72.5%,
+    rgba(0,0,0,0.005) 81.7%,
     rgba(0,0,0,0) 100%);
+}
 
-  /* Subtle shadow fallback for browsers without mask support */
-  box-shadow: 0 4px 20px rgba(244, 246, 251, 0.3);
+.header-blur > :nth-child(1) {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  mask-image: linear-gradient(to bottom, #000 0%, transparent 20%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, transparent 20%);
+}
+.header-blur > :nth-child(2) {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  mask-image: linear-gradient(to bottom, #000 8%, transparent 35%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 8%, transparent 35%);
+}
+.header-blur > :nth-child(3) {
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  mask-image: linear-gradient(to bottom, #000 20%, transparent 50%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 20%, transparent 50%);
+}
+.header-blur > :nth-child(4) {
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  mask-image: linear-gradient(to bottom, #000 35%, transparent 70%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 35%, transparent 70%);
+}
+.header-blur > :nth-child(5) {
+  backdrop-filter: blur(1px);
+  -webkit-backdrop-filter: blur(1px);
+  mask-image: linear-gradient(to bottom, #000 50%, transparent 85%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 50%, transparent 85%);
+}
+.header-blur > :nth-child(6) {
+  backdrop-filter: blur(0.5px);
+  -webkit-backdrop-filter: blur(0.5px);
+  mask-image: linear-gradient(to bottom, #000 70%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 70%, transparent 100%);
+}
+
+.header-scrolled .header-blur::before,
+.header-scrolled .header-blur > * {
+  opacity: 1;
 }
 
 /* Remove text shadows when header bar has background */
@@ -529,9 +604,12 @@ body::after {
 
 /* Mobile performance optimization - lighter blur for better performance */
 @media (max-width: 775px) {
-  .header-scrolled .header-bar {
-    backdrop-filter: blur(4px) saturate(105%); /* Much lighter blur for mobile */
-    background: rgba(244, 246, 251, 0.9); /* More opaque background to compensate */
+  .header-blur::before {
+    background: rgba(244, 246, 251, 0.9); /* More opaque tint to back up the lighter blur */
+  }
+  .header-blur > :nth-child(1),
+  .header-blur > :nth-child(2) {
+    display: none; /* Skip the heaviest blur layers on mobile */
   }
   .header-scrolled .mobile-header-menu {
     backdrop-filter: blur(4px) saturate(105%); /* Lighter blur for mobile menu */
@@ -541,25 +619,8 @@ body::after {
 
 /* Fallback for browsers without backdrop-filter support */
 @supports not (backdrop-filter: blur(8px)) {
-  .header-scrolled .header-bar {
-    background: rgba(244, 246, 251, 0.95) !important; /* Higher opacity fallback */
-
-    /* Keep gradient edge diffusion */
-    mask-image: linear-gradient(to bottom,
-      rgba(0,0,0,1) 0%,
-      rgba(0,0,0,1) 70%,
-      rgba(0,0,0,0.8) 85%,
-      rgba(0,0,0,0.3) 95%,
-      rgba(0,0,0,0) 100%);
-    -webkit-mask-image: linear-gradient(to bottom,
-      rgba(0,0,0,1) 0%,
-      rgba(0,0,0,1) 70%,
-      rgba(0,0,0,0.8) 85%,
-      rgba(0,0,0,0.3) 95%,
-      rgba(0,0,0,0) 100%);
-
-    /* Enhanced shadow for non-blur browsers */
-    box-shadow: 0 6px 30px rgba(244, 246, 251, 0.4);
+  .header-blur::before {
+    background: rgba(244, 246, 251, 0.95); /* Higher opacity fallback */
   }
 
   .header-scrolled .mobile-header-menu {
@@ -598,6 +659,10 @@ body::after {
 body.intro-active .header-bar {
   background: transparent !important;
   backdrop-filter: none !important;
+}
+
+body.intro-active .header-blur {
+  display: none;
 }
 
 body.intro-active .header-link,

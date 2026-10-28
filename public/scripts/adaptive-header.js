@@ -21,6 +21,8 @@ if (typeof AdaptiveHeader === 'undefined') {
   }
 
   init() {
+    this.injectBlurLayers();
+
     // Add scroll listener with passive flag for better performance
     window.addEventListener('scroll', this.handleScroll, { passive: true });
 
@@ -31,6 +33,17 @@ if (typeof AdaptiveHeader === 'undefined') {
     this.updateHeaderState();
 
     console.log('AdaptiveHeader initialized with threshold:', this.scrollThreshold);
+  }
+
+  // Stacked backdrop layers for the progressive header blur (see .header-blur in style.css)
+  injectBlurLayers() {
+    const bar = document.querySelector('.header-bar');
+    if (!bar || bar.querySelector('.header-blur')) return;
+    const blur = document.createElement('div');
+    blur.className = 'header-blur';
+    blur.setAttribute('aria-hidden', 'true');
+    for (let i = 0; i < 6; i++) blur.appendChild(document.createElement('div'));
+    bar.prepend(blur);
   }
 
   handleScroll() {
